@@ -21,7 +21,7 @@ jobs:
         run: vercel pull --yes --environment=production --token ${{ secrets.VERCEL_TOKEN }}
 
       - name: Build artifacts
-        run: vercel build --prod --confirm --token ${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod --token ${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel
-        run: vercel --prod --prebuilt --confirm --token ${{ secrets.VERCEL_TOKEN }}
+        run: vercel --prod --prebuilt --token ${{ secrets.VERCEL_TOKEN }}
