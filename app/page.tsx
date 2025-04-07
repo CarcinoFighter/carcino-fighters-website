@@ -23,7 +23,8 @@ import { Button } from "@/components/ui/button"
 import { ArrowUpRight, Award, BookOpen, CalendarCheck, House, Menu, MessageSquareText, Newspaper, PaintBucket, SearchX, UserCheck } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { ModeToggle } from "@/components/ui/mode"
-import { Input } from "@/components/ui/input" 
+import { Input } from "@/components/ui/input"
+import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 
 
 const ListItem = React.forwardRef<
@@ -121,7 +122,7 @@ const research: { title: string; href: string; description: string }[] = [
 export default function Home() {
   const [isMobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   return (
-    <div className="flex flex-col items-start">
+    <div className="flex flex-col items-start gap-5">
 
       {/* Mobile NavMenu */}
       <div className="sm:hidden fixed top-5 left-5 z-20">
@@ -159,7 +160,7 @@ export default function Home() {
                 className="object-cover h-full"
               />
             </div>
-            
+
 
             <div className="text-foreground font-cinzel text-lg">Carcino <br /> Foundation</div>
           </div>
@@ -269,12 +270,16 @@ export default function Home() {
         width={490}
         height={560}
         quality={100}
-        className="pb-10 object-cover w-full h-full absolute top-0 left-0 -z-10 lg:hidden"
+        className=" object-cover w-full h-full absolute -top-20 left-0 -z-10 lg:hidden"
+        style={{
+          maskImage: "linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 90%)",
+          WebkitMaskImage: "linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%)",
+        }}
       />
 
       {/* Main Content */}
       <div className="flex flex-row items-center justify-between w-full h-fit lg:px-14 md:px-10 px-6 pt-[68px]">
-        <div className="flex flex-col text-center lg:text-left  items-center lg:items-start w-full h-fit lg:max-w-[50%] gap-6">
+        <div className="flex flex-col text-center lg:text-left items-center lg:items-start w-full h-fit lg:max-w-[50%] gap-6">
           <Image
             src="/ribbon_phone.png"
             alt=""
@@ -284,7 +289,7 @@ export default function Home() {
             className="object-cover lg:hidden"
           />
           <Label className="border p-3 rounded-sm font-space_grotesk text-base text-foreground hidden lg:inline">Let's change the world together!</Label>
-          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-cinzel text-foreground ">
+          <h1 className="text-5xl lg:text-6xl xl:text-7xl font-cinzel text-foreground ">
             Educating The<br />Masses<br />on Cancer
           </h1>
           <p className="text-lg text-muted-foreground font-space_grotesk">
@@ -316,10 +321,12 @@ export default function Home() {
       </div>
 
       {/* Featured */}
+      {/* Mobile Quotation (hidden in pc) */}
       <div className="flex flex-col items-center gap-5 w-full h-full justify-center lg:hidden py-16">
         <h2 className="font-giest text-lg text-center font-semibold">“I'm just a girl, I just love how shiny it is”</h2>
         <p className="font-giest text-center">Rajannya Das <br /> Founder & Managing Director</p>
       </div>
+      {/* General Featured Section */}
       <div className="flex flex-col lg:gap-6 md:gap-4 gap-2 items-center lg:items-start text-center lg:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6">
         <Label className="border p-3 rounded-sm font-space_grotesk text-base text-foreground">Why Trust Us</Label>
         <h1 className="text-2xl font-giest text-foreground ">
@@ -328,7 +335,7 @@ export default function Home() {
         <p className="text-lg text-muted-foreground font-space_grotesk">
           We need the world to realise the threat, and for that we have a plan...
         </p>
-        <div className="flex flex-row items-center justify-between w-full h-fit">
+        <div className="flex flex-row items-center justify-center w-full h-fit">
           <div className="grid lg:grid-flow-col lg:grid-rows-2 gap-3 lg:max-w-[50%] h-fit">
             <Card className="lg:border-0 shadow-none bg-transparent">
               <CardHeader className="flex flex-col items-center lg:items-start gap-2">
@@ -382,8 +389,190 @@ export default function Home() {
 
       </div>
 
-      {/* Footer */}
+      {/* Articles */}
+      <div className="font-giest flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6">
+        <Label className="border p-3 rounded-sm font-space_grotesk text-base text-foreground">Research and Development</Label>
+        <h1 className="text-2xl font-giest text-foreground ">
+          Our Articles
+        </h1>
+        <p className="text-lg text-muted-foreground font-space_grotesk">
+          Here's the latest collection of articles we offer, tailored to be understandable by everyone, made with love and care by our Writing Team.
+        </p>
+        <div className="grid lg:grid-flow-col lg:grid-rows-2 gap-3 py-6 h-fit w-full">
+          <CardContainer className="w-full">
+            <CardBody className="relative group/card bg-background border-accent w-full h-auto rounded-xl p-6 border">
+              <div className="flex flex-row justify-between h-full gap-4">
+                <CardItem
+                  translateZ="50"
+                  className="w-[50%]"
+                >
+                  <Image
+                    src="/dummy_image1.png"
+                    height={300}
+                    width={300}
+                    className="object-cover rounded-xl "
+                    alt="thumbnail"
+                  />
+                </CardItem>
+                <CardItem
+                  translateZ="20"
+                  className="w-[50%]"
+                >
+                  <div className="flex flex-col items-start justify-between text-left h-full">
+                    <div className="text-primary bg-primary bg-opacity-[10%] px-2 rounded border-primary border border-opacity-20">Information</div>
+                    <h1 className="text-lg lg:text-2xl md:text-xl font-giest text-foreground">Breast Cancer - Wiki</h1>
+                    <p className="md:text-lg font-giest text-muted-foreground">All you need to know about one of the deadly causes behind female mortality.</p>
+                    <Link href={`#`}>
+                      <p className="text-sm text-primary flex flex-row items-center gap-1">
+                        View Article <ArrowUpRight size={14} />
+                      </p>
 
+                    </Link>
+                  </div>
+
+                </CardItem>
+              </div>
+            </CardBody>
+          </CardContainer>
+          <CardContainer className="w-full">
+            <CardBody className="relative group/card bg-background border-accent w-full h-auto rounded-xl p-6 border">
+              <div className="flex flex-row justify-between h-full gap-4">
+                <CardItem
+                  translateZ="50"
+                  className="w-[50%]"
+                >
+                  <Image
+                    src="/dummy_image2.png"
+                    height={300}
+                    width={300}
+                    className="object-cover rounded-xl "
+                    alt="thumbnail"
+                  />
+                </CardItem>
+                <CardItem
+                  translateZ="20"
+                  className="w-[50%]"
+                >
+                  <div className="flex flex-col items-start justify-between text-left h-full">
+                    <div className="text-primary bg-primary bg-opacity-[10%] px-2 rounded border-primary border border-opacity-20">WHO Says</div>
+                    <h1 className="text-lg lg:text-2xl md:text-xl font-giest text-foreground">Minutes from WHO's event.</h1>
+                    <p className="md:text-lg font-giest text-muted-foreground">Here's a clean gist of all that was announced at the Summit.</p>
+                    <Link href={`#`}>
+                      <p className="text-sm text-primary flex flex-row items-center gap-1">
+                        View Article <ArrowUpRight size={14} />
+                      </p>
+
+                    </Link>
+                  </div>
+
+                </CardItem>
+              </div>
+            </CardBody>
+          </CardContainer>
+          <CardContainer className="w-full">
+            <CardBody className="relative group/card bg-background border-accent w-full h-auto rounded-xl p-6 border">
+              <div className="flex flex-row justify-between h-full gap-4">
+                <CardItem
+                  translateZ="50"
+                  className="w-[50%]"
+                >
+                  <Image
+                    src="/dummy_image1.png"
+                    height={300}
+                    width={300}
+                    className="object-cover rounded-xl "
+                    alt="thumbnail"
+                  />
+                </CardItem>
+                <CardItem
+                  translateZ="20"
+                  className="w-[50%]"
+                >
+                  <div className="flex flex-col items-start justify-between text-left h-full">
+                    <div className="text-primary bg-primary bg-opacity-[10%] px-2 rounded border-primary border border-opacity-20">Data Study</div>
+                    <h1 className="text-lg lg:text-2xl md:text-xl font-giest text-foreground">Cancer deaths are rising, but differently.</h1>
+                    <p className="md:text-lg font-giest text-muted-foreground">There's a scary trend in the graph of deaths, here's our take on it.</p>
+                    <Link href={`#`}>
+                      <p className="text-sm text-primary flex flex-row items-center gap-1">
+                        View Article <ArrowUpRight size={14} />
+                      </p>
+
+                    </Link>
+                  </div>
+
+                </CardItem>
+              </div>
+            </CardBody>
+          </CardContainer>
+          <CardContainer className="w-full">
+            <CardBody className="relative group/card bg-background border-accent w-full h-auto rounded-xl p-6 border">
+              <div className="flex flex-row justify-between h-full gap-4">
+                <CardItem
+                  translateZ="50"
+                  className="w-[50%]"
+                >
+                  <Image
+                    src="/dummy_image1.png"
+                    height={300}
+                    width={300}
+                    className="object-cover rounded-xl "
+                    alt="thumbnail"
+                  />
+                </CardItem>
+                <CardItem
+                  translateZ="20"
+                  className="w-[50%]"
+                >
+                  <div className="flex flex-col items-start justify-between text-left h-full">
+                    <div className="text-primary bg-primary bg-opacity-[10%] px-2 rounded border-primary border border-opacity-20">Social Media</div>
+                    <h1 className="text-lg lg:text-2xl md:text-xl font-giest text-foreground">Blueprint of Collapse?</h1>
+                    <p className="md:text-lg font-giest text-muted-foreground">Bryan Johnson has been making waves on the media with his ‘immortal’ life. Is it a filthy scam?</p>
+                    <Link href={`#`}>
+                      <p className="text-sm text-primary flex flex-row items-center gap-1">
+                        View Article <ArrowUpRight size={14} />
+                      </p>
+
+                    </Link>
+                  </div>
+
+                </CardItem>
+              </div>
+            </CardBody>
+          </CardContainer>
+        </div>
+        <Button variant={`ghost`}>Read More Insights <ArrowUpRight /></Button>
+      </div>
+
+
+      {/* Call to action  */}
+      <div className="font-giest text-foreground flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center xl:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6">
+        <div className="w-full flex flex-row items-center justify-between bg-primary">
+          <div className="flex flex-col items-center xl:items-start xl:max-w-[60%] justify-center gap-6 w-full h-fit lg:px-14 md:px-10 px-6 py-10 sm:py-14 md:py-18 lg:py-20">
+            <h1 className="text-4xl">
+              Lets change the world
+              together!
+            </h1>
+            <p className="text-lg">
+              Do you wish to contribute to the cause? Write to us or send us articles, and our Writing Team will work on it and share it with the world.
+            </p>
+            <Button variant={`outline`} className="text-white py-5 font-giest font-medium border-muted-foreground">Start your project <ArrowUpRight /></Button>
+          </div>
+          <div className="hidden xl:inline">
+            <Image
+              src={`/Shape.png`}
+              height={590}
+              width={559.63}
+              alt=""
+              className="object-cover h-full"
+            />
+          </div>
+
+        </div>
+
+      </div>
+
+
+      {/* Footer */}
       <div className="flex flex-col items-start bg-accent justify-start w-full h-fit lg:px-14 md:px-10 px-6 py-10 sm:py-14 md:py-18 lg:py-20">
         <div className="flex flex-row w-full h-fit justify-around lg:px-14 md:px-10 px-6 pb-8  gap-10">
           <div className="flex flex-col items-start gap-4 lg:max-w-[40%]">
