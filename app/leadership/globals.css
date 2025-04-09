@@ -59,6 +59,7 @@
 
 
 @layer base {
+
   *,
   ::after,
   ::before,
@@ -73,61 +74,88 @@
   @keyframes door-open {
     0% {
       transform: translateY(15%);
-      background-image: radial-gradient(circle at 0% 100%, #000000, #00000000);
       opacity: 0;
     }
+
     100% {
       transform: translateY(0%);
       opacity: 1;
-      background-image: transparent;
+    };
+  };
+
+  @keyframes rad {
+    0% {
+      background-image: radial-gradient(circle at 0% 100%, #000000, #00000000);
     }
+
+    100% {
+      background-image: radial-gradient(circle at 0% 100%, #00000000, #00000000);
+    };
+  };
+
+  .animate-rad {
+    animation: rad 2s ease-in-out forwards;
+  }
+  .animate-door-open {
+    animation: door-open 2s ease-in-out forwards;
+  };
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+
+    100% {
+      opacity: 1;
+    };
   }
 
-  :root {
-    --background: 268 0% 100%;
-    --foreground: 268 0% 10%;
-    --card: 268 0% 100%;
-    --card-foreground: 268 0% 15%;
-    --popover: 268 0% 100%;
-    --popover-foreground: 268 95% 10%;
-    --primary: 268 38% 60.8%;
+
+  :root  {
+    --background: 240 0% 100%;
+    --foreground: 240 0% 5%;
+    --card: 240 0% 90%;
+    --card-foreground: 240 0% 10%;
+    --popover: 240 0% 95%;
+    --popover-foreground: 240 95% 5%;
+    --primary: 240 0% 90%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 268 10% 90%;
+    --secondary: 240 10% 70%;
     --secondary-foreground: 0 0% 0%;
-    --muted: 230 10% 95%;
-    --muted-foreground: 268 0% 40%;
-    --accent: 230 10% 90%;
-    --accent-foreground: 268 0% 15%;
-    --destructive: 0 50% 50%;
-    --destructive-foreground: 268 0% 100%;
-    --border: 268 20% 82%;
-    --input: 268 20% 50%;
-    --ring: 268 38% 60.8%;
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 0 0% 8%;
-    --foreground: 268 0% 90%;
-    --card: 268 0% 4%;
-    --card-foreground: 268 0% 90%;
-    --popover: 268 10% 5%;
-    --popover-foreground: 268 0% 90%;
-    --primary: 268 38% 60.8%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 268 10% 10%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 230 10% 15%;
-    --muted-foreground: 268 0% 60%;
-    --accent: 0 0% 13%;
-    --accent-foreground: 268 0% 90%;
+    --muted: 202 10% 85%;
+    --muted-foreground: 240 0% 35%;
+    --accent: 202 10% 80%;
+    --accent-foreground: 240 0% 10%;
     --destructive: 0 50% 30%;
-    --destructive-foreground: 268 0% 90%;
-    --border: 268 20% 18%;
-    --input: 268 20% 18%;
-    --ring: 268 38% 60.8%;
-    --radius: 0.5rem;
+    --destructive-foreground: 240 0% 90%;
+    --border: 240 20% 50%;
+    --input: 240 20% 18%;
+    --ring: 240 0% 0%;
+    --radius: 0.3rem;
   }
+  .dark  {
+    --background: 240 10% 0%;
+    --foreground: 240 0% 90%;
+    --card: 240 0% 5%;
+    --card-foreground: 240 0% 90%;
+    --popover: 240 10% 5%;
+    --popover-foreground: 240 0% 90%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 10% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 202 10% 15%;
+    --muted-foreground: 240 0% 60%;
+    --accent: 202 10% 15%;
+    --accent-foreground: 240 0% 90%;
+    --destructive: 0 50% 30%;
+    --destructive-foreground: 240 0% 90%;
+    --border: 240 20% 18%;
+    --input: 240 20% 18%;
+    --ring: 240 0% 0%;
+    --radius: 0.3rem;
+  }
+  
 
 }
 
