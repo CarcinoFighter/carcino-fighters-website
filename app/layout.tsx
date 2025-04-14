@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Space_Grotesk, Cinzel } from "next/font/google";
-// import "./globals.css";
+import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 
@@ -8,6 +8,7 @@ const geist = Geist({
   variable: "--font-geist",
   subsets: ["latin"],
 });
+
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -32,7 +33,7 @@ export default function RootLayout({
 }>) {
 
   return (
-    
+
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} antialiased`}

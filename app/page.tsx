@@ -16,10 +16,8 @@ import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import "./globals.css";
 
 export default function Home() {
-
   return (
-    <div className="flex flex-col items-start gap-5">
-
+    <div className="flex flex-col items-start gap-5 bg-background">
       {/* Mobile Background */}
       <Image
         src="/mobile_ellipse.png"
@@ -35,7 +33,7 @@ export default function Home() {
       />
 
       {/* Main Content */}
-      <div className="flex flex-row items-center justify-between w-full h-fit lg:px-14 md:px-10 px-6 pt-[68px]">
+      <div className="flex flex-row items-center gap-[12rem] justify-start w-full h-fit lg:h-svh max-h-[1200px] lg:px-14 md:px-10 px-6 pt-[68px]">
         <div className="flex flex-col text-center lg:text-left items-center lg:items-start w-full h-fit lg:max-w-[50%] gap-6">
           <Image
             src="/ribbon_phone.png"
@@ -46,7 +44,7 @@ export default function Home() {
             className="object-cover lg:hidden"
           />
           <Label className="border p-3 rounded-sm font-space_grotesk text-base text-foreground hidden lg:inline">Let's change the world together!</Label>
-          <h1 className="text-5xl lg:text-6xl xl:text-7xl font-cinzel text-foreground ">
+          <h1 className="text-5xl lg:text-5xl xl:text-7xl font-cinzel text-foreground ">
             Educating The<br />Masses<br />on Cancer
           </h1>
           <p className="text-lg text-muted-foreground font-space_grotesk">
@@ -56,14 +54,15 @@ export default function Home() {
           <Button className="text-white py-5 font-giest font-medium">Read Our Documents <ArrowUpRight /> </Button>
         </div>
 
-        <div className="hidden lg:inline">
+        <div className="hidden lg:inline relative w-full">
+          <div className="h-[598px] w-[524px] animate-blob from-[#2C2C2C] to-[#471F77] bg-linear-180 blur-[133px] rounded-full absolute top-0 bottom-0 my-auto right-0 left-0 mr-auto"></div>
           <Image
-            src="/ribbon.png"
+            src="/ribbon2.png"
             alt="Cancer"
-            width={482}
+            width={385}
             height={492}
             quality={100}
-            className="object-cover w-full h-full hidden dark:inline"
+            className="object-cover absolute top-0 bottom-0 my-auto right-0 left-17 mr-auto hidden dark:inline"
           />
           <Image
             src="/ribbon_light.png"
@@ -71,7 +70,7 @@ export default function Home() {
             width={482}
             height={492}
             quality={100}
-            className="object-cover w-full h-full dark:hidden inline"
+            className="object-cover w-full h-full dark:hidden inline z-30"
           />
         </div>
 
@@ -84,7 +83,7 @@ export default function Home() {
         <p className="font-giest text-center">Rajannya Das <br /> Founder & Managing Director</p>
       </div>
       {/* General Featured Section */}
-      <div className="flex flex-col lg:gap-6 md:gap-4 gap-2 items-center lg:items-start text-center lg:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6">
+      <div className="flex flex-col lg:gap-6 md:gap-4 gap-4 items-center lg:items-start text-center lg:text-left justify-start w-full lg:w-fit h-fit lg:h-svh max-h-[1200px] lg:px-14 md:px-10 px-6 pb-6">
         <Label className="border p-3 rounded-sm font-space_grotesk text-base text-foreground">Why Trust Us</Label>
         <h1 className="text-2xl font-giest text-foreground ">
           We want everyone to be aware
@@ -93,7 +92,7 @@ export default function Home() {
           We need the world to realise the threat, and for that we have a plan...
         </p>
         <div className="flex flex-row items-center justify-center w-full h-fit">
-          <div className="grid lg:grid-flow-col lg:grid-rows-2 gap-3 lg:max-w-[50%] h-fit">
+          <div className="grid lg:grid-flow-col lg:grid-rows-2 gap-7 pt-7 max-w-[400px] lg:max-w-[50%] h-fit">
             <Card className="lg:border-0 shadow-none bg-transparent">
               <CardHeader className="flex flex-col items-center lg:items-start gap-2">
                 <Award />
@@ -136,7 +135,6 @@ export default function Home() {
                 </p>
               </CardContent>
             </Card>
-
           </div>
           <div className="lg:flex flex-col items-center gap-5 max-w-[50%] w-full h-full justify-center hidden">
             <h2 className="font-giest text-lg font-semibold">“I'm just a girl, I just love how shiny it is”</h2>
