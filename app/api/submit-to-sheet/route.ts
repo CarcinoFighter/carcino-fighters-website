@@ -16,7 +16,7 @@ const sheets = google.sheets({
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json(); // Parse the request body
+    const body = await req.json();
     const { Name, Email, Phone, School, Grade, Age, Time, Experience, Criticism, Writing } = body;
 
     // Validate required fields
@@ -27,10 +27,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Convert Writing array to a comma-separated string
-    const WritingString = Array.isArray(Writing) ? Writing.join(', ') : Writing;
+    const WritingString = Array.isArray(Writing) ? Writing.join('\n') : Writing;
 
-    // Append data to Google Sheets
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.GOOGLE_SHEETS_ID,
       range: 'Sheet1!A:J',
@@ -59,13 +57,12 @@ export async function POST(req: NextRequest) {
 }
 
 export async function OPTIONS() {
-  // Handle CORS preflight
   return new NextResponse(null, {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS, GET, PUT',
+      'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
     },
   });
 }
