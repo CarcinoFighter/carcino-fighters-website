@@ -1,5 +1,4 @@
 "use client"
-import "./globals.css";
 import Image from "next/image";
 import * as React from "react"
 import { Label } from "@/components/ui/label"
@@ -22,14 +21,14 @@ export default function Leadership() {
   // console.log('divCount:'+divCount);
 
   return (
-    <div className="h-full w-full absolute top-0 -z-20 bg-background font-giest">
+    <div className="h-dvh overflow-hidden w-full -z-20 font-giest">
       <Image
         src={"/leadership_bg.png"}
         alt="Leadership"
         width={1920}
         height={1080}
         quality={100}
-        className="object-cover w-full fixed h-full hidden dark:inline -z-10 animate-door-open animate-rad"
+        className="object-cover fixed min-w-full min-h-[100vh] overflow-hidden hidden dark:inline -z-10 animate-door-open animate-rad animate-blob"
       />
       <Image
         src={"/leadership_bg_light.png"}
@@ -37,18 +36,18 @@ export default function Leadership() {
         width={1920}
         height={1080}
         quality={100}
-        className="object-cover w-full fixed h-full inline dark:hidden -z-10 animate-door-open animate-rad"
+        className="object-cover absolute overflow-hidden inline dark:hidden -z-10 animate-door-open animate-rad animate-blob"
       />
 
-      <div className="z-0 flex flex-col items-center justify-center gap-10 lg:px-18 md:px-14 px-8 pt-[80px] text-foreground">
+      <div className="z-0 flex flex-col items-center justify-center gap-10 lg:px-18 md:px-14 px-8 pt-[80px] text-black dark:text-white overflow-hidden">
         <div className="flex flex-col items-center justify-center gap-3 animate-[door-open_1s_ease-in-out_forwards]">
           <h1 className="text-3xl text-center ">
             Our Leadership
           </h1>
-          <Label className="border gap-2 bg-primary flex flex-row px-5 py-3 items-center justify-center rounded-lg text-sm text-foreground font-medium">Meet the Team <ArrowUpRight size={18} /></Label>
+          <Label className="border gap-2 bg-[hsla(240 0% 90%)] dark:bg-[hsla(0 0% 9%)] flex flex-row px-5 py-3 items-center justify-center rounded-lg text-sm text-black dark:text-white font-medium">Meet the Team <ArrowUpRight size={18} /></Label>
         </div>
         <div className="flex flex-col md:grid grid-flow-col grid-rows-2 w-full max-w-[1300px] justify-around h-fit gap-4 animate-[fade-in_1s_ease-in-out_forwards]">
-          <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-foreground/5 border-[1px] rounded-xl gap-10">
+          <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-black/5 dark:border-white/5 border-[1px] rounded-xl gap-10">
             <Avatar className="h-20 w-20" >
               <AvatarImage className="object-cover" src="/avatars/rajannya.png" />
               <AvatarFallback>
@@ -65,7 +64,7 @@ export default function Leadership() {
               Lorem ipsum dolor sit, amet consectetur adipisicing elit. Reiciendis earum voluptate aliquid, explicabo repellendus voluptatibus, voluptatum harum nisi dolor, est itaque voluptatem? Dolore temporibus animi voluptatem. Nobis non dicta modi.
             </div>
           </div>
-          <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-foreground/5 border-[1px] rounded-xl gap-10">
+          <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-black/5 dark:border-white/5 border-[1px] rounded-xl gap-10">
             <Avatar className="h-20 w-20" >
               <AvatarImage className="object-cover" src="/avatars/agnihotra.png" />
               <AvatarFallback>
@@ -82,7 +81,7 @@ export default function Leadership() {
               Lorem ipsum dolor sit, amet consectetur adipisicing elit. Reiciendis earum voluptate aliquid, explicabo repellendus voluptatibus, voluptatum harum nisi dolor, est itaque voluptatem? Dolore temporibus animi voluptatem. Nobis non dicta modi.
             </div>
           </div>
-          <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-foreground/5 border-[1px] rounded-xl gap-10">
+          <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-black/5 dark:border-white/5 border-[1px] rounded-xl gap-10">
             <Avatar className="h-20 w-20" >
               <AvatarImage className="object-cover" src="/avatars/anjishnu.png" />
               <AvatarFallback>
@@ -99,7 +98,7 @@ export default function Leadership() {
               Lorem ipsum dolor sit, amet consectetur adipisicing elit. Reiciendis earum voluptate aliquid, explicabo repellendus voluptatibus, voluptatum harum nisi dolor, est itaque voluptatem? Dolore temporibus animi voluptatem. Nobis non dicta modi.
             </div>
           </div>
-          <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-foreground/5 border-[1px] rounded-xl gap-10">
+          <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-black/5 dark:border-white/5 border-[1px] rounded-xl gap-10">
             <Avatar className="h-20 w-20" >
               <AvatarImage className="object-cover" src="/avatars/soushree.png" />
               <AvatarFallback>

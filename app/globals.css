@@ -59,6 +59,7 @@
 
 
 @layer base {
+
   *,
   ::after,
   ::before,
@@ -70,17 +71,99 @@
 
 
 @layer base {
+
   @keyframes door-open {
     0% {
       transform: translateY(15%);
-      background-image: radial-gradient(circle at 0% 100%, #000000, #00000000);
       opacity: 0;
     }
+
     100% {
       transform: translateY(0%);
       opacity: 1;
-      background-image: transparent;
     }
+
+    ;
+  }
+
+  ;
+
+  @keyframes rad {
+    0% {
+      background-image: radial-gradient(circle at 0% 100%, #000000, #00000000);
+    }
+
+    100% {
+      background-image: radial-gradient(circle at 0% 100%, #00000000, #00000000);
+    }
+
+    ;
+  }
+
+  ;
+
+  .animate-rad {
+    animation: rad 2s ease-in-out forwards;
+  }
+
+  .animate-door-open {
+    animation: door-open 2s ease-in-out forwards;
+  }
+
+  ;
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+
+    100% {
+      opacity: 1;
+    }
+
+    ;
+  }
+
+  @keyframes fade-out {
+    0% {
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
+    }
+
+    ;
+  }
+  @keyframes blob {
+    0% {
+      transform: translate3d(20, -20, 0) scale(1);
+      /* transform: translateX(0); */
+    }
+
+    25% {
+      transform: translate3d(-10, -20, 0) scale(1.1);
+      /* transform: translateX(-50px); */
+    }
+
+    50% {
+      transform: translate3d(-20, 20, 0) scale(1.2);
+      /* transform: translateX(50px); */
+    }
+
+    75% {
+      transform: translate3d(10, 20, 0) scale(1.1);
+      /* transform: translateX(-50px); */
+    }
+
+    100% {
+      transform: translate3d(20, -20, 0) scale(1); 
+    }
+    ;
+  }
+
+  .animate-blob {
+    animation: blob 12s ease-in-out infinite;
   }
 
   :root {
@@ -138,6 +221,22 @@
   }
 
   body {
-    @apply bg-background max-h-dvh max-w-dvw text-foreground;
+    @apply bg-white dark:bg-black max-h-dvh max-w-dvw text-foreground;
+    overflow: auto;
+    scrollbar-width: none;
+    /* For Firefox */
+    -ms-overflow-style: none;
+    /* For Internet Explorer and Edge */
   }
+
+  body::-webkit-scrollbar {
+    display: none;
+    /* For Chrome, Safari, and Opera */
+  }
+
+  body {
+    scrollbar-width: none;
+    /* Hides scrollbar for Firefox */
+  }
+
 }
