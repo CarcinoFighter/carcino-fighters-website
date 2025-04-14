@@ -42,8 +42,6 @@ export default function RegistrationPage() {
                 Writing: writing
             });
 
-            console.log('API Response:', response.data);
-
             if (response.status === 200) {
                 toast.success('Submitted successfully!');
             } else {
@@ -105,7 +103,7 @@ export default function RegistrationPage() {
                                 Please fill out all fields to complete your registration
                             </p>
                         </CardHeader>
-                        <CardContent className={submitted ? `` : ``}>
+                        <CardContent className={submitted ? `hidden` : ``}>
                             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Personal Information */}
                                 <div className="space-y-2 md:col-span-2">
@@ -317,10 +315,8 @@ export default function RegistrationPage() {
                                                         const isChecked = e.target.checked;
                                                         setWriting(prev => {
                                                             if (isChecked) {
-                                                                console.log(writing)
                                                                 return [...prev, e.target.value];
                                                             } else {
-                                                                console.log(writing)
                                                                 return prev.filter(item => item !== e.target.value);
                                                             }
                                                         });
