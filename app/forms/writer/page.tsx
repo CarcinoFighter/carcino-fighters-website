@@ -53,16 +53,12 @@ export default function RegistrationPage() {
 
             let errorMessage = 'Failed to submit form';
             if (axios.isAxiosError(error)) {
-                // Handle Axios-specific errors
                 if (error.response) {
-                    // Server responded with a status code outside 2xx
                     errorMessage = error.response.data.message ||
                         `Server error: ${error.response.status}`;
                 } else if (error.request) {
-                    // Request was made but no response received
                     errorMessage = 'No response from server - check network';
                 } else {
-                    // Something happened in setting up the request
                     errorMessage = error.message;
                 }
             } else if (error instanceof Error) {
@@ -78,7 +74,7 @@ export default function RegistrationPage() {
 
     return (
         <div className="flex flex-col items-start min-h-screen bg-background">
-            <div className="w-full h-[100svh]  bg-radial-[at_50%_0%] from-[-20%] from-[#471F77] to-[#141414] to-[70%] blur-lg fixed ">
+            <div className="w-full h-[100svh]  bg-radial-[at_50%_0%] from-[-20%] dark:from-[#471F77] from-[#e5cfff] to-background to-[70%] blur-lg fixed">
             </div>
             <Toaster />
 
@@ -108,7 +104,7 @@ export default function RegistrationPage() {
                                 Please fill out all fields to complete your registration
                             </p>
                         </CardHeader>
-                        <CardContent className={submitted ? `hidden` : ``}>
+                        <CardContent className={submitted ? `` : ``}>
                             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Personal Information */}
                                 <div className="space-y-2 md:col-span-2">
@@ -190,7 +186,7 @@ export default function RegistrationPage() {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="grade" className="font-space_grotesk">
-                                        Grade/Year of Passing*
+                                        Grade / Year of Passing / Graduating*
                                     </Label>
                                     <Input
                                         id="grade"
@@ -264,7 +260,7 @@ export default function RegistrationPage() {
                                         name="message"
                                         rows={4}
                                         className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                        placeholder="Tell us about your past experiences or put a link for your resume"
+                                        placeholder="Tell us about your past experiences or put in a link for your resume"
                                         required
                                         value={experience}
                                         onChange={(e) => setExperience(e.target.value)}
