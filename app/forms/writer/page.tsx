@@ -28,7 +28,8 @@ export default function RegistrationPage() {
         setIsSubmitting(true);
 
         try {
-            const response = await axios.post('http://localhost:3000/api/submit-to-sheet', {
+            const apiRoute = process.env.NEXT_PUBLIC_API_ROUTE;
+            const response = await axios.post(`${apiRoute}/submit-to-sheet`, {
                 Name: fullName,
                 Email: email,
                 Phone: phone,
