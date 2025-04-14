@@ -113,7 +113,7 @@ export function Navbar() {
     return(
     <div>
     {/* Navbar */}
-    <div className="flex-row px-auto py-4 fixed w-full justify-between lg:px-14 md:px-10 px-6 top-0 z-10 bg-background/30 hidden sm:flex backdrop-blur-md">
+    <div className="flex-row px-auto py-4 fixed w-full justify-between lg:px-14 md:px-10 px-6 top-0 z-30 bg-background/30 hidden sm:flex backdrop-blur-md">
     <NavigationMenu>
       <NavigationMenuList>
         <NavigationMenuItem>

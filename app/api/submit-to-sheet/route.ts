@@ -23,12 +23,12 @@ export async function POST(req: NextRequest) {
     if (!Name || !Email || !Phone || !School || !Grade || !Age || !Time || !Experience || !Criticism || !Writing) {
       return NextResponse.json(
         { success: false, message: 'Missing required fields' },
-        { status: 400 }
+        { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } }
       );
     }
 
     // Convert Writing array to a comma-separated string
-    const WritingString = Array.isArray(Writing) ? Writing.join('\n') : Writing;
+    const WritingString = Array.isArray(Writing) ? Writing.join(', ') : Writing;
 
     // Append data to Google Sheets
     const response = await sheets.spreadsheets.values.append({
@@ -42,7 +42,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: response.data }, { status: 200 });
+    return NextResponse.json(
+      { success: true, data: response.data },
+      { status: 200, headers: { 'Access-Control-Allow-Origin': '*' } }
+    );
   } catch (error) {
     console.error('Error writing data to Google Sheets:', error);
     return NextResponse.json(
@@ -50,7 +53,7 @@ export async function POST(req: NextRequest) {
         success: false,
         message: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500, headers: { 'Access-Control-Allow-Origin': '*' } }
     );
   }
 }
