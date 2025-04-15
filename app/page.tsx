@@ -18,7 +18,7 @@ import { Footer } from "@/components/footer"
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-start gap-5 bg-background">
+    <div className="flex flex-col lg:block  lg:h-screen w-screen overflow-y-scroll items-start gap-20 bg-background lg:snap-y lg:scroll-pt-[68px] lg:snap-mandatory lg:snap-always">
       {/* Mobile Background */}
       <Image
         src="/mobile_ellipse.png"
@@ -26,16 +26,12 @@ export default function Home() {
         width={490}
         height={560}
         quality={100}
-        className="object-cover w-full h-full absolute -top-20 left-0 -z-10 lg:hidden lg:"
-        style={{
-          maskImage: "linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 90%)",
-          WebkitMaskImage: "linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%)",
-        }}
+        className="object-cover w-full h-full absolute -top-20 left-0 lg:hidden blur-lg"
       />
 
       {/* Main Content */}
-      <div className="flex flex-row items-center gap-[12rem] justify-start w-full h-fit lg:h-svh max-h-[1200px] lg:px-14 md:px-10 px-6 pt-[68px]">
-        <div className="flex flex-col text-center lg:text-left items-center lg:items-start w-full h-fit lg:max-w-[50%] gap-6">
+      <div className="flex flex-row items-center gap-[12rem] justify-start w-full h-fit pt-[68px] lg:pt-0 lg:h-[100vh] lg:px-14 md:px-10 px-6 z-10 snap-center">
+        <div className="flex flex-col text-center lg:my-auto lg:text-left items-center lg:items-start w-full h-fit lg:max-w-[50%] gap-6">
           <Image
             src="/ribbon_phone.png"
             alt=""
@@ -55,7 +51,7 @@ export default function Home() {
           <Button className="text-white py-5 font-giest font-medium">Read Our Documents <ArrowUpRight /> </Button>
         </div>
 
-        <div className="hidden lg:inline relative w-full">
+        <div className="hidden lg:inline relative h-full w-full">
           <div className="h-[598px] w-[524px] animate-blob from-[#2C2C2C] to-[#471F77] bg-linear-180 blur-[133px] rounded-full absolute top-0 bottom-0 my-auto right-0 left-0 mr-auto"></div>
           <Image
             src="/ribbon2.png"
@@ -83,8 +79,9 @@ export default function Home() {
         <h2 className="font-giest text-lg text-center font-semibold">“I'm just a girl, I just love how shiny it is”</h2>
         <p className="font-giest text-center">Rajannya Das <br /> Founder & Managing Director</p>
       </div>
+      
       {/* General Featured Section */}
-      <div className="flex flex-col lg:gap-6 md:gap-4 gap-4 items-center lg:items-start text-center lg:text-left justify-start w-full lg:w-fit h-fit lg:h-svh max-h-[1200px] lg:px-14 md:px-10 px-6 pb-6">
+      <div className="z-10 snap-center flex flex-col lg:gap-6 md:gap-4 gap-4 items-center lg:items-start text-center lg:text-left justify-center w-full lg:w-fit h-fit lg:h-svh max-h-[1200px] lg:px-14 md:px-10 px-6 pb-6 snap-center">
         <Label className="border p-3 rounded-sm font-space_grotesk text-base text-foreground">Why Trust Us</Label>
         <h1 className="text-2xl font-giest text-foreground ">
           We want everyone to be aware
@@ -146,7 +143,7 @@ export default function Home() {
       </div>
 
       {/* Articles */}
-      <div className="font-giest flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6">
+      <div className="snap-start z-10 font-giest flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6 py-7">
         <Label className="border p-3 rounded-sm font-space_grotesk text-base text-foreground">Research and Development</Label>
         <h1 className="text-2xl font-giest text-foreground ">
           Our Articles
@@ -154,7 +151,7 @@ export default function Home() {
         <p className="text-lg text-muted-foreground font-space_grotesk">
           Here's the latest collection of articles we offer, tailored to be understandable by everyone, made with love and care by our Writing Team.
         </p>
-        <div className="grid lg:grid-flow-col lg:grid-rows-2 gap-3 py-6 h-fit w-full">
+        <div className="grid lg:grid-flow-col lg:grid-rows-2 gap-3 py-6  w-full">
           <CardContainer className="w-full">
             <CardBody className="relative group/card bg-background border-accent w-full h-auto rounded-xl p-6 border">
               <div className="flex flex-row justify-between h-full gap-4">
@@ -301,7 +298,7 @@ export default function Home() {
 
 
       {/* Call to action  */}
-      <div className="font-giest text-foreground flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center xl:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6">
+      <div className="snap-center z-10 font-giest text-foreground flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center xl:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6 lg:py-18">
         <div className="w-full flex flex-row items-center justify-between bg-primary">
           <div className="flex flex-col items-center xl:items-start xl:max-w-[60%] justify-center gap-6 w-full h-fit lg:px-14 md:px-10 px-6 py-10 sm:py-14 md:py-18 lg:py-20">
             <h1 className="text-4xl">

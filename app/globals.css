@@ -235,6 +235,7 @@
   }
 
   body {
+    
     scrollbar-width: none;
     /* Hides scrollbar for Firefox */
   }
