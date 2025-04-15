@@ -1,6 +1,6 @@
+import "./globals.css";
 import type { Metadata } from "next";
 import { Geist, Space_Grotesk, Cinzel } from "next/font/google";
-import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 
@@ -48,6 +48,7 @@ export default function RootLayout({
 
           {children}
 
+          
         </ThemeProvider>
       </body>
     </html>

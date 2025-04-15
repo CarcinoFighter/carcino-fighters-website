@@ -21,7 +21,7 @@ export default function Leadership() {
   // console.log('divCount:'+divCount);
 
   return (
-    <div className="h-dvh overflow-hidden w-full -z-20 font-giest">
+    <div className="h-dvh overflow-y-scroll overflow-x-hidden w-full -z-20 font-giest pb-10">
       <Image
         src={"/leadership_bg.png"}
         alt="Leadership"
@@ -36,7 +36,7 @@ export default function Leadership() {
         width={1920}
         height={1080}
         quality={100}
-        className="object-cover absolute overflow-hidden inline dark:hidden -z-10 animate-door-open animate-rad"
+        className="object-cover fixed min-w-full min-h-[100vh] overflow-hidden dark:hidden -z-10 animate-door-open animate-rad"
       />
 
       <div className="z-0 flex flex-col items-center justify-center gap-10 lg:px-18 md:px-14 px-8 pt-[80px] text-black dark:text-white overflow-hidden">

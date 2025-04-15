@@ -117,18 +117,14 @@ export function Navbar() {
     <NavigationMenu>
       <NavigationMenuList>
         <NavigationMenuItem>
-          <Link href="/" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+            <NavigationMenuLink className={navigationMenuTriggerStyle()} href="/">
               Home
             </NavigationMenuLink>
-          </Link>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <Link href="#" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+            <NavigationMenuLink className={navigationMenuTriggerStyle()} href="/leadership">
               About
             </NavigationMenuLink>
-          </Link>
         </NavigationMenuItem>
         <NavigationMenuItem>
           <NavigationMenuTrigger>Research</NavigationMenuTrigger>
@@ -163,18 +159,9 @@ export function Navbar() {
           </NavigationMenuContent>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <Link href="#" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+            <NavigationMenuLink className={navigationMenuTriggerStyle()} href="#">
               Blog
             </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <Link href="/leadership" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Staff
-            </NavigationMenuLink>
-          </Link>
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
@@ -224,13 +211,13 @@ export function Navbar() {
       <div className="bg-accent px-5 w-full h-[1px] mb-5"></div>
 
       <nav className="flex flex-col gap-10 w-full font-giest text-xl">
-        <Link href="#" >
+        <Link href="/" >
           <div className="flex flex-row items-center gap-2">
             <House size={24} />
             Home
           </div>
         </Link>
-        <Link href="#">
+        <Link href="/leadership">
           <div className="flex flex-row items-center gap-2">
             <SearchX size={24} />
             About
