@@ -137,27 +137,27 @@
   }
   @keyframes blob {
     0% {
-      transform: translate3d(20, -20, 0) scale(1);
+      transform: translate3d(25, -25, 0) scale(1);
       /* transform: translateX(0); */
     }
 
     25% {
-      transform: translate3d(-10, -20, 0) scale(1.1);
+      transform: translate3d(-15, -25, 0) scale(1.2);
       /* transform: translateX(-50px); */
     }
 
     50% {
-      transform: translate3d(-20, 20, 0) scale(1.2);
+      transform: translate3d(-25, 25, 0) scale(1.4);
       /* transform: translateX(50px); */
     }
 
     75% {
-      transform: translate3d(10, 20, 0) scale(1.1);
+      transform: translate3d(15, 25, 0) scale(1.2);
       /* transform: translateX(-50px); */
     }
 
     100% {
-      transform: translate3d(20, -20, 0) scale(1); 
+      transform: translate3d(25, -25, 0) scale(1); 
     }
     ;
   }

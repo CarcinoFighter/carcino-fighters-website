@@ -14,6 +14,7 @@ import Link from "next/link"
 import React from "react";
 import { cn } from "@/lib/utils"
 import { BookOpen, House, Menu, MessageSquareText, Newspaper, SearchX} from "lucide-react"
+import { ModeTogglePhone } from "@/components/ui/mode-phone"
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -169,7 +170,7 @@ export function Navbar() {
   </div>
 
   {/* Mobile NavMenu */}
-  <div className="sm:hidden fixed top-5 left-5 z-20">
+  <div className="sm:hidden fixed top-5 left-5 z-20 ">
     <Menu
       className="text-foreground cursor-pointer p-1 backdrop-blur-xs border-accent-forground border rounded-sm"
       size={28}
@@ -210,7 +211,7 @@ export function Navbar() {
       </div>
       <div className="bg-accent px-5 w-full h-[1px] mb-5"></div>
 
-      <nav className="flex flex-col gap-10 w-full font-giest text-xl">
+      <nav className="flex flex-col gap-10 w-full h-full font-giest text-xl">
         <Link href="/" >
           <div className="flex flex-row items-center gap-2">
             <House size={24} />
@@ -241,7 +242,9 @@ export function Navbar() {
             Blog
           </div>
         </Link>
+        
       </nav>
+      <ModeTogglePhone></ModeTogglePhone>
     </div>
   </div>
 

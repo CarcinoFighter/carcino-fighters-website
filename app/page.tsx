@@ -18,16 +18,11 @@ import { Footer } from "@/components/footer"
 
 export default function Home() {
   return (
-    <div className="flex flex-col lg:block  lg:h-screen w-screen overflow-y-scroll items-start gap-20 bg-background lg:snap-y lg:scroll-pt-[68px] lg:snap-mandatory lg:snap-always">
+    <div className="flex flex-col relative lg:block lg:h-screen w-screen overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background lg:snap-y lg:scroll-pt-[68px] lg:snap-mandatory lg:snap-always">
       {/* Mobile Background */}
-      <Image
-        src="/mobile_ellipse.png"
-        alt=""
-        width={490}
-        height={560}
-        quality={100}
-        className="object-cover w-full h-full absolute -top-20 left-0 lg:hidden blur-lg"
-      />
+      <div className="h-[40vh] w-full overflow-hidden fixed left-0 right-0 mx-auto top-0 bg-linear-180 rounded-b-full blur-3xl bg-radial-[at_50%_-50%] from-[#F0F0F0] via-[#D5B0FF] to-[#F0F0F0] dark:from-[#2C2C2C] dark:via-[#471F77] dark:to-[#2C2C2C] lg:hidden animate-blob"
+      ></div>
+
 
       {/* Main Content */}
       <div className="flex flex-row items-center gap-[12rem] justify-start w-full h-fit pt-[68px] lg:pt-0 lg:h-[100vh] lg:px-14 md:px-10 px-6 z-10 snap-center">
@@ -52,22 +47,22 @@ export default function Home() {
         </div>
 
         <div className="hidden lg:inline relative h-full w-full">
-          <div className="h-[598px] w-[524px] animate-blob from-[#2C2C2C] to-[#471F77] bg-linear-180 blur-[133px] rounded-full absolute top-0 bottom-0 my-auto right-0 left-0 mr-auto"></div>
+          <div className="h-[598px] w-[524px] animate-blob dark:from-0% dark:from-[#2C2C2C] dark:to-[#471F77] from-[#F0F0F0] from-[28%] to-[#D5B0FF] bg-linear-180 blur-[133px] rounded-full absolute top-0 bottom-0 my-auto right-0 left-0 mr-auto"></div>
           <Image
-            src="/ribbon2.png"
+            src="/ribbon.png"
             alt="Cancer"
             width={385}
             height={492}
             quality={100}
-            className="object-cover absolute top-0 bottom-0 my-auto right-0 left-17 mr-auto hidden dark:inline "
+            className="object-cover absolute top-0 bottom-0 my-auto right-0 left-17 mr-auto hidden dark:inline"
           />
           <Image
             src="/ribbon_light.png"
             alt="Cancer"
-            width={482}
+            width={385}
             height={492}
             quality={100}
-            className="object-cover w-full h-full dark:hidden inline z-30"
+            className="object-cover absolute top-0 bottom-0 my-auto right-0 left-17 mr-auto dark:hidden"
           />
         </div>
 
@@ -75,13 +70,13 @@ export default function Home() {
 
       {/* Featured */}
       {/* Mobile Quotation (hidden in pc) */}
-      <div className="flex flex-col items-center gap-5 w-full h-full justify-center lg:hidden py-16">
+      <div className="flex flex-col items-center gap-5 w-full h-full justify-center lg:hidden py-16 z-10">
         <h2 className="font-giest text-lg text-center font-semibold">“I'm just a girl, I just love how shiny it is”</h2>
         <p className="font-giest text-center">Rajannya Das <br /> Founder & Managing Director</p>
       </div>
       
       {/* General Featured Section */}
-      <div className="z-10 snap-center flex flex-col lg:gap-6 md:gap-4 gap-4 items-center lg:items-start text-center lg:text-left justify-center w-full lg:w-fit h-fit lg:h-svh max-h-[1200px] lg:px-14 md:px-10 px-6 pb-6 snap-center">
+      <div className="z-10 snap-center flex flex-col lg:gap-6 md:gap-4 gap-4 items-center lg:items-start text-center lg:text-left justify-center w-full lg:w-fit h-fit lg:h-svh max-h-[1200px] lg:px-14 md:px-10 px-6 pb-6">
         <Label className="border p-3 rounded-sm font-space_grotesk text-base text-foreground">Why Trust Us</Label>
         <h1 className="text-2xl font-giest text-foreground ">
           We want everyone to be aware
