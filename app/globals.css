@@ -159,11 +159,10 @@
     100% {
       transform: translate3d(25, -25, 0) scale(1); 
     }
-    ;
   }
 
   .animate-blob {
-    animation: blob 12s ease-in-out infinite;
+    animation: blob 12s linear infinite;
   }
 
   :root {
