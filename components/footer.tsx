@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 
 export function Footer() {
     return (
-        <div className="flex flex-col items-start bg-accent justify-start w-full h-fit lg:px-14 md:px-10 px-6 py-10 sm:py-14 md:py-18 lg:py-20">
+        <div className="flex flex-col items-start bg-accent justify-start w-full h-fit lg:px-14 md:px-10 px-6 py-10 sm:py-14 md:py-18 lg:py-20 snap-end">
             <div className="flex flex-row w-full h-fit justify-around lg:px-14 md:px-10 px-6 pb-8  gap-10">
                 <div className="flex flex-col items-start gap-4 lg:max-w-[40%]">
                     <p className="text-lg font-giest text-foreground">Get notified when we publish.</p>
