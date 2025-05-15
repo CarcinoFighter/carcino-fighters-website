@@ -16,7 +16,7 @@ export function Footer() {
                     <p className="text-foreground font-giest">We respect <u>your privacy</u> and promise not to spam. Unsubscribe anytime.</p>
                 </div>
                 <div className="lg:flex hidden flex-col items-start gap-6 text-lg font-giest text-foreground lg:max-w-[20%]">
-                    <h1 className="font-bold">Contact</h1>
+                    <h1 className={``}>Contact</h1>
                     <div>
                         <div className="flex flex-col gap-4">
                             <Link href="#">hello@alfarex.me</Link>

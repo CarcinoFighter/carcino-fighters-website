@@ -29,7 +29,7 @@ export default function RegistrationPage() {
 
         try {
             const apiRoute = process.env.NEXT_PUBLIC_API_ROUTE;
-            const response = await axios.post(`${apiRoute}/submit-to-sheet`, {
+            const response = await axios.post(`${apiRoute}/writer-sheet`, {
                 Name: fullName,
                 Email: email,
                 Phone: phone,

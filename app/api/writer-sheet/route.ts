@@ -1,10 +1,15 @@
 import { google } from 'googleapis';
 import { NextRequest, NextResponse } from 'next/server';
 
+const base64EncodedServiceAccount = process.env.GOOGLE_SHEETS_PRIVATE_KEY;
+const decodedServiceAccount = base64EncodedServiceAccount
+  ? Buffer.from(base64EncodedServiceAccount, 'base64').toString('utf-8')
+  : '';
+
 const auth = new google.auth.GoogleAuth({
   credentials: {
     client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY?.split(String.raw`\n`).join('\n'),
+    private_key: decodedServiceAccount,
   },
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
@@ -20,7 +25,7 @@ export async function POST(req: NextRequest) {
     const { Name, Email, Phone, School, Grade, Age, Time, Experience, Criticism, Writing } = body;
 
     // Validate required fields
-    if (!Name || !Email || !Phone || !School || !Grade || !Age || !Time || !Experience || !Criticism || !Writing) {
+    if (!Name || !Email || !Phone || !School || !Grade || !Age || !Time || !Experience || !Criticism) {
       return NextResponse.json(
         { success: false, message: 'Missing required fields' },
         { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } }
@@ -30,7 +35,7 @@ export async function POST(req: NextRequest) {
     const WritingString = Array.isArray(Writing) ? Writing.join('\n') : Writing;
 
     const response = await sheets.spreadsheets.values.append({
-      spreadsheetId: process.env.GOOGLE_SHEETS_ID,
+      spreadsheetId: process.env.GOOGLE_SHEETS_WRITER_ID,
       range: 'Sheet1!A:J',
       valueInputOption: 'USER_ENTERED',
       requestBody: {
