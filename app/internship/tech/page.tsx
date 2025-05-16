@@ -88,7 +88,7 @@ export default function RegistrationPage() {
                     Join Our Mission
                 </Label>
                 <h1 className="text-5xl lg:text-5xl xl:text-7xl font-cinzel text-foreground">
-                    Join the Tech Team
+                    Sign up for our Tech Team
                 </h1>
                 <p className="text-lg text-muted-foreground font-space_grotesk max-w-2xl">
                     Become part of our growing community working to educate the world about cancer prevention and awareness.
