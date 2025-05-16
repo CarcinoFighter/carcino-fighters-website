@@ -32,13 +32,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const RoleString = Array.isArray(Role) ? Role.join('\n') : Role;
+
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.GOOGLE_SHEETS_TECH_ID,
       range: 'Sheet1!A:L',
       valueInputOption: 'USER_ENTERED',
       requestBody: {
         values: [
-          [Name, Email, Phone, School, Grade, Age, Time, Experience, Criticism, Portfolio, Languages, Role],
+          [Name, Email, Phone, School, Grade, Age, Time, Experience, Criticism, Portfolio, Languages, RoleString],
         ],
       },
     });
