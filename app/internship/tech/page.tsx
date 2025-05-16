@@ -23,7 +23,7 @@ export default function RegistrationPage() {
     const [criticism, setCriticism] = useState("")
     const [portfolio, setPortfolio] = useState("")
     const [languages, setLanguages] = useState("")
-    const [role, setRole] = useState("")
+    const [role, setRole] = useState<string[]>([])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -329,27 +329,38 @@ export default function RegistrationPage() {
 
                                 <div className="space-y-2 md:col-span-2">
                                     <Label htmlFor="time" className="font-space_grotesk">
-                                        Preferred role*
+                                        Preferred Role*
                                     </Label>
                                     <div className="flex flex-col gap-2 p-3">
                                         {[
                                             "Frontend",
                                             "Backend",
                                             "Fullstack",
+                                            "UI/UX",
                                             "DevOps",
                                             "AI"
                                         ].map((roleOption, index) => (
                                             <div key={index} className="flex flex-row gap-2 items-center h-full">
                                                 <input
-                                                    id={`role-${index}`}
-                                                    name="role"
-                                                    type="radio"
+                                                    id={`writing-${index}`}
+                                                    name="writing"
+                                                    type="checkbox"
                                                     className="h-full"
-                                                    required
                                                     value={roleOption}
-                                                    onChange={(e) => setRole(e.target.value)}
+                                                    onChange={(e) => {
+                                                        const isChecked = e.target.checked;
+                                                        setRole(prev => {
+                                                            if (isChecked) {
+                                                                return [...prev, e.target.value];
+                                                            } else {
+                                                                return prev.filter(item => item !== e.target.value);
+                                                            }
+                                                        });
+                                                    }}
                                                 />
-                                                <Label htmlFor={`role-${index}`} className="font-space_grotesk">{roleOption}</Label>
+                                                <Label htmlFor={`writing-${index}`} className="font-space_grotesk">
+                                                    {roleOption}
+                                                </Label>
                                             </div>
                                         ))}
                                     </div>
