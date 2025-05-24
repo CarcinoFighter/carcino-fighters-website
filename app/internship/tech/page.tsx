@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { ArrowUpRight, LoaderCircle } from "lucide-react";
+import { ArrowUpRight, LoaderCircle, Check } from "lucide-react";
 import { useState } from "react";
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
@@ -341,23 +341,27 @@ export default function RegistrationPage() {
                                             "AI"
                                         ].map((roleOption, index) => (
                                             <div key={index} className="flex flex-row gap-2 items-center h-full">
-                                                <input
-                                                    id={`writing-${index}`}
-                                                    name="writing"
-                                                    type="checkbox"
-                                                    className="h-full"
-                                                    value={roleOption}
-                                                    onChange={(e) => {
-                                                        const isChecked = e.target.checked;
-                                                        setRole(prev => {
-                                                            if (isChecked) {
-                                                                return [...prev, e.target.value];
-                                                            } else {
-                                                                return prev.filter(item => item !== e.target.value);
-                                                            }
-                                                        });
-                                                    }}
-                                                />
+                                                <div>
+                                                    <div
+                                                        onClick={() => {
+                                                            const isChecked = role.includes(roleOption);
+                                                            setRole(prev => {
+                                                                if (isChecked) {
+                                                                    return prev.filter(item => item !== roleOption);
+                                                                } else {
+                                                                    return [...prev, roleOption];
+                                                                }
+                                                            });
+                                                        }}
+                                                        className={`aspect-square w-4 border border-primary rounded-sm relative cursor-pointer ${
+                                                            role.includes(roleOption) ? "bg-primary" : ""
+                                                        }`}
+                                                    >
+                                                        {role.includes(roleOption) && (
+                                                            <Check className="absolute h-3 w-3 aspect-square mx-auto my-auto top-0 bottom-0 left-0 right-0 stroke-3" />
+                                                        )}
+                                                    </div>
+                                                </div>
                                                 <Label htmlFor={`writing-${index}`} className="font-space_grotesk">
                                                     {roleOption}
                                                 </Label>

@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { ArrowUpRight, LoaderCircle } from "lucide-react";
+import { ArrowUpRight, LoaderCircle,Check } from "lucide-react";
 import { useState } from "react";
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
@@ -303,27 +303,31 @@ export default function RegistrationPage() {
                                             "Social media captions/content",
                                             "Interviews or human-interest stories",
                                             "Blog posts"
-                                        ].map((criticismOption, index) => (
+                                        ].map((writingOption, index) => (
                                             <div key={index} className="flex flex-row gap-2 items-center h-full">
-                                                <input
-                                                    id={`writing-${index}`}
-                                                    name="writing"
-                                                    type="checkbox"
-                                                    className="h-full"
-                                                    value={criticismOption}
-                                                    onChange={(e) => {
-                                                        const isChecked = e.target.checked;
-                                                        setWriting(prev => {
-                                                            if (isChecked) {
-                                                                return [...prev, e.target.value];
-                                                            } else {
-                                                                return prev.filter(item => item !== e.target.value);
-                                                            }
-                                                        });
-                                                    }}
-                                                />
+                                                <div>
+                                                    <div
+                                                        onClick={() => {
+                                                            const isChecked = writing.includes(writingOption);
+                                                            setWriting(prev => {
+                                                                if (isChecked) {
+                                                                    return prev.filter(item => item !== writingOption);
+                                                                } else {
+                                                                    return [...prev, writingOption];
+                                                                }
+                                                            });
+                                                        }}
+                                                        className={`aspect-square w-4 border border-primary rounded-sm relative cursor-pointer ${
+                                                            writing.includes(writingOption) ? "bg-primary" : ""
+                                                        }`}
+                                                    >
+                                                        {writing.includes(writingOption) && (
+                                                            <Check className="absolute h-3 w-3 aspect-square mx-auto my-auto top-0 bottom-0 left-0 right-0 stroke-3" />
+                                                        )}
+                                                    </div>
+                                                </div>
                                                 <Label htmlFor={`writing-${index}`} className="font-space_grotesk">
-                                                    {criticismOption}
+                                                    {writingOption}
                                                 </Label>
                                             </div>
                                         ))}
