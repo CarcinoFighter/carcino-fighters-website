@@ -230,27 +230,44 @@ export default function RegistrationPage() {
                                     <Label htmlFor="time" className="font-space_grotesk">
                                         How much time per week can you commit to the team?*
                                     </Label>
-                                    <div className="flex flex-col gap-2 p-3">
+                                                                        <div className="flex flex-col gap-2 p-3">
                                         {[
                                             "1-2 hours",
                                             "2-3 hours",
                                             "3-4 hours",
                                             "5+ hours",
                                             "It depends, but i am interested and committed."
-                                        ].map((timeOption, index) => (
-                                            <div key={index} className="flex flex-row gap-2 items-center h-full">
-                                                <input
-                                                    id={`time-${index}`}
-                                                    name="time"
-                                                    type="radio"
-                                                    className="h-full"
-                                                    required
-                                                    value={timeOption}
-                                                    onChange={(e) => setTime(e.target.value)}
-                                                />
-                                                <Label htmlFor={`time-${index}`} className="font-space_grotesk">{timeOption}</Label>
-                                            </div>
-                                        ))}
+                                        ].map((timeOption, index) => {
+                                            const selected = time === timeOption;
+                                            return (
+                                                <div
+                                                    key={index}
+                                                    className="flex flex-row gap-2 items-center h-full cursor-pointer"
+                                                    onClick={() => setTime(timeOption)}
+                                                    tabIndex={0}
+                                                    role="radio"
+                                                    aria-checked={selected}
+                                                    onKeyDown={e => {
+                                                        if (e.key === " " || e.key === "Enter") setTime(timeOption);
+                                                    }}
+                                                >
+                                                    <div
+                                                        className={`w-4 h-4 border border-primary rounded-full flex items-center justify-center transition-colors ${selected ? "bg-primary" : "bg-transparent"
+                                                            }`}
+                                                    >
+                                                        {selected && (
+                                                            <div className="w-2 h-2 bg-background rounded-full"></div>
+                                                        )}
+                                                    </div>
+                                                    <Label
+                                                        htmlFor={`time-${index}`}
+                                                        className="font-space_grotesk cursor-pointer"
+                                                    >
+                                                        {timeOption}
+                                                    </Label>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
@@ -275,24 +292,38 @@ export default function RegistrationPage() {
                                         Are you comfortable working in a team and receiving feedback on your work?*
                                     </Label>
                                     <div className="flex flex-col gap-2 p-3">
-                                        {[
-                                            "Yes",
-                                            "No",
-                                            "I am not sure"
-                                        ].map((criticismOption, index) => (
-                                            <div key={index} className="flex flex-row gap-2 items-center h-full">
-                                                <input
-                                                    id={`criticism-${index}`}
-                                                    name="criticism"
-                                                    type="radio"
-                                                    className="h-full"
-                                                    required
-                                                    value={criticismOption}
-                                                    onChange={(e) => setCriticism(e.target.value)}
-                                                />
-                                                <Label htmlFor={`criticism-${index}`} className="font-space_grotesk">{criticismOption}</Label>
-                                            </div>
-                                        ))}
+                                        {["Yes", "No", "I am not sure"].map((criticismOption, index) => {
+                                            const selected = criticism === criticismOption;
+                                            return (
+                                                <div
+                                                    key={index}
+                                                    className="flex flex-row gap-2 items-center h-full cursor-pointer"
+                                                    onClick={() => setCriticism(criticismOption)}
+                                                    tabIndex={0}
+                                                    role="radio"
+                                                    aria-checked={selected}
+                                                    onKeyDown={e => {
+                                                        if (e.key === " " || e.key === "Enter") setCriticism(criticismOption);
+                                                    }}
+                                                >
+                                                    <div
+                                                        className={`w-4 h-4 border border-primary rounded-full flex items-center justify-center transition-colors ${selected ? "bg-primary" : "bg-transparent"
+                                                            }`}
+                                                    >
+                                                        {/* Only show the inner dot if selected */}
+                                                        {selected && (
+                                                            <div className="w-2 h-2 bg-background rounded-full"></div>
+                                                        )}
+                                                    </div>
+                                                    <Label
+                                                        htmlFor={`criticism-${index}`}
+                                                        className="font-space_grotesk cursor-pointer"
+                                                    >
+                                                        {criticismOption}
+                                                    </Label>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
