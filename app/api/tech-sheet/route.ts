@@ -1,15 +1,11 @@
 import { google } from 'googleapis';
 import { NextRequest, NextResponse } from 'next/server';
 
-const base64EncodedServiceAccount = process.env.GOOGLE_SHEETS_PRIVATE_KEY;
-const decodedServiceAccount = base64EncodedServiceAccount
-  ? Buffer.from(base64EncodedServiceAccount, 'base64').toString('utf-8')
-  : '';
 
 const auth = new google.auth.GoogleAuth({
   credentials: {
     client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
-    private_key: decodedServiceAccount,
+    private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY?.split(String.raw`\n`).join('\n'),
   },
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
