@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars*/ 
 import { google } from 'googleapis';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 
 const auth = new google.auth.GoogleAuth({
@@ -18,7 +19,7 @@ const docs = google.docs(
 )
 
 
-export async function GET(req: NextRequest, docid: string) {
+export async function GET() {
     try {
         const docId = process.env.TEST_DOC
         if (!docId) {
