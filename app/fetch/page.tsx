@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { Button } from "@/components/ui/button"
@@ -50,18 +51,6 @@ interface StructuralElement {
 export default function Test() {
   const [plainText, setPlainText] = useState("");
   const [formattedContent, setFormattedContent] = useState<JSX.Element[]>([]);
-
-  const getTextColor = (color?: {
-    rgbColor?: {
-      red?: number;
-      green?: number;
-      blue?: number;
-    };
-  }) => {
-    if (!color?.rgbColor) return undefined;
-    const { red = 0, green = 0, blue = 0 } = color.rgbColor;
-    return `rgb(${Math.round(red * 255)}, ${Math.round(green * 255)}, ${Math.round(blue * 255)})`;
-  };
 
   const parseDocumentContent = (contents: StructuralElement[]) => {
     let plainTextResult = "";
