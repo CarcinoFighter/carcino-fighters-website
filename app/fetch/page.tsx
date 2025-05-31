@@ -101,17 +101,20 @@ export default function Test() {
 
     return (
       <Image
-        key={`image-${inlineObjectId}`}
-        src={imageProps.contentUri}
-        alt=" Image from Google Doc"
-        style={{
-          width: `${width}${imageProps.size?.width?.unit || 'px'}`,
-          height: `${height}${imageProps.size?.height?.unit || 'px'}`,
-          maxWidth: '100%',
-          margin: '16px 0',
-          borderRadius: '8px',
-        }}
-        className="my-4 rounded-lg shadow-md"
+      key={`image-${inlineObjectId}`}
+      src={imageProps.contentUri}
+      alt="Image from Google Doc"
+      width={width}
+      height={height}
+      style={{
+        maxWidth: '100%',
+        margin: '16px 0',
+        borderRadius: '8px',
+        height: `${height}${imageProps.size?.height?.unit || 'px'}`,
+        width: `${width}${imageProps.size?.width?.unit || 'px'}`,
+      }}
+      className="my-4 rounded-lg shadow-md"
+      unoptimized
       />
     );
   };
