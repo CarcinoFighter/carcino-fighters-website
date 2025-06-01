@@ -61,7 +61,7 @@ export default function Leadership() {
             </Avatar>
             <div className="font-semibold">Rajannya Das, Founder & MD</div>
             <div className="text-justify">
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Reiciendis earum voluptate aliquid, explicabo repellendus voluptatibus, voluptatum harum nisi dolor, est itaque voluptatem? Dolore temporibus animi voluptatem. Nobis non dicta modi.
+              A science enthusiast who’s usually found lifting weights for peace, balancing deadlines with dopamine bike rides, travelling and learning languages. Mitosis deserves a standing ovation— biology said yes.
             </div>
           </div>
           <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-black/5 dark:border-white/5 border-[1px] rounded-xl gap-10">
@@ -78,7 +78,7 @@ export default function Leadership() {
             </Avatar>
             <div className="font-semibold">Agnihotra Nath, Head of Design</div>
             <div className="text-justify">
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Reiciendis earum voluptate aliquid, explicabo repellendus voluptatibus, voluptatum harum nisi dolor, est itaque voluptatem? Dolore temporibus animi voluptatem. Nobis non dicta modi.
+              Head of Student Team at Google. Endless passion for cars, and music. Porsche enthusiast with a sick garage full of fast cars. Keen eye for detail and topped off with sweet ADHD.
             </div>
           </div>
           <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-black/5 dark:border-white/5 border-[1px] rounded-xl gap-10">
@@ -95,7 +95,7 @@ export default function Leadership() {
             </Avatar>
             <div className="font-semibold">Anjishnu Dey, Head of Development</div>
             <div className="text-justify">
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Reiciendis earum voluptate aliquid, explicabo repellendus voluptatibus, voluptatum harum nisi dolor, est itaque voluptatem? Dolore temporibus animi voluptatem. Nobis non dicta modi.
+              Loves physics, hates bad UI. Punches things for fun (MMA, not bugs-but also bugs). Runs on curiosity, caffeine, and clean builds. <br />Physicist by soul. Fights bugs, throws hands, hits gym. If it's complex, he's into it. If it's boring, he's out.  Obsessed with clean design, clean lifts, and clean wins.
             </div>
           </div>
           <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-black/5 dark:border-white/5 border-[1px] rounded-xl gap-10">

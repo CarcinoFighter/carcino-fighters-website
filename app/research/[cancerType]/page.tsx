@@ -52,9 +52,9 @@ export default function CancerDocPage() {
   }
 
   return (
-      <div className="w-full flex items-center justify-center py-12 px-4 pt-[68px] bg-white">
+      <div className="w-full flex items-center justify-center py-12 px-4 pt-[68px] bg-white ">
         <div
-          className="max-w-4xl text-foreground"
+          className="max-w-3xl md:max-w-4xl text-foreground"
           dangerouslySetInnerHTML={{ __html: doc!.content }}
         />
         <div className="mt-8 text-sm text-foreground-secondary">
