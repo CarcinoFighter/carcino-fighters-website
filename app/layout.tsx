@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Space_Grotesk, Cinzel } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
+import { startDocSync } from "@/services/docSync";
 
 const geist = Geist({
   variable: "--font-geist",
@@ -33,7 +34,7 @@ export default function RootLayout({
 }>) {
 
   return (
-
+    startDocSync(),
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} antialiased`}
