@@ -29,6 +29,7 @@ export async function getDocContent(docId: string | undefined) {
         mimeType: "text/html",
     }, {
         responseType: "text",
+        
     });
     
     if (response.status !== 200) {

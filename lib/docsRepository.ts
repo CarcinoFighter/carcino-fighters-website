@@ -80,12 +80,12 @@ export async function getDocBySlug(slug: string): Promise<CancerDoc | null> {
   }
 }
 
-export async function deleteDoc(googleDocId: string) {
+export async function deleteDoc(id: string) {
   try {
     const { error } = await supabase
       .from('cancer_docs')
       .delete()
-      .eq('google_doc_id', googleDocId);
+      .eq('id', id);
     
     if (error) throw error;
     return true;

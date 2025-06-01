@@ -34,7 +34,6 @@ export default function RootLayout({
 }>) {
 
   return (
-    startDocSync(),
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} antialiased`}
