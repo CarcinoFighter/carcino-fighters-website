@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils"
 import { BookOpen, House, Menu, MessageSquareText, Newspaper, SearchX } from "lucide-react"
 import { ModeTogglePhone } from "@/components/ui/mode-phone"
 import { getAllDocs } from "@/lib/docsRepository"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { useRouter } from "next/navigation"
 import { Button } from "./ui/button"
 

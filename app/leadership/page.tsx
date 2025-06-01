@@ -95,7 +95,7 @@ export default function Leadership() {
             </Avatar>
             <div className="font-semibold">Anjishnu Dey, Head of Development</div>
             <div className="text-justify">
-              Loves physics, hates bad UI. Punches things for fun (MMA, not bugs-but also bugs). Runs on curiosity, caffeine, and clean builds. <br />Physicist by soul. Fights bugs, throws hands, hits gym. If it's complex, he's into it. If it's boring, he's out.  Obsessed with clean design, clean lifts, and clean wins.
+              Loves physics, hates bad UI. Punches things for fun (MMA, not bugs-but also bugs). Runs on curiosity, caffeine, and clean builds. <br />Physicist by soul. Fights bugs, throws hands, hits gym. If it’s complex, he’s into it. If it’s boring, he’s out.  Obsessed with clean design, clean lifts, and clean wins.
             </div>
           </div>
           <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-black/5 dark:border-white/5 border-[1px] rounded-xl gap-10">
