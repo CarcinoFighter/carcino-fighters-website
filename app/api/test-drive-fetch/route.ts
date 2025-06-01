@@ -1,12 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/initSupabase";
-import { getGoogleDriveFiles, getDocContent } from "@/lib/googleDrive";
+import {NextResponse } from "next/server";
 import { google } from "googleapis";
-import { file } from "googleapis/build/src/apis/file";
 
-export async function GET(
-    req: NextRequest
-) {
+export async function GET() {
 
     try {
         const auth = new google.auth.GoogleAuth(

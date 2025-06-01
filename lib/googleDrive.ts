@@ -1,5 +1,4 @@
 import { google } from "googleapis";
-import path from "path";
 
 const auth = new google.auth.GoogleAuth({
     credentials: {
@@ -15,12 +14,13 @@ const drive = google.drive({
 });
 
 export async function getGoogleDriveFiles(folderId: string | undefined) {
-    const response = await drive.files.list({
+    const {data: files} = await drive.files.list({
         q: `'${folderId}' in parents and mimeType='application/vnd.google-apps.document'`,
-        fields: "files(id, name, webViewLink, modifiedTime)",
+        fields: "files(id, name, modifiedTime)",
         orderBy: "name",
     });
-    return response.data.files || [];
+    
+    return files;
 }
 
 export async function getDocContent(docId: string | undefined) {
@@ -35,6 +35,6 @@ export async function getDocContent(docId: string | undefined) {
         throw new Error(`Failed to fetch document content: ${response.statusText}`);
     }
     
-    return response.data;
+    return response.data as string;
     
 }

@@ -2,6 +2,7 @@
 import { supabase } from '@/lib/initSupabase';
 
 interface CancerDoc {
+  id: string;
   slug: string;
   title: string | null | undefined;
   content: string;
@@ -16,11 +17,34 @@ export async function saveDocsToStorage(docs: Omit<CancerDoc, 'id'>[]) {
       .from('cancer_docs')
       .upsert(docs, { onConflict: 'google_doc_id' });
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error upserting docs:', {
+        message: error.message,
+        details: error.details,
+        code: error.code,
+      });
+      throw error;
+    }
     return data;
   } catch (error) {
     console.error('Error saving docs to Supabase:', error);
     throw error;
+  }
+}
+
+export async function getDocById(id: string): Promise<CancerDoc | null> {
+  try {
+    const { data, error } = await supabase
+      .from('cancer_docs')
+      .select('*')
+      .eq('google_doc_id', id)
+      .maybeSingle();
+      
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(`Error fetching doc with ID ${id}:`, error);
+    return null;
   }
 }
 
@@ -29,8 +53,8 @@ export async function getAllDocs(): Promise<CancerDoc[]> {
     const { data, error } = await supabase
       .from('cancer_docs')
       .select('*')
-      .order('title', { ascending: true });
-    
+      .order('created_at', { ascending: false });
+      
     if (error) throw error;
     return data || [];
   } catch (error) {
@@ -45,7 +69,8 @@ export async function getDocBySlug(slug: string): Promise<CancerDoc | null> {
       .from('cancer_docs')
       .select('*')
       .eq('slug', slug)
-      .single();
+      .maybeSingle();
+      
     
     if (error) throw error;
     return data;
