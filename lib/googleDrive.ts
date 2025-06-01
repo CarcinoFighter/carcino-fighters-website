@@ -1,3 +1,4 @@
+import { error } from "console";
 import { google } from "googleapis";
 
 const auth = new google.auth.GoogleAuth({
@@ -8,19 +9,35 @@ const auth = new google.auth.GoogleAuth({
     scopes: ["https://www.googleapis.com/auth/drive.readonly"],
 })
 
+const docs = google.docs({
+    version: "v1",
+    auth
+})
+
 const drive = google.drive({
     version: "v3",
     auth,
 });
 
 export async function getGoogleDriveFiles(folderId: string | undefined) {
-    const {data: files} = await drive.files.list({
+    const { data: files } = await drive.files.list({
         q: `'${folderId}' in parents and mimeType='application/vnd.google-apps.document'`,
         fields: "files(id, name, modifiedTime)",
         orderBy: "name",
     });
-    
+
     return files;
+}
+
+export async function getDocJson(docId: string | undefined) {
+    try {
+        const doc = await docs.documents.get({ documentId: docId });
+        console.log(doc.data);
+        return doc.data.body?.content || [];
+    } catch (error) {
+        console.error('Error fetching data from Google Docs:', error);
+        throw new Error(`Failed to fetch document JSON: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
 }
 
 export async function getDocContent(docId: string | undefined) {
@@ -29,13 +46,13 @@ export async function getDocContent(docId: string | undefined) {
         mimeType: "text/html",
     }, {
         responseType: "text",
-        
+
     });
-    
+
     if (response.status !== 200) {
         throw new Error(`Failed to fetch document content: ${response.statusText}`);
     }
-    
+
     return response.data as string;
-    
+
 }
