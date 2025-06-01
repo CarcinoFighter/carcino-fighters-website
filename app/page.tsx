@@ -295,7 +295,7 @@ export default function Home() {
       {/* Call to action  */}
       <div className="snap-center z-10 font-giest text-foreground flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center xl:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6 lg:py-18">
         <div className="w-full flex flex-row items-center justify-between bg-primary">
-          <div className="flex flex-col items-center xl:items-start xl:max-w-[60%] justify-center gap-6 w-full h-fit lg:px-14 md:px-10 px-6 py-10 sm:py-14 md:py-18 lg:py-20">
+          <div className="text-whte flex flex-col items-center xl:items-start xl:max-w-[60%] justify-center gap-6 w-full h-fit lg:px-14 md:px-10 px-6 py-10 sm:py-14 md:py-18 lg:py-20">
             <h1 className="text-4xl">
               Lets change the world
               together!

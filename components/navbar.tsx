@@ -15,6 +15,7 @@ import React from "react";
 import { cn } from "@/lib/utils"
 import { BookOpen, House, Menu, MessageSquareText, Newspaper, SearchX} from "lucide-react"
 import { ModeTogglePhone } from "@/components/ui/mode-phone"
+import { getAllDocs } from "@/lib/docsRepository"
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -81,32 +82,7 @@ const articles: { title: string; href: string; description: string }[] = [
   },
 ]
 
-const research: { title: string; href: string; description: string }[] = [
-  {
-    title: "Example Research 1",
-    href: "#",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maxime, debitis. Unde, earum. Esse ipsam totam nesciunt reiciendis illum minus dolorum voluptatum, ad eos suscipit perferendis ullam consequuntur harum magnam eligendi?",
-  },
-  {
-    title: "Example Research 2",
-    href: "#",
-    description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptates doloremque quos voluptate deleniti optio! Voluptas distinctio, doloremque impedit, corporis ipsa architecto id dolore velit odio aperiam quisquam, sit nemo dicta.",
-  },
-  {
-    title: "Example Research 3",
-    href: "#",
-    description:
-      "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nisi, eligendi cum quae iure ab harum officiis odit laborum? Animi, error incidunt. Aliquid pariatur impedit quasi, ea quidem quisquam repudiandae exercitationem!",
-  },
-  {
-    title: "Example Research 4",
-    href: "#",
-    description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-  },
-]
+const researches = await getAllDocs()
 
 
 export function Navbar() {
@@ -131,13 +107,17 @@ export function Navbar() {
           <NavigationMenuTrigger>Research</NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-              {research.map((item) => (
+              {researches.map((item) => (
                 <ListItem
-                  key={item.title}
-                  title={item.title}
-                  href={item.href}
+                  key={item.slug}
+                  title={item.slug
+                  .split('-')
+                  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(' ')
+                  }
+                  href={`/research/${item.slug}`}
                 >
-                  {item.description}
+                  {/* {item.content.replace(/<[^>]+>/g, '').slice(0, 20) + "..."} */}
                 </ListItem>
               ))}
             </ul>
