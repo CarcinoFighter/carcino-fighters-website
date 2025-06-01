@@ -3,7 +3,8 @@ import { startDocSync } from '@/services/docSync';
 import { NextResponse } from 'next/server';
 export async function GET() {
   try {
-    const result = await startDocSync;
+    const result = await startDocSync();
+    console.log('Sync completed:', result);
     return NextResponse.json({
       success: true,
       ...result
