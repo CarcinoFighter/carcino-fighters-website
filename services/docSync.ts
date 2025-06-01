@@ -19,10 +19,11 @@ export async function syncAllDocuments(): Promise<SyncStats> {
 
   try {
     console.log('Initializing Google Drive API...');
+    
     const auth = new google.auth.GoogleAuth({
       credentials: {
-        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n'),
       },
       scopes: ['https://www.googleapis.com/auth/drive.readonly'],
     });
@@ -37,7 +38,7 @@ export async function syncAllDocuments(): Promise<SyncStats> {
     console.log('Fetching documents from Google Drive...');
     const { data: driveFiles } = await drive.files.list({
       q: `'${folderId}' in parents and mimeType='application/vnd.google-apps.document'`,
-      fields: 'files(id,name,modifiedTime,webViewLink)',
+      fields: 'files(id,name,modifiedTime)',
     });
 
     if (!driveFiles.files?.length) {
@@ -97,7 +98,7 @@ async function syncSingleDocument(drive: any, fileId: string) {
     console.log(`Fetching metadata for document ${fileId}...`);
     const { data: file } = await drive.files.get({ 
       fileId, 
-      fields: 'name,modifiedTime,webViewLink' 
+      fields: 'name,modifiedTime' 
     });
 
     // Prepare document data
@@ -107,7 +108,6 @@ async function syncSingleDocument(drive: any, fileId: string) {
       content: content.data,
       last_updated: file.modifiedTime,
       slug: generateSlug(file.name),
-      web_view_link: file.webViewLink
     };
 
     console.log(`Upserting document ${fileId} to Supabase...`);
