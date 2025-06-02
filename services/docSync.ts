@@ -1,6 +1,6 @@
 // services/docSync.ts
 import { drive_v3 } from 'googleapis';
-import { getDocContent, getDocJson, getGoogleDriveFiles } from '@/lib/googleDrive';
+import { getDocJson, getGoogleDriveFiles } from '@/lib/googleDrive';
 import { deleteDoc, getAllDocs, getDocById, saveDocsToStorage } from '@/lib/docsRepository';
 
 interface SyncStats {
