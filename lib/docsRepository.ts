@@ -5,7 +5,7 @@ interface CancerDoc {
   id: string;
   slug: string;
   title: string | null | undefined;
-  content: string;
+  content: JSON;
   google_doc_id: string;
   last_updated: string | null | undefined;
 }

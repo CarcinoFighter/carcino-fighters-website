@@ -1,6 +1,6 @@
 // services/docSync.ts
-import { drive_v3} from 'googleapis';
-import { getDocContent, getGoogleDriveFiles } from '@/lib/googleDrive';
+import { drive_v3 } from 'googleapis';
+import { getDocJson, getGoogleDriveFiles } from '@/lib/googleDrive';
 import { deleteDoc, getAllDocs, getDocById, saveDocsToStorage } from '@/lib/docsRepository';
 
 interface SyncStats {
@@ -14,10 +14,11 @@ interface SyncStats {
 interface CancerDoc {
   slug: string;
   title: string | null | undefined;
-  content: string;
+  content: any; 
   google_doc_id: string;
   last_updated: string | null | undefined;
 }
+
 
 export async function startDocSync(): Promise<SyncStats> {
   const stats: SyncStats = {
@@ -27,6 +28,7 @@ export async function startDocSync(): Promise<SyncStats> {
     removed: 0,
     errors: 0
   };
+
 
   try {
     console.log('Initializing Google Drive API...');
@@ -49,7 +51,7 @@ export async function startDocSync(): Promise<SyncStats> {
     console.log('Found documents in Supabase:', supabase_docs.length);
     console.log(`Found ${google_docs.files.length} documents in Google Drive`);
     if (supabase_docs.length > google_docs.files?.length!) {
-      
+
       for (const doc of supabase_docs) {
         const existsInDrive = google_docs.files?.some(file => file.id === doc.google_doc_id);
         if (!existsInDrive) {
@@ -101,7 +103,7 @@ export async function startDocSync(): Promise<SyncStats> {
 
 async function syncSingleDocument(document: drive_v3.Schema$File): Promise<void> {
   try {
-    const content = await getDocContent(document.id!);
+    const content = await getDocJson(document.id!);
     const docData: CancerDoc = {
       google_doc_id: document.id!,
       title: document.name,
