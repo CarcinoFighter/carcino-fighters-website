@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label"
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import "./globals.css";
 import { Footer } from "@/components/footer"
+import Spline from '@splinetool/react-spline';
 
 
 export default function Home() {
@@ -27,45 +28,50 @@ export default function Home() {
       {/* Main Content */}
       <div className="flex flex-row items-center gap-[12rem] justify-start w-full h-fit pt-[68px] lg:pt-0 lg:h-[100vh] lg:px-14 md:px-10 px-6 z-10 snap-center">
         <div className="flex flex-col text-center lg:my-auto lg:text-left items-center lg:items-start w-full h-fit lg:max-w-[50%] gap-6">
-          <Image
+          {/* <div
             src="/ribbon_phone.png"
             alt=""
             width={117.56}
             height={150.23}
             quality={100}
             className="object-cover lg:hidden"
-          />
-          <Label className="border p-3 rounded-sm font-space_grotesk text-base text-foreground hidden lg:inline">Let's change the world together!</Label>
-          <h1 className="text-5xl lg:text-5xl xl:text-7xl font-cinzel text-foreground ">
-            Educating The<br />Masses<br />on Cancer
+          /> */}
+                         <Spline
+        scene="https://prod.spline.design/nRTRpm1HBPY7kxl8/scene.splinecode" className="object-cover lg:hidden"
+      />
+ 
+          {/* <Label className="border p-3 rounded-sm font-space_grotesk text-base text-foreground hidden lg:inline">Let's change the world together!</Label> */}
+          <h1 className="text-5xl lg:text-5xl xl:text-7xl text-foreground hero ">
+            Touchdown.
           </h1>
           <p className="text-lg text-muted-foreground font-space_grotesk">
-            A simple hub, built to educate and help emerging and concurrent
-            generations upon one of the leading causes of death in humanity.
+With over eight months in development, over six months of research and about thirty research papers later,
+ we are finally launching the Research Tab!
           </p>
-          <Button className="text-white py-5 font-giest font-medium">Read Our Documents <ArrowUpRight /> </Button>
+          <Button className="py-5 font-giest font-medium">Read Our Documents <ArrowUpRight /> </Button>
         </div>
-
-        <div className="hidden lg:inline relative h-full w-full">
-          <div className="h-[598px] w-[524px] animate-blob dark:from-0% dark:from-[#2C2C2C] dark:to-[#471F77] from-[#F0F0F0] from-[28%] to-[#D5B0FF] bg-linear-180 blur-[133px] rounded-full absolute top-0 bottom-0 my-auto right-0 left-0 mr-auto"></div>
-          <Image
+<div className="h-[598px] w-[524px] animate-blob dark:from-0% dark:from-[#2C2C2C] dark:to-[#471F77] from-[#F0F0F0] from-[28%] to-[#D5B0FF] bg-linear-180 blur-[133px] rounded-full absolute top-0 bottom-0 my-auto right-0 left-full-50 mr-auto z-index--1"></div>
+        <div className="hidden lg:inline relative h-[900px] w-full overflow-hidden">
+          {/* <Image
             src="/ribbon.png"
             alt="Cancer"
             width={385}
             height={492}
             quality={100}
             className="object-cover absolute top-0 bottom-0 my-auto right-0 left-17 mr-auto hidden dark:inline"
-          />
-          <Image
+          /> */}
+               <Spline
+        scene="https://prod.spline.design/nRTRpm1HBPY7kxl8/scene.splinecode" className="object-cover absolute top-60 bottom-0 my-auto right-0 mr-auto z-index-10"
+      />
+          {/* <Image
             src="/ribbon_light.png"
             alt="Cancer"
             width={385}
             height={492}
             quality={100}
             className="object-cover absolute top-0 bottom-0 my-auto right-0 left-17 mr-auto dark:hidden"
-          />
-        </div>
-
+          /> */}
+</div>
       </div>
 
       {/* Featured */}

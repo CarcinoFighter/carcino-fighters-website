@@ -1,5 +1,12 @@
 @import "tailwindcss";
-
+@font-face {
+  font-family: 'Panchang';
+    src: url('/fonts/Panchang_Complete/Fonts/WEB/fonts/Panchang-Semibold.woff2') format('woff2'),
+       url('/fonts/Panchang_Complete/Fonts/WEB/fonts/Panchang-Semibold.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 @plugin 'tailwindcss-animate';
 
 @custom-variant dark (&:is(.dark *));
@@ -232,6 +239,14 @@
     display: none;
     /* For Chrome, Safari, and Opera */
   }
+.hero {
+  font-family: 'Panchang', sans-serif;
+  background: linear-gradient(90deg, #F2F2F2 30.29%, #515151 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text; 
+  color: transparent;
+}
 
   body {
     
