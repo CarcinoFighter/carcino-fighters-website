@@ -150,8 +150,8 @@ export default function Home() {
       whileInView={{ opacity: 1 }}
       transition={{ duration: 1 }}
       className="flex flex-col items-center gap-5 w-full h-full justify-center lg:hidden py-16 z-10">
-        <h2 className="font-giest text-lg text-center font-semibold">“The human spirit was built to outlast despair. So, live life to the fullest and don't think about things too much.”</h2>
-        <p className="font-giest text-center">Rajannya Das <br /> Founder & Managing Director</p>
+        <h2 className="font-giest px-3 text-lg text-center font-semibold">“The human spirit was built to outlast despair. So, live life to the fullest and don't think about things too much.”</h2>
+        <p className="font-giest text-center">Rajannya Das <br /> Founder & CEO</p>
       </motion.div>
       
       {/* General Featured Section */}
