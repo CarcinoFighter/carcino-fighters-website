@@ -60,7 +60,7 @@ export default function Home() {
             className="object-cover lg:hidden"
           />
           <Label className="border p-3 rounded-full font-space_grotesk text-base text-foreground hidden lg:inline">Let's change the world together!</Label>
-          <h1 className="text-4xl lg:text-4xl xl:text-6xl bg-gradient-to-r from-foreground to-accent bg-clip-text from-[30.29%] to-100 text-transparent font-panchang">
+          <h1 className="text-4xl lg:text-4xl xl:text-6xl bg-gradient-to-r from-foreground to-accent bg-clip-text from-[30.29%] to-100 text-transparent font-panchang font-semibold">
             {/* Educating The<br />Masses<br />on Cancer */}
             Touchdown
           </h1>
