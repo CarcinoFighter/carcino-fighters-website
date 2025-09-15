@@ -1,11 +1,9 @@
 "use client"
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import { ModeToggle } from "@/components/ui/mode"
@@ -13,12 +11,8 @@ import Image from "next/image"
 import Link from "next/link"
 import React from "react";
 import { cn } from "@/lib/utils"
-import { BookOpen, House, Menu, MessageSquareText, Newspaper, SearchX } from "lucide-react"
+import { BookOpen, House, Menu, SearchX } from "lucide-react"
 import { ModeTogglePhone } from "@/components/ui/mode-phone"
-import { getAllDocs } from "@/lib/docsRepository"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
-import { useRouter } from "next/navigation"
-import { Button } from "./ui/button"
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -48,51 +42,8 @@ const ListItem = React.forwardRef<
 })
 ListItem.displayName = "ListItem"
 
-const articles: { title: string; href: string; description: string }[] = [
-  {
-    title: "Example Article 1",
-    href: "#",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  },
-  {
-    title: "Example Article 2",
-    href: "#",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  },
-  {
-    title: "Example Article 3",
-    href: "#",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  },
-  {
-    title: "Example Article 4",
-    href: "#",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  },
-  {
-    title: "Example Article 5",
-    href: "#",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  },
-  {
-    title: "Example Article 6",
-    href: "#",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  },
-]
-
-const researches = await getAllDocs()
-
-
 export function Navbar() {
   const [isMobileMenuOpen, setMobileMenuOpen] = React.useState(false)
-  const router = useRouter();
   return (
     <div>
       {/* Navbar */}
@@ -110,44 +61,8 @@ export function Navbar() {
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuTrigger>Research</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-                  {researches.map((item) => (
-                    <ListItem
-                      key={item.slug}
-                      title={item.slug
-                        .split('-')
-                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                        .join(' ')
-                      }
-                      href={`/research/${item.slug}`}
-                    >
-                      {/* {item.content.replace(/<[^>]+>/g, '').slice(0, 20) + "..."} */}
-                    </ListItem>
-                  ))}
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuTrigger>Articles</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-                  {articles.map((component) => (
-                    <ListItem
-                      key={component.title}
-                      title={component.title}
-                      href={component.href}
-                    >
-                      {component.description}
-                    </ListItem>
-                  ))}
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()} href="#">
-                Blog
+              <NavigationMenuLink className={navigationMenuTriggerStyle()} href="/article">
+                Articles
               </NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>
@@ -210,34 +125,10 @@ export function Navbar() {
                 About
               </div>
             </Link>
-            <DropdownMenu>
-              <DropdownMenuTrigger className="text-left flex flex-row gap-2 items-center cursor-pointer">
+            <Link href="/article">
+              <div className="flex flex-row items-center gap-2">
                 <BookOpen size={24} />
-                Research
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {researches.map((item) => (
-                  <DropdownMenuItem className="mx-3 my-1" key={item.slug} >
-                    <Button onClick={() => {router.push(`/research/${item.slug}`)}} variant={`ghost`} className="w-full h-full cursor-pointer">
-                      {item.slug
-                        .split('-')
-                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                        .join(' ')}
-                    </Button>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Link href="#">
-              <div className="flex flex-row items-center gap-2">
-                <Newspaper size={24} />
                 Articles
-              </div>
-            </Link>
-            <Link href="#">
-              <div className="flex flex-row items-center gap-2">
-                <MessageSquareText size={24} />
-                Blog
               </div>
             </Link>
 
