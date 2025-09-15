@@ -53,7 +53,7 @@ export default function Leadership() {
           </Avatar>
           </AvatarFallback>
         </Avatar>
-        <div className="font-semibold">Rajannya Das, Founder & MD</div>
+        <div className="font-semibold text-center">Rajannya Das, Founder & CEO</div>
         <div className="text-justify">
           A science enthusiast who’s usually found lifting weights for peace, balancing deadlines with dopamine bike rides, travelling and learning languages. Mitosis deserves a standing ovation— biology said yes.
         </div>
@@ -70,7 +70,7 @@ export default function Leadership() {
           </Avatar>
           </AvatarFallback>
         </Avatar>
-        <div className="font-semibold">Agnihotra Nath, Head of Design</div>
+        <div className="font-semibold text-center">Agnihotra Nath, Chief Operating Officer</div>
         <div className="text-justify">
           Head of Student Team at Google. Endless passion for cars, and music. Porsche enthusiast with a sick garage full of fast cars. Keen eye for detail and topped off with sweet ADHD.
         </div>
@@ -87,7 +87,7 @@ export default function Leadership() {
           </Avatar>
           </AvatarFallback>
         </Avatar>
-        <div className="font-semibold">Anjishnu Dey, Head of Development</div>
+        <div className="font-semibold text-center">Anjishnu Dey, Chief Technology Officer</div>
         <div className="text-justify">
           Loves physics, hates bad UI. Punches things for fun (MMA, not bugs-but also bugs). Runs on curiosity, caffeine, and clean builds. <br />Physicist by soul. Fights bugs, throws hands, hits gym. If it’s complex, he’s into it. If it’s boring, he’s out.  Obsessed with clean design, clean lifts, and clean wins.
         </div>
@@ -104,9 +104,9 @@ export default function Leadership() {
           </Avatar>
           </AvatarFallback>
         </Avatar>
-        <div className="font-semibold">Soushree Chakraborty, Head of Research</div>
+        <div className="font-semibold text-center">Soushree Chakraborty, Chief Research Officer</div>
         <div className="text-justify">
-          Lorem ipsum dolor sit, amet consectetur adipisicing elit. Reiciendis earum voluptate aliquid, explicabo repellendus voluptatibus, voluptatum harum nisi dolor, est itaque voluptatem? Dolore temporibus animi voluptatem. Nobis non dicta modi.
+          Fueled by curiosity and a love for new things, she dives headfirst into scientific discovery, artistic creation, and adrenaline-pumping adventures. She&#39;s the perfect blend of brains, heart, and thrill-seeker!
         </div>
         </div>
       </div>

@@ -65,7 +65,7 @@ export default function Home() {
             Touchdown
           </h1>
           <p className="text-lg text-muted-foreground font-space_grotesk">
-            With over eight months in development, over six months of research and about thirty research papers later, we are finally launching the Research Tab!
+            With over eight months in development, over six months of research and about thirty research papers later, we are finally launching the Articles Tab!
           </p>
             <Button asChild variant={`ghost`} className="border rounded-full text-white py-5 font-giest font-medium hover:cursor-pointer">
               <Link href="/article">Read Our Documents <ArrowUpRight /></Link>
