@@ -6,13 +6,13 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
-import { ModeToggle } from "@/components/ui/mode"
 import Image from "next/image"
 import Link from "next/link"
 import React from "react";
 import { cn } from "@/lib/utils"
 import { BookOpen, House, Menu, SearchX } from "lucide-react"
 import { ModeTogglePhone } from "@/components/ui/mode-phone"
+import { usePathname } from "next/navigation"
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -44,30 +44,42 @@ ListItem.displayName = "ListItem"
 
 export function Navbar() {
   const [isMobileMenuOpen, setMobileMenuOpen] = React.useState(false)
+  const pathname = usePathname();
   return (
-    <div>
+    <div className="">
       {/* Navbar */}
-      <div className="flex-row px-auto py-4 fixed w-full justify-between lg:px-14 md:px-10 px-6 top-0 z-30 bg-background/30 hidden sm:flex backdrop-blur-md">
-        <NavigationMenu>
-          <NavigationMenuList>
+      <div className="flex-row px-auto py-4 fixed w-full justify-center lg:px-14 md:px-10 px-6 top-0 z-30 hidden items-center sm:flex">
+        <NavigationMenu className="w-full flex flex-row px-10 py-1 backdrop-blur-md items-center justify-between border bg/background/30 rounded-full">
+          <NavigationMenuList className="gap-[50px]">
             <NavigationMenuItem>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()} href="/">
+              <Image src={"/logo.png"} alt={"logo"} width={30} height={30} className="rounded-full object-cover" />
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                className={navigationMenuTriggerStyle() + (pathname === "/" ? " border-accent bg-primary/25" : "")}
+                href="/"
+              >
                 Home
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()} href="/leadership">
+              <NavigationMenuLink
+                className={navigationMenuTriggerStyle() + (pathname.startsWith("/leadership") ? " border-accent bg-primary/25" : "")}
+                href="/leadership"
+              >
                 About
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()} href="/article">
+              <NavigationMenuLink
+                className={navigationMenuTriggerStyle() + (pathname.startsWith("/article") ? " border-accent bg-primary/25" : "")}
+                href="/article"
+              >
                 Articles
               </NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
-        <ModeToggle></ModeToggle>
       </div>
 
       {/* Mobile NavMenu */}
@@ -106,32 +118,28 @@ export function Navbar() {
                 className="object-cover h-full"
               />
             </div>
-
-
             <div className="text-foreground font-cinzel text-lg">Carcino <br /> Foundation</div>
           </div>
           <div className="bg-accent px-5 w-full h-[1px] mb-5"></div>
-
           <nav className="flex flex-col gap-10 w-full h-full font-giest text-xl">
-            <Link href="/" >
+            <Link href="/" className={pathname === "/" ? "text-primary font-bold" : ""}>
               <div className="flex flex-row items-center gap-2">
                 <House size={24} />
                 Home
               </div>
             </Link>
-            <Link href="/leadership">
+            <Link href="/leadership" className={pathname.startsWith("/leadership") ? "text-primary font-bold" : ""}>
               <div className="flex flex-row items-center gap-2">
                 <SearchX size={24} />
                 About
               </div>
             </Link>
-            <Link href="/article">
+            <Link href="/article" className={pathname.startsWith("/article") ? "text-primary font-bold" : ""}>
               <div className="flex flex-row items-center gap-2">
                 <BookOpen size={24} />
                 Articles
               </div>
             </Link>
-
           </nav>
           <ModeTogglePhone></ModeTogglePhone>
         </div>
