@@ -15,6 +15,8 @@
   --font-giest: var(--font-geist), sans-serif;
   --font-space_grotesk: var(--font-space-grotesk), sans-serif;
   --font-cinzel: var(--font-cinzel), serif;
+  --font-michroma: var(--font-michroma), sans-serif;
+  --font-panchang: var(--font-panchang), serif;
 
   --color-background: hsla(var(--background));
   --color-foreground: hsla(var(--foreground));
@@ -142,34 +144,20 @@
 
     ;
   }
-  @keyframes blob {
-    0% {
-      transform: translate3d(25, -25, 0) scale(1);
-      /* transform: translateX(0); */
+  @keyframes orbit {
+    from {
+      transform: rotate(0deg) translateX(100px) translateZ(30px) rotate(0deg);
     }
-
-    25% {
-      transform: translate3d(-15, -25, 0) scale(1.2);
-      /* transform: translateX(-50px); */
-    }
-
-    50% {
-      transform: translate3d(-25, 25, 0) scale(1.4);
-      /* transform: translateX(50px); */
-    }
-
-    75% {
-      transform: translate3d(15, 25, 0) scale(1.2);
-      /* transform: translateX(-50px); */
-    }
-
-    100% {
-      transform: translate3d(25, -25, 0) scale(1); 
+    to {
+      transform: rotate(360deg) translateX(100px) translateZ(30px) rotate(-360deg);
     }
   }
 
   .animate-blob {
-    animation: blob 12s linear infinite;
+    animation: orbit 8s linear infinite;
+    transform-origin: center;
+    transform-style: preserve-3d;
+    perspective: 1000px;
   }
 
   :root {
@@ -196,7 +184,7 @@
   }
 
   .dark {
-    --background: 0 0% 8%;
+    --background: 0 0% 0%;
     --foreground: 268 0% 90%;
     --card: 268 0% 4%;
     --card-foreground: 268 0% 90%;

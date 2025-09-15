@@ -1,4 +1,4 @@
-/* eslint react/no-unescaped-entities: "off" */
+
 "use client"
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { ArrowUpRight, LoaderCircle, Check } from "lucide-react";
 import { useState } from "react";
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
+import { motion } from "framer-motion";
 
 export default function RegistrationPage() {
     const [experience, setExperience] = useState("");
@@ -79,7 +80,13 @@ export default function RegistrationPage() {
 
 
             {/* Hero Section */}
-            <div className="flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pt-[68px] pb-10 z-10">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1 }}
+                viewport={{ once: true }}
+                className="flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pt-[68px] pb-10 z-10"
+            >
                 <Label className="border p-3 rounded-sm font-space_grotesk text-base text-foreground">
                     Join Our Mission
                 </Label>
@@ -89,10 +96,16 @@ export default function RegistrationPage() {
                 <p className="text-lg text-muted-foreground font-space_grotesk max-w-2xl">
                     Become part of our growing community working to educate the world about cancer prevention and awareness.
                 </p>
-            </div>
+            </motion.div>
 
             {/* Form Section */}
-            <div className="w-full flex flex-col lg:flex-col items-center justify-between bg-transparent z-10">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.2 }}
+                viewport={{ once: true }}
+                className="w-full flex flex-col lg:flex-col items-center justify-between bg-transparent z-10"
+            >
                 <div className="flex flex-col items-center lg:items-center justify-center gap-6 w-full lg:max-w-[60%] h-fit lg:px-14 md:px-10 px-6 py-10">
                     <Card className="w-full max-w-3xl border-accent bg-background">
                         <CardHeader>
@@ -385,11 +398,11 @@ export default function RegistrationPage() {
                             </form>
                         </CardContent>
                         <CardContent className={submitted ? `py-10 ` : `hidden`}>
-                            Thank You for Registering! We'll consider your application and reach back in a few days!
+                            Thank You for Registering! We&#39;ll consider your application and reach back in a few days!
                         </CardContent>
                     </Card>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 }

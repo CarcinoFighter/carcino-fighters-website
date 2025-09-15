@@ -1,86 +1,53 @@
 // lib/docsRepository.ts
 import { supabase } from '@/lib/initSupabase';
 
-interface CancerDoc {
+export interface Article {
   id: string;
   slug: string;
-  title: string | null | undefined;
-  content: JSON;
-  google_doc_id: string;
-  last_updated: string | null | undefined;
+  title: string;
+  content: string;
 }
 
-export async function saveDocsToStorage(docs: Omit<CancerDoc, 'id'>[]) {
-  try {
-    // Upsert all documents in a transaction
-    const { data, error } = await supabase
-      .from('cancer_docs')
-      .upsert(docs, { onConflict: 'google_doc_id' });
-    
-    if (error) {
-      console.error('Error upserting docs:', {
-        message: error.message,
-        details: error.details,
-        code: error.code,
-      });
-      throw error;
-    }
-    return data;
-  } catch (error) {
-    console.error('Error saving docs to Supabase:', error);
-    throw error;
-  }
-}
-
-export async function getDocById(id: string): Promise<CancerDoc | null> {
-  try {
-    const { data, error } = await supabase
-      .from('cancer_docs')
-      .select('*')
-      .eq('google_doc_id', id)
-      .maybeSingle();
-      
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error(`Error fetching doc with ID ${id}:`, error);
-    return null;
-  }
-}
-
-export async function getAllDocs(): Promise<CancerDoc[]> {
-  try {
-    const { data, error } = await supabase
-      .from('cancer_docs')
-      .select('*')
-      .order('created_at', { ascending: false });
-      
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error('Error fetching docs from Supabase:', error);
-    return [];
-  }
-}
-
-export async function getDocBySlug(slug: string): Promise<CancerDoc | null> {
+export async function getDocBySlug(slug: string): Promise<Article | null> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
       .select('*')
       .eq('slug', slug)
-      .maybeSingle();
-      
-    
-    if (error) throw error;
-    return data;
+      .single();
+
+    if (error) {
+      console.error('Error fetching document:', error);
+      return null;
+    }
+
+    return data as Article;
   } catch (error) {
-    console.error(`Error fetching doc with slug ${slug}:`, error);
+    console.error('Error in getDocBySlug:', error);
     return null;
   }
 }
 
-export async function deleteDoc(id: string) {
+export async function getAllDocs(): Promise<Article[]> {
+  try {
+    const { data, error } = await supabase
+      .from('cancer_docs')
+      .select('*')
+      .order('title');
+
+    if (error) {
+      console.error('Error fetching documents:', error);
+      return [];
+    }
+
+    return data as Article[];
+  } catch (error) {
+    console.error('Error in getAllDocs:', error);
+    return [];
+  }
+}
+
+export async function deleteDoc(id: string): Promise<boolean> {
   try {
     const { error } = await supabase
       .from('cancer_docs')
