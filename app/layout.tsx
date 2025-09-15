@@ -12,10 +12,38 @@ const geist = Geist({
 });
 
 const panchang = localFont({
-  src: [{
-    path: "../public/fonts/Panchang-Variable.ttf",
-    weight: "400",
-}],
+  src: [
+    {
+      path: "../public/fonts/Panchang-Extralight.otf",
+      weight: "200",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/Panchang-Light.otf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/Panchang-Regular.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/Panchang-Semibold.otf",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/Panchang-Bold.otf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/Panchang-Extrabold.otf",
+      weight: "800",
+      style: "normal",
+    },
+  ],
   variable: "--font-panchang",
 });
 

@@ -31,7 +31,7 @@ export default function Home() {
   React.useEffect(() => {
     (async () => {
       const docs = await getAllDocs();
-      setArticles(docs.slice(0, 4));
+      setArticles(docs);
       setLoading(false);
     })();
   }, []);
@@ -60,12 +60,12 @@ export default function Home() {
             className="object-cover lg:hidden"
           />
           <Label className="border p-3 rounded-full font-space_grotesk text-base text-foreground hidden lg:inline">Let's change the world together!</Label>
-          <h1 className="text-4xl lg:text-4xl xl:text-6xl font-michroma text-foreground ">
-            Educating The<br />Masses<br />on Cancer
+          <h1 className="text-4xl lg:text-4xl xl:text-6xl bg-gradient-to-r from-foreground to-accent bg-clip-text from-[30.29%] to-100 text-transparent font-panchang">
+            {/* Educating The<br />Masses<br />on Cancer */}
+            Touchdown
           </h1>
           <p className="text-lg text-muted-foreground font-space_grotesk">
-            A simple hub, built to educate and help emerging and concurrent
-            generations upon one of the leading causes of death in humanity.
+            With over eight months in development, over six months of research and about thirty research papers later, we are finally launching the Research Tab!
           </p>
             <Button asChild variant={`ghost`} className="border rounded-full text-white py-5 font-giest font-medium hover:cursor-pointer">
               <Link href="/article">Read Our Documents <ArrowUpRight /></Link>
@@ -80,19 +80,68 @@ export default function Home() {
             width={385}
             height={492}
             quality={100}
-            className="object-cover absolute top-0 bottom-0 my-auto right-0 left-17 mr-auto hidden dark:inline"
-          />
-          <Image
-            src="/ribbon_light.png"
-            alt="Cancer"
-            width={385}
-            height={492}
-            quality={100}
-            className="object-cover absolute top-0 bottom-0 my-auto right-0 left-17 mr-auto dark:hidden"
+            className="object-cover absolute top-0 bottom-0 my-auto right-0 scale-75 left-17 mr-auto hidden dark:inline"
           />
         </div>
 
       </motion.div>
+
+      {/* Articles */}
+      <motion.div
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      transition={{ duration: 1 }}
+      className="snap-start z-10 font-giest flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6 py-7">
+        <Label className="border p-3 rounded-full font-space_grotesk text-base text-foreground">Research and Development</Label>
+        <h1 className="text-2xl font-giest text-foreground ">
+          Our Articles
+        </h1>
+        <p className="text-lg text-muted-foreground font-space_grotesk">
+          Here's the latest collection of articles we offer, tailored to be understandable by everyone, made with love and care by our Writing Team.
+        </p>
+        <div className="grid lg:grid-flow-col lg:grid-rows-2 gap-3 py-6  w-full">
+          {loading ? (
+            <div className="col-span-full flex justify-center items-center h-40">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : articles.length === 0 ? (
+            <div className="col-span-full text-center text-lg text-muted-foreground">No articles found.</div>
+          ) : (
+            // Shuffle articles and pick 4 random ones
+            [...articles]
+              .sort(() => Math.random() - 0.5)
+              .slice(0, 4)
+              .map((article) => (
+                <CardContainer key={article.id} className="w-full">
+                  <CardBody className="relative group/card bg-background border-accent w-full h-auto rounded-xl p-6 border">
+                    <div className="flex flex-col gap-4 h-full justify-between">
+                      <CardItem translateZ="20" className="flex flex-col gap-2 h-full">
+                        <div className="text-primary bg-primary/10 px-2 rounded border-primary border/20 w-fit mb-2 text-xs font-medium">
+                          Research Article
+                        </div>
+                        <h2 className="text-lg lg:text-2xl md:text-xl font-giest text-foreground mb-2 line-clamp-2">
+                          {article.title}
+                        </h2>
+                        <p className="md:text-lg font-giest text-muted-foreground line-clamp-3 mb-4">
+                          {article.content.replace(/[#*123456789_`>\-\[\]!\(\)]/g, "").slice(0, 120)}...
+                        </p>
+                      </CardItem>
+                      <Link href={`/article/${article.slug}`} className="mt-auto">
+                        <p className="text-sm text-primary flex flex-row items-center gap-1 font-medium hover:underline">
+                          View Article <ArrowUpRight size={14} />
+                        </p>
+                      </Link>
+                    </div>
+                  </CardBody>
+                </CardContainer>
+              ))
+          )}
+        </div>
+        <Button asChild variant={`ghost`}>
+          <Link href="/article">Read More Insights <ArrowUpRight /></Link>
+        </Button>
+      </motion.div>
+
 
       {/* Featured */}
       {/* Mobile Quotation (hidden in pc) */}
@@ -171,57 +220,7 @@ export default function Home() {
 
       </motion.div>
 
-      {/* Articles */}
-      <motion.div
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      transition={{ duration: 1 }}
-      className="snap-start z-10 font-giest flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6 py-7">
-        <Label className="border p-3 rounded-sm font-space_grotesk text-base text-foreground">Research and Development</Label>
-        <h1 className="text-2xl font-giest text-foreground ">
-          Our Articles
-        </h1>
-        <p className="text-lg text-muted-foreground font-space_grotesk">
-          Here's the latest collection of articles we offer, tailored to be understandable by everyone, made with love and care by our Writing Team.
-        </p>
-        <div className="grid lg:grid-flow-col lg:grid-rows-2 gap-3 py-6  w-full">
-          {loading ? (
-            <div className="col-span-full flex justify-center items-center h-40">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : articles.length === 0 ? (
-            <div className="col-span-full text-center text-lg text-muted-foreground">No articles found.</div>
-          ) : (
-            articles.map((article) => (
-              <CardContainer key={article.id} className="w-full">
-                <CardBody className="relative group/card bg-background border-accent w-full h-auto rounded-xl p-6 border">
-                  <div className="flex flex-col gap-4 h-full justify-between">
-                    <CardItem translateZ="20" className="flex flex-col gap-2 h-full">
-                      <div className="text-primary bg-primary/10 px-2 rounded border-primary border/20 w-fit mb-2 text-xs font-medium">
-                        Research Article
-                      </div>
-                      <h2 className="text-lg lg:text-2xl md:text-xl font-giest text-foreground mb-2 line-clamp-2">
-                        {article.title}
-                      </h2>
-                      <p className="md:text-lg font-giest text-muted-foreground line-clamp-3 mb-4">
-                        {article.content.replace(/[#*_`>\-\[\]!\(\)]/g, "").slice(0, 120)}...
-                      </p>
-                    </CardItem>
-                    <Link href={`/article/${article.slug}`} className="mt-auto">
-                      <p className="text-sm text-primary flex flex-row items-center gap-1 font-medium hover:underline">
-                        View Article <ArrowUpRight size={14} />
-                      </p>
-                    </Link>
-                  </div>
-                </CardBody>
-              </CardContainer>
-            ))
-          )}
-        </div>
-        <Button asChild variant={`ghost`}>
-          <Link href="/article">Read More Insights <ArrowUpRight /></Link>
-        </Button>
-      </motion.div>
+
 
 
       {/* Call to action  */}

@@ -22,14 +22,14 @@ export default function Leadership() {
 
   return (
     <div className="h-dvh overflow-y-scroll overflow-x-hidden w-full -z-20 font-giest pb-10">
-      <div className="fixed inset-0 flex items-center justify-center pointer-events-none -z-10 pt-30 opacity-60 ">
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none -z-10 pt-30 opacity-30 ">
       <Image
         src={"/leadership_bg.png"}
         alt="Leadership"
         width={1920}
         height={1080}
         quality={100}
-        className="object-cover max-w-[70%] overflow-hidden hidden dark:inline animate-door-open animate-rad"
+        className="object-cover max-w-[70%] overflow-hidden hidden dark:inline animate-door-open animate-rad "
       />
       </div>
 
@@ -38,10 +38,10 @@ export default function Leadership() {
         <h1 className="text-3xl text-center ">
         Our Leadership
         </h1>
-        <Label className="border gap-2 bg-[hsla(240 0% 90%)] dark:bg-[hsla(0 0% 9%)] flex flex-row px-5 py-3 items-center justify-center rounded-lg text-sm text-black dark:text-white font-medium">Meet the Team <ArrowUpRight size={18} /></Label>
+        <Label className="border gap-2 bg-[hsla(240 0% 90%)] dark:bg-[hsla(0 0% 9%)] flex flex-row px-5 py-3 items-center justify-center rounded-full text-sm text-black dark:text-white font-medium">Meet the Team <ArrowUpRight size={18} /></Label>
       </div>
       <div className="flex flex-col md:grid grid-flow-col grid-rows-2 w-full max-w-[1300px] justify-around h-fit gap-4 animate-[fade-in_1s_ease-in-out_forwards]">
-        <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-black/5 dark:border-white/5 border-[1px] rounded-xl gap-10">
+        <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-black/5 dark:border-white/5 border-[1px] rounded-4xl gap-10">
         <Avatar className="h-20 w-20" >
           <AvatarImage className="object-cover" src="/avatars/rajannya.png" />
           <AvatarFallback>
@@ -58,7 +58,7 @@ export default function Leadership() {
           A science enthusiast who’s usually found lifting weights for peace, balancing deadlines with dopamine bike rides, travelling and learning languages. Mitosis deserves a standing ovation— biology said yes.
         </div>
         </div>
-        <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-black/5 dark:border-white/5 border-[1px] rounded-xl gap-10">
+        <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-black/5 dark:border-white/5 border-[1px] rounded-4xl gap-10">
         <Avatar className="h-20 w-20" >
           <AvatarImage className="object-cover" src="/avatars/agnihotra.png" />
           <AvatarFallback>
@@ -75,7 +75,7 @@ export default function Leadership() {
           Head of Student Team at Google. Endless passion for cars, and music. Porsche enthusiast with a sick garage full of fast cars. Keen eye for detail and topped off with sweet ADHD.
         </div>
         </div>
-        <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-black/5 dark:border-white/5 border-[1px] rounded-xl gap-10">
+        <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-black/5 dark:border-white/5 border-[1px] rounded-4xl gap-10">
         <Avatar className="h-20 w-20" >
           <AvatarImage className="object-cover" src="/avatars/anjishnu.png" />
           <AvatarFallback>
@@ -92,7 +92,7 @@ export default function Leadership() {
           Loves physics, hates bad UI. Punches things for fun (MMA, not bugs-but also bugs). Runs on curiosity, caffeine, and clean builds. <br />Physicist by soul. Fights bugs, throws hands, hits gym. If it’s complex, he’s into it. If it’s boring, he’s out.  Obsessed with clean design, clean lifts, and clean wins.
         </div>
         </div>
-        <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-[100px] border-black/5 dark:border-white/5 border-[1px] rounded-xl gap-10">
+        <div className="h-full flex items-center justify-center py-5 px-7 flex-col bg-[#66666612] backdrop-blur-lg border-black/5 dark:border-white/5 border-[1px] rounded-4xl gap-10">
         <Avatar className="h-20 w-20" >
           <AvatarImage className="object-cover" src="/avatars/soushree.png" />
           <AvatarFallback>
