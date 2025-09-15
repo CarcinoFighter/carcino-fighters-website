@@ -1,12 +1,28 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Geist, Space_Grotesk, Cinzel } from "next/font/google";
+import { Geist, Space_Grotesk, Cinzel, Michroma } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
+import localFont from "next/font/local";
+
 
 const geist = Geist({
   variable: "--font-geist",
   subsets: ["latin"],
+});
+
+const panchang = localFont({
+  src: [{
+    path: "../public/fonts/Panchang-Variable.ttf",
+    weight: "400",
+}],
+  variable: "--font-panchang",
+});
+
+const michroma = Michroma({
+  variable: "--font-michroma",
+  subsets: ["latin"],
+  weight: "400"
 });
 
 
@@ -35,7 +51,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} antialiased`}
+        className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} ${michroma.variable} ${panchang.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"
