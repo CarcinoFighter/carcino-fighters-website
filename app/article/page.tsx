@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Search } from "lucide-react";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
+import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { getAllDocs } from "@/lib/docsRepository";
 
@@ -16,6 +17,8 @@ interface Article {
 export default function ArticleListPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+        const [query, setQuery] = useState("");
+        const [debouncedQuery, setDebouncedQuery] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -24,6 +27,29 @@ export default function ArticleListPage() {
       setLoading(false);
     })();
   }, []);
+
+    // Debounce query input to reduce re-renders / filtering frequency
+    useEffect(() => {
+        const t = setTimeout(() => setDebouncedQuery(query), 300);
+        return () => clearTimeout(t);
+    }, [query]);
+
+    const filtered = useMemo(() => {
+            const qTrim = debouncedQuery.trim();
+            if (!qTrim) return articles;
+            const q = qTrim.toLowerCase();
+
+        return articles.filter(a => {
+            // split title into words, remove non-word characters from edges
+            const words = a.title
+                .split(/\s+/)
+                .map(w => w.replace(/^[^\w']+|[^\w']+$/g, '').toLowerCase())
+                .filter(Boolean);
+
+            // match whole-word prefix: any word starting with query
+            return words.some(w => w.startsWith(q));
+        });
+    }, [articles, query]);
 
   return (
     <div className="flex flex-col min-h-screen overflow-scroll relative"
@@ -59,14 +85,26 @@ export default function ArticleListPage() {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 px-6 pb-10"
             >
+                {/* Search bar - responsive and transparent */}
+                <div className="max-w-4xl w-full mx-auto col-span-full px-6">
+                    <div className="w-full flex flex-row justify-start items-center gap-1">
+                        <Search className="text-muted-foreground" />
+                        <Input
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="Search articles..."
+                            className="bg-transparent rounded-full px-5 border border-foreground/10 placeholder:text-muted-foreground w-full"
+                        />
+                    </div>
+                </div>
                 {loading ? (
                     <div className="col-span-full flex justify-center items-center h-40">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
-                ) : articles.length === 0 ? (
-                    <div className="col-span-full text-center text-lg text-muted-foreground">No articles found.</div>
+                ) : filtered.length === 0 ? (
+                    <div className="col-span-full text-center text-lg text-muted-foreground">No articles match your search.</div>
                 ) : (
-                    articles.map((article) => (
+                    filtered.map((article) => (
                         <CardContainer key={article.id} className="w-full">
                             <CardBody className="relative group/card bg-background/20 border-accent w-full h-auto rounded-xl p-6 border flex flex-col justify-between min-h-[260px]">
                                 <div className="flex flex-col gap-4 h-full justify-between">
