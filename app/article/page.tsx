@@ -49,7 +49,7 @@ export default function ArticleListPage() {
             // match whole-word prefix: any word starting with query
             return words.some(w => w.startsWith(q));
         });
-    }, [articles, query]);
+    }, [articles, query, debouncedQuery]);
 
   return (
     <div className="flex flex-col min-h-screen overflow-scroll relative"
