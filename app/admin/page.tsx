@@ -11,7 +11,7 @@ const supabase = createClient(
 const ADMIN_PASS_HASH = "$2a$12$hO6g3hvavdsyejG4ESJOueW/kZlrtmeizB0vRut5ArGv4dBZlNAyG";
 
 export default function AdminPage() {
-  const [unlocked, setUnlocked] = useState(true);
+  const [unlocked, setUnlocked] = useState(false);
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
   type CancerDoc = {
@@ -35,12 +35,12 @@ export default function AdminPage() {
     console.log("Hash used:", ADMIN_PASS_HASH);
     const match = await bcrypt.compare(input, ADMIN_PASS_HASH);
     console.log("Bcrypt compare result:", match);
-    // if (match) {
-    //   setUnlocked(true);
-    //   fetchDocs();
-    // } else {
-    //   setError("Incorrect password");
-    // }
+    if (match) {
+      setUnlocked(true);
+      fetchDocs();
+    } else {
+      setError("Incorrect password");
+    }
     setUnlocked(true);
     fetchDocs();
     setLoading(false);

@@ -17,7 +17,7 @@ import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import { Footer } from "@/components/footer";
 import { motion, MotionConfig } from "framer-motion";
 import { getAllDocs } from "@/lib/docsRepository";
-import { useState } from "react";
+// import { useState } from "react";
 
 interface Article {
   id: string;
@@ -34,8 +34,8 @@ interface Position {
 export default function Home() {
   const [articles, setArticles] = React.useState<Article[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
-  const [opacity, setOpacity] = useState<number>(0);
+  // const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
+  // const [opacity, setOpacity] = useState<number>(0);
 
 
   React.useEffect(() => {
@@ -46,32 +46,32 @@ export default function Home() {
     })();
   }, []);
 
-  React.useEffect(() => {
-    let idleTimer: number | undefined;
+  // React.useEffect(() => {
+  //   let idleTimer: number | undefined;
 
-    const onPointerMove = (e: PointerEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY });
-      setOpacity(0.6);
-      if (idleTimer) window.clearTimeout(idleTimer);
-      idleTimer = window.setTimeout(() => setOpacity(0), 1000);
-    };
+  //   const onPointerMove = (e: PointerEvent) => {
+  //     setPosition({ x: e.clientX, y: e.clientY });
+  //     setOpacity(0.6);
+  //     if (idleTimer) window.clearTimeout(idleTimer);
+  //     idleTimer = window.setTimeout(() => setOpacity(0), 1000);
+  //   };
 
-    // Detect when the pointer leaves the window (relatedTarget === null)
-    const onMouseOut = (e: MouseEvent) => {
-      if ((e as MouseEvent).relatedTarget === null) {
-        setOpacity(0);
-      }
-    };
+  //   // Detect when the pointer leaves the window (relatedTarget === null)
+  //   const onMouseOut = (e: MouseEvent) => {
+  //     if ((e as MouseEvent).relatedTarget === null) {
+  //       setOpacity(0);
+  //     }
+  //   };
 
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("mouseout", onMouseOut);
+  //   window.addEventListener("pointermove", onPointerMove);
+  //   window.addEventListener("mouseout", onMouseOut);
 
-    return () => {
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("mouseout", onMouseOut);
-      if (idleTimer) window.clearTimeout(idleTimer);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener("pointermove", onPointerMove);
+  //     window.removeEventListener("mouseout", onMouseOut);
+  //     if (idleTimer) window.clearTimeout(idleTimer);
+  //   };
+  // }, []);
 
   const featuredArticles = React.useMemo<Article[]>(() => {
     if (articles.length === 0) return [];
@@ -79,14 +79,14 @@ export default function Home() {
   }, [articles]);
 
   return (
-    <div className="sm:cursor-none flex flex-col relative lg:block lg:h-screen w-screen overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background lg:snap-y lg:scroll-pt-[68px] lg:snap-mandatory lg:snap-always">
-      <div
+    <div className=" flex flex-col relative lg:block lg:h-screen w-screen overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background lg:snap-y lg:scroll-pt-[68px] lg:snap-mandatory lg:snap-always">
+      {/* <div
         className=" hidden sm:inline fixed inset-0 z-100 opacity-0 transition-opacity duration-500 ease-in-out pointer-events-none"
         style={{
           opacity,
           background: `radial-gradient(circle at ${position.x}px ${position.y}px, #471F77, transparent 10%)`,
         }}
-      />
+      /> */}
 
       {/* Mobile Background */}
       <div className="h-[40vh] w-full overflow-hidden fixed left-0 right-0 mx-auto top-0 bg-linear-180 rounded-b-full blur-3xl bg-radial-[at_50%_-50%] from-[#F0F0F0] via-primary-foreground to-[#F0F0F0] dark:from-[#2C2C2C] dark:via-[#471F77] dark:to-[#2C2C2C] lg:hidden animate-blob"></div>
@@ -122,7 +122,7 @@ export default function Home() {
             <Button
               asChild
               variant={`ghost`}
-              className="sm:cursor-none border hover:scale-[105%] group rounded-full text-white py-5 transition-all duration-300 animate font-giest font-medium "
+              className="border hover:scale-[105%] group rounded-full text-white py-5 transition-all duration-300 animate font-giest font-medium "
             >
               <Link href="/article" className="">
                 Read Our Documents{" "}
@@ -176,7 +176,7 @@ export default function Home() {
                     <div className="flex flex-col gap-4 h-full justify-between">
                       <Link
                         href={`/article/${article.slug}`}
-                        className="mt-auto sm:cursor-none"
+                        className="mt-auto"
                       >
                         <CardItem
                           translateZ="20"
@@ -206,7 +206,7 @@ export default function Home() {
               ))
             )}
           </div>
-          <Button asChild variant={`ghost`} className="sm:cursor-none">
+          <Button asChild variant={`ghost`} className="">
             <Link href="/article">
               Read More Insights <ArrowUpRight />
             </Link>
@@ -337,7 +337,7 @@ export default function Home() {
               <Button
                 asChild
                 variant={`outline`}
-                className="sm:cursor-none text-white p-5 bg-primary/17 border-primary font-giest font-medium rounded-full"
+                className="text-white p-5 bg-primary/17 border-primary font-giest font-medium rounded-full"
               >
                 <Link href="/internship/writer">
                   Start your project <ArrowUpRight />
