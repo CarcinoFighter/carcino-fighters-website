@@ -10,6 +10,7 @@
   --font-cinzel: var(--font-cinzel), serif;
   --font-michroma: var(--font-michroma), sans-serif;
   --font-panchang: var(--font-panchang), serif;
+  --font-wintersolace: var(--font-wintersolace), serif;
 
   --color-background: hsla(var(--background));
   --color-foreground: hsla(var(--foreground));
@@ -126,6 +127,15 @@
     ;
   }
 
+  @keyframes shine {
+    0% {
+      background-position: 100%
+    }
+    100% {
+      background-position: -100%;
+    }
+  }
+
   @keyframes fade-out {
     0% {
       opacity: 1;
@@ -144,6 +154,10 @@
     to {
       transform: rotate(360deg) translateX(100px) translateZ(30px) rotate(-360deg);
     }
+  }
+
+  .animate-shine {
+    animation: shine 5s linear infinite;
   }
 
   .animate-blob {

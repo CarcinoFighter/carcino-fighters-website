@@ -5,7 +5,9 @@ export interface Article {
   id: string;
   slug: string;
   title: string;
+  author: string;
   content: string;
+  position: string;
 }
 
 export async function getDocBySlug(slug: string): Promise<Article | null> {
