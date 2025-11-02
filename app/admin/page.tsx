@@ -11,7 +11,7 @@ const supabase = createClient(
 const ADMIN_PASS_HASH = "$2a$12$hO6g3hvavdsyejG4ESJOueW/kZlrtmeizB0vRut5ArGv4dBZlNAyG";
 
 export default function AdminPage() {
-  const [unlocked, setUnlocked] = useState(true);
+  const [unlocked, setUnlocked] = useState(false);
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
   type CancerDoc = {
@@ -19,13 +19,14 @@ export default function AdminPage() {
     slug: string;
     title: string;
     content: string;
+    author: string;
   };
   const [docs, setDocs] = useState<CancerDoc[]>([]);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
-  const [editData, setEditData] = useState({ slug: "", title: "", content: "" });
+  const [editData, setEditData] = useState({ slug: "", title: "", content: "", author: "" });
   const [adding, setAdding] = useState(false);
-  const [addData, setAddData] = useState({ slug: "", title: "", content: "" });
+  const [addData, setAddData] = useState({ slug: "", title: "", content: "", author: "" });
   // Password check
   async function handleUnlock(e: React.FormEvent) {
     e.preventDefault();
@@ -35,12 +36,12 @@ export default function AdminPage() {
     console.log("Hash used:", ADMIN_PASS_HASH);
     const match = await bcrypt.compare(input, ADMIN_PASS_HASH);
     console.log("Bcrypt compare result:", match);
-    // if (match) {
-    //   setUnlocked(true);
-    //   fetchDocs();
-    // } else {
-    //   setError("Incorrect password");
-    // }
+    if (match) {
+      setUnlocked(true);
+      fetchDocs();
+    } else {
+      setError("Incorrect password");
+    }
     setUnlocked(true);
     fetchDocs();
     setLoading(false);
@@ -48,7 +49,7 @@ export default function AdminPage() {
 
   async function fetchDocs() {
     setLoading(true);
-    const { data, error } = await supabase.from("cancer_docs").select("id, slug, title, content");
+    const { data, error } = await supabase.from("cancer_docs").select("id, slug, title, content, author");
     if (!error) setDocs(data || []);
     setLoading(false);
   }
@@ -65,7 +66,7 @@ export default function AdminPage() {
     setLoading(true);
     await supabase.from("cancer_docs").insert([addData]);
     setAdding(false);
-    setAddData({ slug: "", title: "", content: "" });
+    setAddData({ slug: "", title: "", content: "", author: "" });
     fetchDocs();
     setLoading(false);
   }
@@ -93,9 +94,9 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-10 pt-[68px]">
+    <div className="min-h-screen bg-background px-4 py-10 pt-[68px] min-w-screen">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">cancer_docs Table</h1>
+        <h1 className="text-2xl font-bold mb-6">Cancer Docs Table</h1>
         <button
           className="mb-4 bg-primary text-white px-4 py-2 rounded font-semibold"
           onClick={() => setAdding(true)}
@@ -108,7 +109,9 @@ export default function AdminPage() {
               <th className="p-2">Slug</th>
               <th className="p-2">Title</th>
               <th className="p-2">Content</th>
+              <th className="p-2">Author</th>
               <th className="p-2">Actions</th>
+              
             </tr>
           </thead>
           <tbody>
@@ -149,12 +152,23 @@ export default function AdminPage() {
                 </td>
                 <td className="p-2 align-top">
                   {editing === doc.id ? (
+                    <input
+                      className="border rounded px-2 py-1 w-full"
+                      value={editData.author}
+                      onChange={e => setEditData({ ...editData, author: e.target.value })}
+                    />
+                  ) : (
+                    doc.author
+                  )}
+                </td>
+                <td className="p-2 align-top">
+                  {editing === doc.id ? (
                     <>
                       <button className="bg-green-600 text-white px-2 py-1 rounded mr-2" onClick={() => handleEditSave(doc.id)} disabled={loading}>Save</button>
                       <button className="bg-gray-400 text-white px-2 py-1 rounded" onClick={() => setEditing(null)} disabled={loading}>Cancel</button>
                     </>
                   ) : (
-                    <button className="bg-blue-600 text-white px-2 py-1 rounded" onClick={() => { setEditing(doc.id); setEditData({ slug: doc.slug, title: doc.title, content: doc.content }); }}>Edit</button>
+                    <button className="bg-blue-600 text-white px-2 py-1 rounded" onClick={() => { setEditing(doc.id); setEditData({ slug: doc.slug, title: doc.title, content: doc.content, author: doc.author }); }}>Edit</button>
                   )}
                 </td>
               </tr>
@@ -191,6 +205,7 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+      
     </div>
   );
 }
