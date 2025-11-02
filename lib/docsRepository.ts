@@ -5,6 +5,7 @@ export interface Article {
   id: string;
   slug: string;
   title: string;
+  author: string;
   content: string;
 }
 

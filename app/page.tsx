@@ -18,6 +18,7 @@ import { Footer } from "@/components/footer";
 import { motion, MotionConfig } from "framer-motion";
 import { getAllDocs } from "@/lib/docsRepository";
 // import { useState } from "react";
+import ShinyText from "@/components/ShinyText";
 
 interface Article {
   id: string;
@@ -110,10 +111,12 @@ export default function Home() {
             <Label className="border p-3 rounded-full font-space_grotesk text-base text-foreground hidden lg:inline">
               Let's change the world together!
             </Label>
-            <h1 className="text-4xl lg:text-4xl xl:text-6xl bg-gradient-to-r from-foreground to-accent bg-clip-text from-[30.29%] to-100 text-transparent font-panchang font-semibold">
-              {/* Educating The<br />Masses<br />on Cancer */}
-              Touchdown
-            </h1>
+            <ShinyText 
+              text={"Touchdown"}
+              disabled={false}
+              speed={4}
+              className="text-4xl lg:text-4xl xl:text-6xl font-panchang font-semibold"
+            />
             <p className="text-lg text-muted-foreground font-space_grotesk">
               With over eight months in development, over six months of writing
               and refinement and about thirty research articles later, we are
