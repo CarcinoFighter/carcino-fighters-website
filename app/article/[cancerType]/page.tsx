@@ -20,6 +20,7 @@ interface ArticleData {
   title: string;
   author: string;
   content: string;
+  position: string;
 }
 
 export default function ArticlePage() {
@@ -171,7 +172,7 @@ export default function ArticlePage() {
                 <br className="max-sm:hidden" />
                 <span className="sm:hidden">|</span>
                 <span className="sm:text-xs text-foreground/50">
-                  Chief Research Officer
+                  {article.position}
                 </span>
               </div>
               <Avatar className="max-sm:hidden scale-140">

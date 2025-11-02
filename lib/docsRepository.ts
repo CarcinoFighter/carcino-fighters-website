@@ -7,6 +7,7 @@ export interface Article {
   title: string;
   author: string;
   content: string;
+  position: string;
 }
 
 export async function getDocBySlug(slug: string): Promise<Article | null> {
