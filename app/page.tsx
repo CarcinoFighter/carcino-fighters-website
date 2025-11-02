@@ -27,10 +27,10 @@ interface Article {
   content: string;
 }
 
-interface Position {
-  x: number;
-  y: number;
-}
+// interface Position {
+//   x: number;
+//   y: number;
+// }
 
 export default function Home() {
   const [articles, setArticles] = React.useState<Article[]>([]);
