@@ -1,6 +1,7 @@
 "use client";
-import { getDocBySlug, getAllDocs, Article } from "@/lib/docsRepository";
+import { getDocBySlugWithAvatar, getAllDocsWithAvatars, ArticleWithAvatar } from "@/lib/docsRepository";
 import { useEffect, useMemo, useState, useRef } from "react";
+import type { ImgHTMLAttributes } from "react";
 import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -14,29 +15,22 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Image from "next/image";
 
 
-interface ArticleData {
-  id: string;
-  slug: string;
-  title: string;
-  author: string;
-  content: string;
-  position: string;
-}
+type ArticleData = ArticleWithAvatar;
 
 export default function ArticlePage() {
   const params = useParams();
   const cancerType = params?.cancerType as string | undefined;
   const [article, setArticle] = useState<ArticleData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [articles, setArticles] = useState<Article[] | null>(null);
+  const [articles, setArticles] = useState<ArticleWithAvatar[] | null>(null);
   const [readmore, setReadmore] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchDoc = async () => {
       if (typeof cancerType === "string") {
         try {
-          const fetchedDoc = await getDocBySlug(cancerType);
-          const fetchedArticles = await getAllDocs();
+          const fetchedDoc = await getDocBySlugWithAvatar(cancerType);
+          const fetchedArticles = await getAllDocsWithAvatars();
           setArticle(fetchedDoc);
           setArticles(fetchedArticles);
         } catch (error) {
@@ -66,7 +60,6 @@ export default function ArticlePage() {
     return arr.slice(0, Math.min(3, arr.length));
   }, [articles, article]);
 
-  // Measure how many cards fit inside the sticky container without overflowing.
   const stickyRef = useRef<HTMLDivElement | null>(null);
   const firstCardRef = useRef<HTMLDivElement | null>(null);
   const moreArticlesRef = useRef<HTMLHeadingElement | null>(null);
@@ -78,8 +71,6 @@ export default function ArticlePage() {
     const measure = () => {
       const container = stickyRef.current!;
       const containerHeight = container.clientHeight || 0;
-      console.log("Container height:", containerHeight);
-
       // If we don't have a card measurement yet, default to up to 3
       if (!firstCardRef.current) {
         setVisibleCount(Math.min(3, selected.length));
@@ -88,18 +79,11 @@ export default function ArticlePage() {
 
       const cardRect = firstCardRef.current.getBoundingClientRect();
       const cardHeight = cardRect.height || 0;
-      console.log("Card height:", cardHeight);
 
       const style = window.getComputedStyle(container);
       const gapStr = style.columnGap || style.gap || "0px";
       const gap = parseFloat(gapStr) || 0;
-      console.log("Gap size:", gap);
-
-
-
       // compute how many (cardHeight + gap) fit into containerHeight
-      console.log((cardHeight + gap) * 3, containerHeight);
-      console.log((containerHeight) / (cardHeight + gap))
       const count = Math.floor((containerHeight) / (cardHeight + gap));
       const bounded = Math.max(0, Math.min(3, count));
       setVisibleCount(bounded || 0);
@@ -146,7 +130,6 @@ export default function ArticlePage() {
     <div>
       <div className="w-screen px-5 sm:px-20 sm:pt-[80px] relative gap-6 sm:flex-row bg-background font-giest min-h-screen">
         <div className={`relative pt-10 flex flex-col justify-center`}>
-          {/* Hero Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -162,7 +145,7 @@ export default function ArticlePage() {
               />
             </div>
             <div className="max-w-4xl sm:px-6">
-              <h1 className="text-6xl/25 text-center sm:text-left sm:text-8xl font-wintersolace sm:font-bold text-foreground">
+              <h1 className="text-6xl/25 text-center sm:text-left sm:text-7xl/30 font-wintersolace sm:font-bold text-foreground">
                 {article.title}
               </h1>
             </div>
@@ -176,18 +159,22 @@ export default function ArticlePage() {
                 </span>
               </div>
               <Avatar className="max-sm:hidden scale-140">
-                <AvatarImage src="/dummy_image1.png" />
+                <AvatarImage
+                  src={article.profilePicture || "/dummy_image1.png"}
+                  onError={(e) => {
+                    console.warn('Hero avatar failed', article?.id, article?.profilePicture);
+                    console.warn(e);
+                  }}
+                />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
             </div>
           </motion.div>
 
-          {/* Article Content */}
           <motion.div
             initial={false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            // when collapsed limit the height / hide overflow; when expanded remove limit
             className={`flex pr-0 flex-col sm:flex-row w-full px-6 pt-12 transition-all duration-300 `}
           >
             <div className=" relative">
@@ -244,14 +231,21 @@ export default function ArticlePage() {
                         {...props}
                       />
                     ),
-                    img: (props) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        className="rounded-lg shadow-lg my-8 max-w-full"
-                        alt=""
-                        {...props}
-                      />
-                    ),
+                    img: (props: ImgHTMLAttributes<HTMLImageElement>) => {
+                      const src = typeof props.src === 'string' ? props.src : undefined;
+                      if (!src) return null;
+                      const alt = props.alt ?? '';
+                      return (
+                        <Image
+                          src={src}
+                          alt={alt}
+                          width={1200}
+                          height={800}
+                          sizes="(max-width: 768px) 100vw, 800px"
+                          className="rounded-lg shadow-lg my-8 max-w-full h-auto"
+                        />
+                      );
+                    },
                   }}
                 >
                   {article.content}
@@ -295,7 +289,7 @@ export default function ArticlePage() {
                   >
                     <div ref={idx === 0 ? firstCardRef : undefined} className="w-full">
                       <CardContainer className=" w-full overflow-hidden">
-                        <CardBody className="relative group/card bg-background border-accent w-full h-auto rounded-[55px] p-[30px] border">
+                        <CardBody className="relative group/card bg-background border-accent w-full h-auto rounded-[55px] p-[30px] px-[45px] border">
                         <div className="flex flex-col gap-4 h-full justify-between">
                           <CardItem
                             translateZ="20"
@@ -307,11 +301,11 @@ export default function ArticlePage() {
                             <h3 className="text-lg font-giest text-foreground mb-1 line-clamp-2">
                               {a.title}
                             </h3>
-                            {a.content && (
-                              <p className=" text-muted-foreground text-sm line-clamp-3 mb-2">
+                            <div className="flex items-center gap-2 mb-2">
+                              <p className=" text-muted-foreground text-sm line-clamp-3">
                                 Authored by {a.author}
                               </p>
-                            )}
+                            </div>
                             <div className="text-primary flex items-center gap-1 text-sm hover:underline">
                               Read it
                               <ArrowUpRight size={14} />
