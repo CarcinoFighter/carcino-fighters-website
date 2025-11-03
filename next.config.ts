@@ -8,9 +8,21 @@ const nextConfig: NextConfig = {
         hostname: "lh7-rt.googleusercontent.com",
         port: "",
         pathname: "/**",
-      }
-    ]
-  }
+      },
+      {
+        protocol: "https",
+        hostname: "hpycprmvcnmfuqsoecvl.supabase.co",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "encrypted-tbn1.gstatic.com",
+        port: "",
+        pathname: "/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;
