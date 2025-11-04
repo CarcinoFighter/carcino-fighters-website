@@ -15,7 +15,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import { Footer } from "@/components/footer";
-import { motion, MotionConfig } from "framer-motion";
+import { motion, MotionConfig, useScroll, useTransform } from "framer-motion";
 import { getAllDocs } from "@/lib/docsRepository";
 // import { useState } from "react";
 import ShinyText from "@/components/ShinyText";
@@ -24,6 +24,7 @@ interface Article {
   id: string;
   slug: string;
   title: string;
+  author: string;
   content: string;
 }
 
@@ -35,9 +36,25 @@ interface Article {
 export default function Home() {
   const [articles, setArticles] = React.useState<Article[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const heroRef = React.useRef<HTMLDivElement | null>(null);
+  const articlesRef = React.useRef<HTMLDivElement | null>(null);
+  // Parallax: move background slower than scroll within hero section
+  const { scrollYProgress } = useScroll({
+    container: containerRef,
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const y = useTransform(scrollYProgress, [0, 1], [0, -240]);
+  // Parallax blobs for Articles section
+  const { scrollYProgress: articlesProgress } = useScroll({
+    container: containerRef,
+    target: articlesRef,
+    offset: ["start end", "end start"],
+  });
+  const yBlob1 = useTransform(articlesProgress, [0, 1], [400, -400]);
   // const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
   // const [opacity, setOpacity] = useState<number>(0);
-
 
   React.useEffect(() => {
     (async () => {
@@ -76,11 +93,14 @@ export default function Home() {
 
   const featuredArticles = React.useMemo<Article[]>(() => {
     if (articles.length === 0) return [];
-    return [...articles].sort(() => Math.random() - 0.5).slice(0, 4);
+    return [...articles].sort(() => Math.random() - 0.5).slice(0, 6);
   }, [articles]);
 
   return (
-    <div className=" flex flex-col relative lg:block lg:h-screen w-screen overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background lg:snap-y lg:scroll-pt-[68px] lg:snap-mandatory lg:snap-always">
+    <div
+      ref={containerRef}
+      className=" flex flex-col relative lg:block lg:h-screen w-screen overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background"
+    >
       {/* <div
         className=" hidden sm:inline fixed inset-0 z-100 opacity-0 transition-opacity duration-500 ease-in-out pointer-events-none"
         style={{
@@ -90,11 +110,12 @@ export default function Home() {
       /> */}
 
       {/* Mobile Background */}
-      <div className="h-[40vh] w-full overflow-hidden fixed left-0 right-0 mx-auto top-0 bg-linear-180 rounded-b-full blur-3xl bg-radial-[at_50%_-50%] from-[#F0F0F0] via-primary-foreground to-[#F0F0F0] dark:from-[#2C2C2C] dark:via-[#471F77] dark:to-[#2C2C2C] lg:hidden animate-blob"></div>
+      {/* <div className="h-[40vh] w-full overflow-hidden fixed left-0 right-0 mx-auto top-0 bg-linear-180 rounded-b-full blur-3xl bg-radial-[at_50%_-50%] from-[#F0F0F0] via-primary-foreground to-[#F0F0F0] dark:from-[#2C2C2C] dark:via-[#471F77] dark:to-[#2C2C2C] lg:hidden animate-blob">
+      </div> */}
 
       <MotionConfig transition={{ duration: 1 }}>
         {/* Main Content */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           className="flex flex-row mb-10 items-center gap-[12rem] justify-start w-full h-fit pt-[68px] lg:pt-0 lg:h-[100vh] lg:px-14 md:px-10 px-6 z-10 snap-center"
@@ -145,13 +166,73 @@ export default function Home() {
               className="object-cover absolute top-0 bottom-0 my-auto right-0 scale-75 left-17 mr-auto hidden dark:inline"
             />
           </div>
+        </motion.div> */}
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          className="h-screen flex bg-transparent flex-col mb-10 items-center gap-[12rem] justify-center w-full overflow-y-hidden"
+          ref={heroRef}
+        >
+          <motion.div
+            style={{ y }}
+            className="absolute inset-0 will-change-transform"
+            aria-hidden
+          >
+            <Image
+              src={`/landing/Background.png`}
+              height={888}
+              width={1440}
+              alt="background"
+              className="object-cover w-full h-full"
+              priority
+            />
+
+            <div className="absolute inset-0 bg-[#471F77]/52" />
+            <div className="absolute inset-0 bg-[#000000]/64" />
+          </motion.div>
+
+          <Button
+            asChild
+            variant={`ghost`}
+            className="z-10 absolute top-30 backdrop-blur-sm border border-foreground/30 bg-foreground/10 rounded-full inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 hover:scale-[105%] transition-all ease duration-300 font-giest font-medium"
+          >
+            <Link href="/article" className="">
+              We&#39;re looking for Writers. Sign up here{" "}
+              <ArrowUpRight className="transition-transform" />
+            </Link>
+          </Button>
+          <div className="flex z-10 flex-col w-full justify-self-center self-center items-center gap-11">
+            <ShinyText
+              text={"Articles are now live!"}
+              disabled={false}
+              speed={4}
+              className="text-4xl lg:text-5xl text-center xl:text-7xl font-panchang font-bold"
+            />
+            <span className="font-space_grotesk text-lg max-sm:px-6 sm:max-w-[35%] w-full text-center">
+              At the Carcino Foundation, we believe that everyone should be able
+              to learn about one of the leading causes of human mortality, but
+              in a way everyone can understand.
+            </span>
+            <Button
+              asChild
+              variant={`ghost`}
+              className="px-6 py-5 backdrop-blur-sm border border-foreground/30 bg-foreground/10 rounded-full inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 hover:scale-[105%] transition-all duration-300 font-giest font-medium"
+            >
+              <Link href="/article" className="">
+                Read Our Documents{" "}
+                <ArrowUpRight className="transition-transform" />
+              </Link>
+            </Button>
+          </div>
         </motion.div>
 
         {/* Articles */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          className="snap-start z-10 font-giest flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6 py-7"
+          className="z-10 font-giest flex flex-col lg:gap-8 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full sm:max-w-[70%] mx-auto h-fit lg:px-14 md:px-10 px-6 pb-6 py-7 relative"
+          ref={articlesRef}
         >
           <Label className="border p-3 rounded-full font-space_grotesk text-base text-foreground">
             Research and Development
@@ -162,54 +243,74 @@ export default function Home() {
             understandable by everyone, made with love and care by our Writing
             Team.
           </p>
-          <div className="grid lg:grid-flow-col lg:grid-rows-2 gap-3 py-6  w-full">
+          {/* subtle parallax blobs behind the grid */}
+          <motion.div
+            initial={false}
+            style={{ y: yBlob1 }}
+            className="pointer-events-none absolute z-0 top-0 sm:left-0 sm:right-0 bottom-0 sm:mx-auto my-auto aspect-square w-[80rem] blur-3xl opacity-35 will-change-transform"
+            aria-hidden
+          >
+            <div className="w-full h-full rounded-full bg-[radial-gradient(closest-side,rgba(213,176,255,0.8),transparent)]" />
+          </motion.div>
+
+
+          <motion.div
+            className="relative z-10 grid lg:grid-flow-col lg:grid-rows-2 gap-3 py-6 w-full"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.2 }}
+            key={loading ? "skeleton" : "cards"}
+            variants={{
+              hidden: { opacity: 0 },
+              show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+            }}
+          >
             {loading ? (
-              <div className="col-span-full flex justify-center items-center h-40">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              </div>
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="w-full px-4 my-2">
+                  <div className="relative aspect-[3/2] w-full items-center justify-center rounded-[55px] border border-accent overflow-hidden">
+                    <div className="skeleton absolute inset-0" />
+                  </div>
+                </div>
+              ))
             ) : articles.length === 0 ? (
               <div className="col-span-full text-center text-lg text-muted-foreground">
                 No articles found.
               </div>
             ) : (
-              // Use memoized featuredArticles (stable until `articles` changes)
               featuredArticles.map((article) => (
-                <CardContainer key={article.id} className="w-full">
-                  <CardBody className="relative group/card bg-background border-accent w-full h-auto rounded-xl p-6 border">
-                    <div className="flex flex-col gap-4 h-full justify-between">
-                      <Link
-                        href={`/article/${article.slug}`}
-                        className="mt-auto"
-                      >
-                        <CardItem
-                          translateZ="20"
-                          className="flex flex-col gap-2 h-full"
-                        >
-                          <div className="text-primary bg-primary/10 px-2 rounded border-primary border/20 w-fit mb-2 text-xs font-medium">
-                            Research Article
-                          </div>
-                          <h2 className="text-lg lg:text-2xl md:text-xl font-giest text-foreground mb-2 line-clamp-2">
-                            {article.title}
-                          </h2>
-                          <p className="md:text-lg font-giest text-muted-foreground line-clamp-3 mb-4">
-                            {article.content
-                              .replace(/[#*123456789_`>\-\[\]!\(\)]/g, "")
-                              .slice(0, 120)}
-                            ...
-                          </p>
-                        </CardItem>
-
-                        <p className="text-sm text-primary flex  flex-row items-center gap-1 font-medium hover:underline">
-                          View Article <ArrowUpRight size={14} />
-                        </p>
-                      </Link>
-                    </div>
-                  </CardBody>
-                </CardContainer>
+                <motion.div key={article.id} variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }} layout>
+                  <CardContainer className=" w-sm px-4 my-2 overflow-hidden">
+                    <CardBody className="inset-shadow-[0_0_10px_10px] inset-shadow-foreground/2 relative group/card aspect-3/2 bg-background/20 backdrop-blur-sm border-accent w-full h-full rounded-[55px] p-[30px] px-[45px] border">
+                      <div className="flex flex-col gap-4 h-full justify-between">
+                        <Link href={`/article/${article.slug}`} className="my-auto">
+                          <CardItem translateZ="20" className="flex flex-col gap-2 h-full items-center">
+                            <div className="text-primary bg-primary/10 px-2 rounded border-primary border/20 w-fit mb-2 text-xs font-medium">
+                              Research Article
+                            </div>
+                            <h2 className="text-lg lg:text-2xl md:text-xl font-giest text-foreground mb-2 line-clamp-2 text-center">
+                              {article.title}
+                            </h2>
+                            <div className="flex items-center gap-2 mb-2">
+                              <p className="text-muted-foreground text-sm line-clamp-3">Authored by {article.author}</p>
+                            </div>
+                            <p className="text-sm text-primary flex flex-row items-center gap-1 font-medium hover:underline justify-center">
+                              View Article <ArrowUpRight size={14} />
+                            </p>
+                          </CardItem>
+                        </Link>
+                      </div>
+                    </CardBody>
+                  </CardContainer>
+                </motion.div>
               ))
             )}
-          </div>
-          <Button asChild variant={`ghost`} className="">
+          </motion.div>
+          <Button
+            asChild
+            variant={`ghost`}
+            className="px-5 py-3 backdrop-blur-sm border border-foreground/30 bg-foreground/10 rounded-full inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium"
+          >
             <Link href="/article">
               Read More Insights <ArrowUpRight />
             </Link>
@@ -221,7 +322,7 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          className="flex flex-col items-center gap-5 w-full h-full justify-center lg:hidden py-16 z-10"
+          className="flex flex-col items-center gap-5 w-full h-fit justify-center lg:hidden py-16 z-10"
         >
           <h2 className="font-giest px-3 text-lg text-center font-semibold">
             “The human spirit was built to outlast despair. So, live life to the
@@ -239,12 +340,12 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          className="z-10 snap-center flex flex-col lg:gap-6 md:gap-4 gap-4 items-center lg:items-start text-center lg:text-left justify-center w-full lg:w-fit h-fit lg:h-svh max-h-[1200px] lg:px-14 md:px-10 px-6 pb-6"
+          className="z-10 flex flex-col lg:gap-6 md:gap-4 gap-4 items-center lg:items-start text-center lg:text-left justify-center w-full lg:w-fit h-fit max-h-[1200px] lg:px-14 md:px-10 px-6 pb-6"
         >
           <Label className="border p-3 rounded-full font-space_grotesk text-base text-foreground">
             Why Trust Us
           </Label>
-          <h1 className="text-2xl font-giest text-foreground ">
+          <h1 className="text-2xl font-giest text-foreground">
             We want everyone to be aware
           </h1>
           <p className="text-lg text-muted-foreground font-space_grotesk">
@@ -255,7 +356,7 @@ export default function Home() {
             <div className="grid lg:grid-flow-col lg:grid-rows-2 gap-7 pt-7 max-w-[400px] lg:max-w-[50%] h-fit">
               <Card className="lg:border-0 shadow-none bg-transparent">
                 <CardHeader className="flex flex-col items-center lg:items-start gap-2">
-                  <Award />
+                  <div className="animate-floaty"><Award /></div>
                   <p className="text-xl lg:text-2xl font-giest">
                     Verified Research
                   </p>
@@ -269,7 +370,7 @@ export default function Home() {
               </Card>
               <Card className="lg:border-0 shadow-none bg-transparent">
                 <CardHeader className="flex flex-col items-center lg:items-start gap-1">
-                  <CalendarCheck />
+                  <div className="animate-floaty" style={{ animationDelay: "0.15s" }}><CalendarCheck /></div>
                   <p className="text-xl lg:text-2xl font-giest">
                     Up-to-Date Articles
                   </p>
@@ -283,7 +384,7 @@ export default function Home() {
               </Card>
               <Card className="lg:border-0 shadow-none bg-transparent">
                 <CardHeader className="flex flex-col items-center lg:items-start gap-2">
-                  <PaintBucket />
+                  <div className="animate-floaty" style={{ animationDelay: "0.3s" }}><PaintBucket /></div>
                   <p className="text-xl lg:text-2xl font-giest">
                     Made for Everyone
                   </p>
@@ -297,7 +398,7 @@ export default function Home() {
               </Card>
               <Card className="lg:border-0 shadow-none bg-transparent">
                 <CardHeader className="flex flex-col items-center lg:items-start gap-2">
-                  <UserCheck />
+                  <div className="animate-floaty" style={{ animationDelay: "0.45s" }}><UserCheck /></div>
                   <p className="text-xl lg:text-2xl font-giest">
                     Run By Students
                   </p>
@@ -326,7 +427,7 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          className="snap-center z-10 font-giest text-foreground flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center xl:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6 lg:py-18"
+          className="z-10 font-giest text-foreground flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center xl:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6 lg:py-18"
         >
           <div className="w-full flex flex-row items-center justify-between bg-background/20 border rounded-4xl relative overflow-hidden">
             <div className="absolute inset-0 bg-linear-180 blur-3xl from-[#F0F0FF]/30 via-[#D5B0FF]/30 to-[#F0F0FF]/30 dark:from-[#2C2C2C]/30 dark:via-[#471F77]/30 dark:to-[#2C2C2C]/30"></div>
@@ -339,8 +440,8 @@ export default function Home() {
               </p>
               <Button
                 asChild
-                variant={`outline`}
-                className="text-white p-5 bg-primary/17 border-primary font-giest font-medium rounded-full"
+                variant={`ghost`}
+                className="px-6 py-5 backdrop-blur-sm border border-foreground/30 bg-foreground/10 rounded-full inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium"
               >
                 <Link href="/internship/writer">
                   Start your project <ArrowUpRight />

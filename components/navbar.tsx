@@ -11,7 +11,7 @@ import Link from "next/link"
 import React, { useState } from "react";
 import { cn } from "@/lib/utils"
 import { BookOpen, House, Menu, SearchX } from "lucide-react"
-import { ModeTogglePhone } from "@/components/ui/mode-phone"
+// import { ModeTogglePhone } from "@/components/ui/mode-phone"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -149,7 +149,7 @@ export function Navbar() {
               </div>
             </Link>
           </nav>
-          <ModeTogglePhone></ModeTogglePhone>
+          {/* <ModeTogglePhone></ModeTogglePhone> */}
         </div>
       </div>
 
