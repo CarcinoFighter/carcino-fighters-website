@@ -45,7 +45,7 @@ export default function Home() {
     target: heroRef,
     offset: ["start start", "end start"],
   });
-  const y = useTransform(scrollYProgress, [0, 1], [0, -240]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, -300]);
   // Parallax blobs for Articles section
   const { scrollYProgress: articlesProgress } = useScroll({
     container: containerRef,
@@ -244,18 +244,9 @@ export default function Home() {
             Team.
           </p>
           {/* subtle parallax blobs behind the grid */}
-          <motion.div
-            initial={false}
-            style={{ y: yBlob1 }}
-            className="pointer-events-none absolute z-0 top-0 sm:left-0 sm:right-0 bottom-0 sm:mx-auto my-auto aspect-square w-[80rem] blur-3xl opacity-35 will-change-transform"
-            aria-hidden
-          >
-            <div className="w-full h-full rounded-full bg-[radial-gradient(closest-side,rgba(213,176,255,0.8),transparent)]" />
-          </motion.div>
-
 
           <motion.div
-            className="relative z-10 grid lg:grid-flow-col lg:grid-rows-2 gap-3 py-6 w-full"
+            className="relative justify-center z-10 grid lg:grid-flow-col lg:grid-rows-2 gap-3 py-6 w-screen"
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.2 }}
@@ -265,6 +256,14 @@ export default function Home() {
               show: { opacity: 1, transition: { staggerChildren: 0.08 } },
             }}
           >
+            <motion.div
+              initial={false}
+              style={{ y: yBlob1 }}
+              className="pointer-events-none absolute z-0 top-0 sm:left-0 sm:right-0 bottom-0 sm:mx-auto my-auto aspect-square w-[80rem] blur-3xl opacity-35 will-change-transform"
+              aria-hidden
+            >
+              <div className="w-full h-full rounded-full bg-[radial-gradient(closest-side,rgba(213,176,255,0.8),transparent)]" />
+            </motion.div>
             {loading ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="w-full px-4 my-2">
@@ -279,12 +278,25 @@ export default function Home() {
               </div>
             ) : (
               featuredArticles.map((article) => (
-                <motion.div key={article.id} variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }} layout>
-                  <CardContainer className=" w-sm px-4 my-2 overflow-hidden">
+                <motion.div
+                  key={article.id}
+                  variants={{
+                    hidden: { opacity: 0, y: 10 },
+                    show: { opacity: 1, y: 0 },
+                  }}
+                  layout
+                >
+                  <CardContainer className="w-sm px-4 my-2 overflow-hidden aspect-[3/2]">
                     <CardBody className="inset-shadow-[0_0_10px_10px] inset-shadow-foreground/2 relative group/card aspect-3/2 bg-background/20 backdrop-blur-sm border-accent w-full h-full rounded-[55px] p-[30px] px-[45px] border">
                       <div className="flex flex-col gap-4 h-full justify-between">
-                        <Link href={`/article/${article.slug}`} className="my-auto">
-                          <CardItem translateZ="20" className="flex flex-col gap-2 h-full items-center">
+                        <Link
+                          href={`/article/${article.slug}`}
+                          className="my-auto"
+                        >
+                          <CardItem
+                            translateZ="20"
+                            className="flex flex-col gap-2 h-full items-center"
+                          >
                             <div className="text-primary bg-primary/10 px-2 rounded border-primary border/20 w-fit mb-2 text-xs font-medium">
                               Research Article
                             </div>
@@ -292,7 +304,9 @@ export default function Home() {
                               {article.title}
                             </h2>
                             <div className="flex items-center gap-2 mb-2">
-                              <p className="text-muted-foreground text-sm line-clamp-3">Authored by {article.author}</p>
+                              <p className="text-muted-foreground text-sm line-clamp-3">
+                                Authored by {article.author}
+                              </p>
                             </div>
                             <p className="text-sm text-primary flex flex-row items-center gap-1 font-medium hover:underline justify-center">
                               View Article <ArrowUpRight size={14} />
@@ -356,7 +370,9 @@ export default function Home() {
             <div className="grid lg:grid-flow-col lg:grid-rows-2 gap-7 pt-7 max-w-[400px] lg:max-w-[50%] h-fit">
               <Card className="lg:border-0 shadow-none bg-transparent">
                 <CardHeader className="flex flex-col items-center lg:items-start gap-2">
-                  <div className="animate-floaty"><Award /></div>
+                  <div className="animate-floaty">
+                    <Award />
+                  </div>
                   <p className="text-xl lg:text-2xl font-giest">
                     Verified Research
                   </p>
@@ -370,7 +386,12 @@ export default function Home() {
               </Card>
               <Card className="lg:border-0 shadow-none bg-transparent">
                 <CardHeader className="flex flex-col items-center lg:items-start gap-1">
-                  <div className="animate-floaty" style={{ animationDelay: "0.15s" }}><CalendarCheck /></div>
+                  <div
+                    className="animate-floaty"
+                    style={{ animationDelay: "0.15s" }}
+                  >
+                    <CalendarCheck />
+                  </div>
                   <p className="text-xl lg:text-2xl font-giest">
                     Up-to-Date Articles
                   </p>
@@ -384,7 +405,12 @@ export default function Home() {
               </Card>
               <Card className="lg:border-0 shadow-none bg-transparent">
                 <CardHeader className="flex flex-col items-center lg:items-start gap-2">
-                  <div className="animate-floaty" style={{ animationDelay: "0.3s" }}><PaintBucket /></div>
+                  <div
+                    className="animate-floaty"
+                    style={{ animationDelay: "0.3s" }}
+                  >
+                    <PaintBucket />
+                  </div>
                   <p className="text-xl lg:text-2xl font-giest">
                     Made for Everyone
                   </p>
@@ -398,7 +424,12 @@ export default function Home() {
               </Card>
               <Card className="lg:border-0 shadow-none bg-transparent">
                 <CardHeader className="flex flex-col items-center lg:items-start gap-2">
-                  <div className="animate-floaty" style={{ animationDelay: "0.45s" }}><UserCheck /></div>
+                  <div
+                    className="animate-floaty"
+                    style={{ animationDelay: "0.45s" }}
+                  >
+                    <UserCheck />
+                  </div>
                   <p className="text-xl lg:text-2xl font-giest">
                     Run By Students
                   </p>
