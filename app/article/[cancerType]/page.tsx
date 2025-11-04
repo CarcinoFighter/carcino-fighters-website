@@ -166,6 +166,7 @@ export default function ArticlePage() {
               <Avatar className="max-sm:hidden scale-140">
                 <AvatarImage
                   src={article.profilePicture || "/dummy_image1.png"}
+                  className="object-cover"
                   onError={(e) => {
                     console.warn('Hero avatar failed', article?.id, article?.profilePicture);
                     console.warn(e);
