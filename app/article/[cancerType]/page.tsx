@@ -180,7 +180,7 @@ export default function ArticlePage() {
             initial={false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className={`flex pr-0 flex-col sm:flex-row w-full px-6 pt-12 transition-all duration-300 `}
+            className={`flex pr-0 flex-col sm:flex-row w-full pr-3 pl-3 sm:px-6 pt-12 transition-all duration-300 `}
           >
             <div className=" relative">
               <article
