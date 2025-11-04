@@ -13,6 +13,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Image from "next/image";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
 
 
 type ArticleData = ArticleWithAvatar;
@@ -128,7 +129,9 @@ export default function ArticlePage() {
 
   return (
     <div>
+    
       <div className="w-screen px-5 sm:px-20 sm:pt-[80px] relative gap-6 sm:flex-row bg-background font-giest min-h-screen">
+  <ScrollProgress className="hidden md:block" />
         <div className={`relative pt-10 flex flex-col justify-center`}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -145,11 +148,13 @@ export default function ArticlePage() {
               />
             </div>
             <div className="max-w-4xl sm:px-6">
+              
               <h1 className="text-6xl/25 text-center sm:text-left sm:text-7xl/30 font-wintersolace sm:font-bold text-foreground">
                 {article.title}
+                
               </h1>
             </div>
-            <div className="flex max-sm:w-full flex-row gap-7 items-center sm:pr-10">
+            <div className="flex max-sm:w-full flex-row gap-7 items-center sm:pr-15">
               <div className="flex max-sm:text-xs max-sm:w-full flex-row items-center justify-center sm:flex-col sm:items-end gap-3 sm:gap-1">
                 <span>{article.author}</span> 
                 <br className="max-sm:hidden" />
@@ -288,7 +293,7 @@ export default function ArticlePage() {
                     className="text-primary flex items-center gap-1 text-sm"
                   >
                     <div ref={idx === 0 ? firstCardRef : undefined} className="w-full">
-                      <CardContainer className=" w-full overflow-hidden">
+                      <CardContainer className=" w-full px-4 overflow-hidden">
                         <CardBody className="relative group/card bg-background border-accent w-full h-auto rounded-[55px] p-[30px] px-[45px] border">
                         <div className="flex flex-col gap-4 h-full justify-between">
                           <CardItem
