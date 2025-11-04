@@ -192,16 +192,6 @@ export default function Home() {
             <div className="absolute inset-0 bg-[#000000]/64" />
           </motion.div>
 
-          <Button
-            asChild
-            variant={`ghost`}
-            className="z-10 absolute top-30 backdrop-blur-sm border border-foreground/30 bg-foreground/10 rounded-full inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 hover:scale-[105%] transition-all ease duration-300 font-giest font-medium"
-          >
-            <Link href="/article" className="">
-              We&#39;re looking for Writers. Sign up here{" "}
-              <ArrowUpRight className="transition-transform" />
-            </Link>
-          </Button>
           <div className="flex z-10 flex-col w-full justify-self-center self-center items-center gap-11">
             <ShinyText
               text={"Articles are now live!"}
@@ -256,14 +246,17 @@ export default function Home() {
               show: { opacity: 1, transition: { staggerChildren: 0.08 } },
             }}
           >
-            <motion.div
-              initial={false}
-              style={{ y: yBlob1 }}
-              className="pointer-events-none absolute z-0 top-0 sm:left-0 sm:right-0 bottom-0 sm:mx-auto my-auto aspect-square w-[80rem] blur-3xl opacity-35 will-change-transform"
-              aria-hidden
-            >
-              <div className="w-full h-full rounded-full bg-[radial-gradient(closest-side,rgba(213,176,255,0.8),transparent)]" />
-            </motion.div>
+            {/* Center the blob even when it's larger than the viewport by centering a wrapper and applying parallax to the inner node */}
+            <div className="pointer-events-none absolute z-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+              <motion.div
+                initial={false}
+                style={{ y: yBlob1 }}
+                className="aspect-square w-[80rem] blur-3xl opacity-35 will-change-transform"
+                aria-hidden
+              >
+                <div className="w-full h-full rounded-full bg-[radial-gradient(closest-side,rgba(213,176,255,0.8),transparent)]" />
+              </motion.div>
+            </div>
             {loading ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="w-full px-4 my-2">
@@ -286,7 +279,7 @@ export default function Home() {
                   }}
                   layout
                 >
-                  <CardContainer className="w-sm px-4 my-2 overflow-hidden aspect-[3/2]">
+                  <CardContainer className="w-xs sm:w-sm px-4 my-2 overflow-hidden aspect-[3/2]">
                     <CardBody className="inset-shadow-[0_0_10px_10px] inset-shadow-foreground/2 relative group/card aspect-3/2 bg-background/20 backdrop-blur-sm border-accent w-full h-full rounded-[55px] p-[30px] px-[45px] border">
                       <div className="flex flex-col gap-4 h-full justify-between">
                         <Link
@@ -469,15 +462,26 @@ export default function Home() {
                 articles, and our Writing Team will work on it and share it with
                 the world.
               </p>
-              <Button
-                asChild
-                variant={`ghost`}
-                className="px-6 py-5 backdrop-blur-sm border border-foreground/30 bg-foreground/10 rounded-full inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium"
-              >
-                <Link href="/internship/writer">
-                  Start your project <ArrowUpRight />
-                </Link>
-              </Button>
+              <div className="flex flex-row gap-3">
+                <Button
+                  asChild
+                  variant={`ghost`}
+                  className="px-6 py-5 backdrop-blur-sm border border-foreground/30 bg-foreground/10 rounded-full inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium"
+                >
+                  <Link href="/internship/writer">
+                    Writing Team <ArrowUpRight />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant={`ghost`}
+                  className="px-6 py-5 backdrop-blur-sm border border-foreground/30 bg-foreground/10 rounded-full inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium"
+                >
+                  <Link href="/internship/tech">
+                    Dev / Design <ArrowUpRight />
+                  </Link>
+                </Button>
+              </div>
             </div>
             <div className="hidden xl:inline relative z-10">
               <Image
