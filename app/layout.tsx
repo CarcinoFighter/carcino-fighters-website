@@ -101,6 +101,7 @@ export default function RootLayout({
           storageKey="theme"
           disableTransitionOnChange
         >
+          {/* Liquid glass filter removed as per request */}
           
           <Navbar></Navbar>
           
