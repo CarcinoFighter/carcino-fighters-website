@@ -78,7 +78,7 @@ const cinzel = Cinzel({
 
 
 export const metadata: Metadata = {
-  title: "Carcino Foundation",
+  title: "The Carcino Foundation – Breaking Down Cancer for Anyone and Everyone",
   description: "A simple hub, built to educate and help emerging and concurrent generations upon one of the leading causes of death in humanity.",
 };
 
@@ -91,8 +91,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} ${michroma.variable} ${panchang.variable} ${wintersolace.variable} antialiased hide-scrollbar`}
-      >
+        className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} ${michroma.variable} ${panchang.variable} ${wintersolace.variable} antialiased hide-scrollbar`}>
 
         <ThemeProvider
         
