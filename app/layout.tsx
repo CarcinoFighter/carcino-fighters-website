@@ -4,12 +4,24 @@ import { Geist, Space_Grotesk, Cinzel, Michroma } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import localFont from "next/font/local";
+// import { Footer } from "@/components/footer";
 
 
 const geist = Geist({
   variable: "--font-geist",
   subsets: ["latin"],
 });
+
+const wintersolace= localFont({
+  src: [
+    {
+      path: "../public/fonts/wintersolace.ttf",
+      weight: '400',
+      style: "normal",
+    }
+  ],
+  variable: "--font-wintersolace",
+})
 
 const panchang = localFont({
   src: [
@@ -66,7 +78,7 @@ const cinzel = Cinzel({
 
 
 export const metadata: Metadata = {
-  title: "Carcino Foundation",
+  title: "The Carcino Foundation – Breaking Down Cancer for Anyone and Everyone",
   description: "A simple hub, built to educate and help emerging and concurrent generations upon one of the leading causes of death in humanity.",
 };
 
@@ -79,22 +91,25 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} ${michroma.variable} ${panchang.variable} antialiased `}
-        
-      >
+        className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} ${michroma.variable} ${panchang.variable} ${wintersolace.variable} antialiased hide-scrollbar`}>
+
         <ThemeProvider
+        
           attribute="class"
           defaultTheme="dark"
           storageKey="theme"
           disableTransitionOnChange
         >
+          {/* Liquid glass filter removed as per request */}
+          
           <Navbar></Navbar>
-
+          
           {children}
 
           
         </ThemeProvider>
       </body>
+      
     </html>
   );
 }

@@ -2,7 +2,7 @@
 
 export function Footer() {
     return (
-        <div className="justify-start w-full h-fit lg:px-14 z-10 md:px-10 px-6 pb-10  snap-end">
+        <div className="justify-start  w-full h-fit lg:px-14 z-10 md:px-10 px-6 py-10 ">
             <div className="flex flex-col sm:flex-row text-center sm:text-left justify-between items-center pt-10">
                 <h1 className="w-full sm:w-2/3 font-panchang font-[700] font-bold bg-gradient-to-b from-[rgba(152,117,193,0.56)] to-[rgba(51,51,51,0.56)] bg-clip-text text-transparent text-3xl sm:text-4xl md:text-5xl lg:text-[6rem]">
                     The Carcino Foundation
