@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import React from 'react';
 
 interface ShinyTextProps {
@@ -11,7 +12,15 @@ const ShinyText: React.FC<ShinyTextProps> = ({ text, disabled = false, speed = 5
   const animationDuration = `${speed}s`;
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0,
+        y:-20,
+       }}
+      animate={{ 
+        opacity: 1, 
+        y: 0,
+      }}
+      exit={{ opacity: 0, y: 20 }}
       className={`text-[#b5b5b5a4] bg-clip-text inline-block ${disabled ? '' : 'animate-shine'} ${className}`}
       style={{
         backgroundImage:
@@ -22,7 +31,7 @@ const ShinyText: React.FC<ShinyTextProps> = ({ text, disabled = false, speed = 5
       }}
     >
       {text}
-    </div>
+    </motion.div>
   );
 };
 
