@@ -24,7 +24,7 @@ interface Article {
   id: string;
   slug: string;
   title: string;
-  author: string;
+  author: string | null;
   content: string;
 }
 
@@ -298,7 +298,7 @@ export default function Home() {
                             </h2>
                             <div className="flex items-center gap-2 mb-2">
                               <p className="text-muted-foreground text-sm line-clamp-3">
-                                Authored by {article.author}
+                                Authored by {article.author ?? "Anonymous Author"}
                               </p>
                             </div>
                             <p className="text-sm text-primary flex flex-row items-center gap-1 font-medium hover:underline justify-center">

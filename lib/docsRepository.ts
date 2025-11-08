@@ -1,22 +1,46 @@
 // lib/docsRepository.ts
 import { supabase } from '@/lib/initSupabase';
 
+function resolveApiUrl(path: string) {
+  if (typeof window !== 'undefined') {
+    return path;
+  }
+
+  const base = process.env.NEXT_PUBLIC_SITE_URL
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined)
+    || 'http://localhost:3000';
+
+  try {
+    return new URL(path, base).toString();
+  } catch (error) {
+    console.warn('Failed to resolve API URL', { path, base, error });
+    return path;
+  }
+}
+
 export interface Article {
   id: string;
   slug: string;
   title: string;
-  author: string;
+  author: string | null;
   content: string;
-  position: string;
+  position: string | null;
 }
 
 export interface ArticleWithAvatar extends Article { profilePicture?: string | null }
+
+export interface ArticleSummary {
+  id: string;
+  slug: string;
+  title: string;
+  author: string | null;
+}
 
 export async function getDocBySlug(slug: string): Promise<Article | null> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('*')
+      .select('id, slug, title, author, content, position')
       .eq('slug', slug)
       .single();
 
@@ -36,7 +60,7 @@ export async function getDocBySlugWithAvatar(slug: string): Promise<ArticleWithA
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('*')
+      .select('id, slug, title, author, content, position')
       .eq('slug', slug)
       .single();
 
@@ -46,7 +70,7 @@ export async function getDocBySlugWithAvatar(slug: string): Promise<ArticleWithA
 
     let profilePicture: string | null = null;
     try {
-      const res = await fetch('/api/avatars', {
+      const res = await fetch(resolveApiUrl('/api/avatars'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: [doc.id] })
@@ -72,7 +96,7 @@ export async function getAllDocs(): Promise<Article[]> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('*')
+      .select('id, slug, title, author, content, position')
       .order('title');
 
     if (error) {
@@ -91,7 +115,7 @@ export async function getAllDocsWithAvatars(): Promise<ArticleWithAvatar[]> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('*')
+      .select('id, slug, title, author, content, position')
       .order('title');
 
     if (error || !data) { if (error) console.error('Error fetching documents:', error); return [] }
@@ -103,7 +127,7 @@ export async function getAllDocsWithAvatars(): Promise<ArticleWithAvatar[]> {
     let picMap: Record<string, string | null> = {};
     const ids = docs.map(d => d.id);
     try {
-      const res = await fetch('/api/avatars', {
+      const res = await fetch(resolveApiUrl('/api/avatars'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids })
@@ -137,5 +161,31 @@ export async function deleteDoc(id: string): Promise<boolean> {
   } catch (error) {
     console.error('Error deleting doc:', error);
     return false;
+  }
+}
+
+export async function getRandomArticleSummaries(limit = 3, excludeSlug?: string): Promise<ArticleSummary[]> {
+  try {
+    let query = supabase
+      .from('cancer_docs_random')
+      .select('id, slug, title, author')
+
+    if (excludeSlug) {
+      query = query.neq('slug', excludeSlug);
+    }
+
+    const { data, error } = await query.limit(limit);
+
+    if (error || !data) {
+      if (error) {
+        console.error('Error fetching random article summaries:', error);
+      }
+      return [];
+    }
+
+    return data as ArticleSummary[];
+  } catch (error) {
+    console.error('Error in getRandomArticleSummaries:', error);
+    return [];
   }
 }
