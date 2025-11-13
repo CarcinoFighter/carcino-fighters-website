@@ -2,10 +2,7 @@ import type { MetadataRoute } from "next";
 import { getAllDocs } from "@/lib/docsRepository";
 
 function getBaseUrl(): string {
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-
+  const siteUrl = "https://www.thecarcinofoundation.org"
   return siteUrl.replace(/\/$/, "");
 }
 
