@@ -92,7 +92,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} ${michroma.variable} ${panchang.variable} ${wintersolace.variable} antialiased hide-scrollbar`}>
-
+    
         <ThemeProvider
         
           attribute="class"
@@ -100,10 +100,49 @@ export default function RootLayout({
           storageKey="theme"
           disableTransitionOnChange
         >
-          {/* Liquid glass filter removed as per request */}
           
           <Navbar></Navbar>
-          
+         {/* Global hidden SVG filter */}
+<svg style={{ display: "none" }}>
+  <filter
+    id="glass-distortion"
+    x="0"
+    y="0"
+    width="100%"
+    height="100%"
+    filterUnits="objectBoundingBox"
+  >
+
+    <feTurbulence
+      type="fractalNoise"
+      baseFrequency="0.007 0.01"
+      numOctaves="3"
+      seed="2"
+      result="turb"
+    />
+
+    <feGaussianBlur in="turb" stdDeviation="2.2" result="blurredNoise" />
+
+    <feSpecularLighting
+      in="blurredNoise"
+      surfaceScale="2"
+      specularConstant="0.6"
+      specularExponent="40"
+      lightingColor="#ffffff"
+      result="light"
+    >
+      <fePointLight x="-80" y="-40" z="120" />
+    </feSpecularLighting>
+    <feDisplacementMap
+      in="SourceGraphic"
+      in2="blurredNoise"
+      scale="20"
+      xChannelSelector="R"
+      yChannelSelector="G"
+    />
+  </filter>
+</svg>
+
           {children}
 
           
@@ -112,4 +151,6 @@ export default function RootLayout({
       
     </html>
   );
+
+
 }
