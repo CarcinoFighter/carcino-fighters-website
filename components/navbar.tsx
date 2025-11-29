@@ -91,8 +91,11 @@ export function Navbar() {
                     <motion.span
                       layoutId="pill-tab"
                       transition={{ type: "spring", duration: 0.5 }}
-                      className="absolute inset-0 z-0 border-foreground/30 border bg-foreground/10 inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 rounded-full"
-                    ><div className="liquidGlass-effect"></div></motion.span>
+  className="absolute isolation-isolate inset-0 z-0 rounded-full
+             bg-gradient-to-br from-[#B372FF] to-[#9875C1]"
+                    > <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+        <div className="liquidGlass-tint"></div>
+        <div className="liquidGlass-shine  relative w-[105.8%] h-[102.7%] !top-[-1px] !left-[-1.5px]"></div></div></motion.span>
                   )}
                 </NavigationMenuLink>
               </NavigationMenuItem>

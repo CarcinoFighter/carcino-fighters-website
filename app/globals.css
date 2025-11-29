@@ -296,7 +296,7 @@
     border-radius: 55px;
   position: absolute;
   inset: 0;
-  background: rgba(37, 37, 37, 0.493);
+  background: rgba(20, 1, 31, 0.308);
 }
 
 .liquidGlass-shine {
@@ -305,6 +305,8 @@
   border-radius: 55px;
   z-index: 2;
   overflow: visible; /* allow corners to show */
+    border-top: 0.5px solid rgba(255, 255, 255, 0.5); /* very light top border */
+  border-bottom: 0.1px solid rgba(255, 255, 255, 0.3);
 }
 
 
@@ -313,10 +315,10 @@
   position: absolute;
   top: -2px;   
   left: -2px;
-  width: 25px;   
-  height: 25px;
-  border-top: 2px solid rgba(255,255,255,0.5);
-  border-left: 2px solid rgba(255,255,255,0.5);
+  width: 26px;   
+  height: 55px;
+  border-top: 2px solid rgba(255,255,255,0.3);
+  border-left: 2px solid rgba(255,255,255,0.3);
   border-radius: 55px 0 0 0; 
 }
 
@@ -326,10 +328,10 @@
   position: absolute;
   bottom: -2px;
   right: -2px;
-  width: 25px;
-  height: 25px;
-  border-bottom: 2px solid rgba(255,255,255,0.5);
-  border-right: 2px solid rgba(255,255,255,0.5);
+  width: 26px;
+  height: 55px;
+  border-bottom: 1.5px solid rgba(255,255,255,0.3);
+  border-right: 2px solid rgba(255,255,255,0.3);
   border-radius: 0 0 55px 0;
 }
 
