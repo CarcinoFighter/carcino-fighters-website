@@ -67,7 +67,7 @@ export function Navbar() {
   className={cn(
     "w-full flex flex-row px-10 py-1 rounded-full items-center justify-between relative z-10 font-['DM_Sans'] tracking-[-0.02em]",
     "overflow-hidden relative isolation-isolate",
-    "liquid-glass"
+    "liquid-glass !shadow-none"
   )}
 ><div className="liquidGlass-effect"></div>
         <div className="liquidGlass-tint"></div>
