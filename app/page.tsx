@@ -253,16 +253,21 @@ export default function Home() {
               whileTap={{ scale: 0.98 }}
               className="inline-flex"
             >
-              <Button
-                asChild
-                variant={`ghost`}
-                className="px-6 py-5 backdrop-blur-sm border border-foreground/30 bg-foreground/10 rounded-full inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 hover:scale-[105%] transition-all duration-300 font-giest font-medium"
-              >
-                <Link href="/article" className="">
-                  Read Our Documents{" "}
-                  <ArrowUpRight className="transition-transform" />
-                </Link>
-              </Button>
+<Button
+  variant="ghost"
+  className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm border border-foreground/30 bg-foreground/10 inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 font-giest font-medium hover:scale-[105%] transition-all duration-300"
+>
+  <Link href="/article" className="relative z-10 flex items-center gap-2">
+    Read Our Documents <ArrowUpRight className="transition-transform" />
+  </Link>
+
+  {/* Liquid glass layers */}
+  <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+  <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
+  <div className="absolute inset-0 liquidGlass-shine pointer-events-none"></div>
+  <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+</Button>
+
             </motion.div>
           </motion.div>
         </motion.div>
@@ -277,11 +282,22 @@ export default function Home() {
           className="z-10 font-giest flex flex-col lg:gap-8 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full sm:max-w-[70%] mx-auto h-fit lg:px-14 md:px-10 px-6 pb-6 py-7 relative"
         >
           <MotionLabel
-            className="border p-3 rounded-full font-space_grotesk text-base text-foreground"
-            variants={fadeUp}
-          >
-            Research and Development
-          </MotionLabel>
+  className="relative border rounded-full overflow-hidden font-space_grotesk text-base text-foreground"
+  variants={fadeUp}
+>
+  {/* Wrapper for content + layers */}
+  <div className="relative px-5 py-3 flex items-center justify-center">
+    {/* Text content */}
+    <span className="relative z-10">Research and Development</span>
+
+    {/* Liquid glass layers */}
+    <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+    <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
+    <div className="absolute inset-0 liquidGlass-shine pointer-events-none"></div>
+    <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+  </div>
+</MotionLabel>
+
           <motion.h1
             className="text-2xl font-giest text-foreground "
             variants={fadeUp}
@@ -388,15 +404,22 @@ export default function Home() {
             whileTap={{ scale: 0.97 }}
             className="inline-flex"
           >
-            <Button
-              asChild
-              variant={`ghost`}
-              className="px-5 py-3 backdrop-blur-sm border border-foreground/30 bg-foreground/10 rounded-full inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium"
-            >
-              <Link href="/article">
-                Read More Insights <ArrowUpRight />
-              </Link>
-            </Button>
+<Button
+  variant="ghost"
+  className="relative px-5 py-3 rounded-full overflow-hidden backdrop-blur-sm border border-foreground/30 bg-foreground/10 inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
+>
+  <Link href="/article" className="relative z-10 flex items-center gap-2">
+    Read More Insights <ArrowUpRight className="transition-transform" />
+  </Link>
+
+  {/* Liquid glass layers */}
+  <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+  <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
+  <div className="absolute inset-0 liquidGlass-shine pointer-events-none"></div>
+  <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+</Button>
+
+
           </motion.div>
         </motion.div>
 
@@ -556,51 +579,75 @@ export default function Home() {
 
         {/* Call to action  */}
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          className="z-10 font-giest text-foreground flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center xl:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6 lg:py-18"
+  initial={{ opacity: 0 }}
+  whileInView={{ opacity: 1 }}
+  className="z-10 font-giest text-foreground flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center xl:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6 lg:py-18"
+>
+  {/* Main glass container */}
+  <div className="w-full flex flex-row items-center justify-between relative overflow-hidden rounded-4xl">
+
+    {/* Background blur & tint */}
+    <div className="absolute inset-0 bg-linear-180 blur-3xl from-[#F0F0FF]/30 via-[#D5B0FF]/30 to-[#F0F0FF]/30 dark:from-[#2C2C2C]/30 dark:via-[#471F77]/30 dark:to-[#2C2C2C]/30"></div>
+
+    {/* Liquid glass layers */}
+    <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+    <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
+    <div className="absolute inset-0 liquidGlass-shine pointer-events-none"></div>
+    <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+
+    {/* Content */}
+    <div className="text-whte flex flex-col items-center xl:items-start xl:max-w-[60%] justify-center gap-6 w-full h-fit lg:px-14 md:px-10 px-6 py-10 sm:py-14 md:py-18 lg:py-20 relative z-10">
+      <h1 className="text-5xl">Lets change the world together!</h1>
+      <p className="text-lg">
+        Do you wish to contribute to the cause? Write to us or send us
+        articles, and our Writing Team will work on it and share it with
+        the world.
+      </p>
+
+      <div className="flex flex-row gap-3">
+        {/* Writing Team Button */}
+        <Button
+          variant="ghost"
+          className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm border border-foreground/30 bg-foreground/10 inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
         >
-          <div className="w-full flex flex-row items-center justify-between bg-background/20 border rounded-4xl relative overflow-hidden">
-            <div className="absolute inset-0 bg-linear-180 blur-3xl from-[#F0F0FF]/30 via-[#D5B0FF]/30 to-[#F0F0FF]/30 dark:from-[#2C2C2C]/30 dark:via-[#471F77]/30 dark:to-[#2C2C2C]/30"></div>
-            <div className="text-whte flex flex-col items-center xl:items-start xl:max-w-[60%] justify-center gap-6 w-full h-fit lg:px-14 md:px-10 px-6 py-10 sm:py-14 md:py-18 lg:py-20 relative z-10">
-              <h1 className="text-5xl">Lets change the world together!</h1>
-              <p className="text-lg">
-                Do you wish to contribute to the cause? Write to us or send us
-                articles, and our Writing Team will work on it and share it with
-                the world.
-              </p>
-              <div className="flex flex-row gap-3">
-                <Button
-                  asChild
-                  variant={`ghost`}
-                  className="px-6 py-5 backdrop-blur-sm border border-foreground/30 bg-foreground/10 rounded-full inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium"
-                >
-                  <Link href="/internship/writer">
-                    Writing Team <ArrowUpRight />
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant={`ghost`}
-                  className="px-6 py-5 backdrop-blur-sm border border-foreground/30 bg-foreground/10 rounded-full inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium"
-                >
-                  <Link href="/internship/tech">
-                    Dev / Design <ArrowUpRight />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-            <div className="hidden xl:inline relative z-10">
-              <Image
-                src={`/Shape.png`}
-                height={590}
-                width={559.63}
-                alt=""
-                className="object-cover h-full"
-              />
-            </div>
-          </div>
-        </motion.div>
+          <Link href="/internship/writer" className="relative z-10 flex items-center gap-2">
+            Writing Team <ArrowUpRight className="transition-transform" />
+          </Link>
+          <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+          <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
+          <div className="absolute inset-0 liquidGlass-shine pointer-events-none"></div>
+          <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+        </Button>
+
+        {/* Dev / Design Button */}
+        <Button
+          variant="ghost"
+          className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm border border-foreground/30 bg-foreground/10 inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
+        >
+          <Link href="/internship/tech" className="relative z-10 flex items-center gap-2">
+            Dev / Design <ArrowUpRight className="transition-transform" />
+          </Link>
+          <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+          <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
+          <div className="absolute inset-0 liquidGlass-shine pointer-events-none"></div>
+          <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+        </Button>
+      </div>
+    </div>
+
+    {/* Image */}
+    <div className="hidden xl:inline relative z-10">
+      <Image
+        src={`/Shape.png`}
+        height={590}
+        width={559.63}
+        alt=""
+        className="object-cover h-full"
+      />
+    </div>
+  </div>
+</motion.div>
+
       </MotionConfig>
 
       {/* Footer */}

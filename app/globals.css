@@ -1,4 +1,6 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap");
 @import "tailwindcss";
+
 
 @plugin 'tailwindcss-animate';
 
@@ -264,7 +266,80 @@
     /* Hides scrollbar for Firefox */
   }
 
-  /* Removed glass-button styles */
+.font-dm {
+  font-family: "DM Sans", sans-serif;
+}
+}
+.liquid-glass {
+  position: relative;
+  display: flex;
+  font-weight: 600;
+  overflow: hidden;
+  cursor: pointer;
+
+  box-shadow: 0 6px 6px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.1);
+
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+}
+.liquidGlass-effect {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: 55px;
+  backdrop-filter: blur(3px);
+  filter: url(#glass-distortion);
+  overflow: hidden;
+  isolation: isolate;
+}
+.liquidGlass-tint {
+  z-index: 1;
+    border-radius: 55px;
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 1, 31, 0.308);
+}
+
+.liquidGlass-shine {
+  position: absolute;
+  inset: 0;
+  border-radius: 55px;
+  z-index: 2;
+  overflow: visible; /* allow corners to show */
+    border-top: 0.5px solid rgba(255, 255, 255, 0.5); /* very light top border */
+  border-bottom: 0.1px solid rgba(255, 255, 255, 0.3);
+}
 
 
+.liquidGlass-shine::before {
+  content: "";
+  position: absolute;
+  top: -2px;   
+  left: -2px;
+  width: 26px;   
+  height: 55px;
+  border-top: 2px solid rgba(255,255,255,0.3);
+  border-left: 2px solid rgba(255,255,255,0.3);
+  border-radius: 55px 0 0 0; 
+}
+
+
+.liquidGlass-shine::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 26px;
+  height: 55px;
+  border-bottom: 1.5px solid rgba(255,255,255,0.3);
+  border-right: 2px solid rgba(255,255,255,0.3);
+  border-radius: 0 0 55px 0;
+}
+
+
+
+.liquidGlass-text {
+  z-index: 3;
+  font-size: 2rem;
+  font-family: "DM Sans", sans-serif;
+  color: white;
 }
