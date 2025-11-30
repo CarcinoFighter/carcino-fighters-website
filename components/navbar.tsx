@@ -63,7 +63,17 @@ export function Navbar() {
     <div className="">
       {/* Navbar */}
       <div className="flex-row px-auto py-4 fixed w-full justify-center lg:px-14 md:px-10 px-6 top-0 z-30 hidden items-center sm:flex">
-        <NavigationMenu className="w-full flex flex-row px-10 py-1 backdrop-blur-sm inset-shadow-[0_0_9px_2px] inset-shadow-foreground/20 items-center justify-between border border-foreground/30 bg/foreground/20 rounded-full">
+<NavigationMenu
+  className={cn(
+    "w-full flex flex-row px-10 py-1 rounded-full items-center justify-between relative z-10 font-['DM_Sans'] tracking-[-0.02em]",
+    "overflow-hidden relative isolation-isolate",
+    "liquid-glass !shadow-none"
+  )}
+><div className="liquidGlass-effect"></div>
+        <div className="liquidGlass-tint"></div>
+        <div className="liquidGlass-shine"></div>
+        <div className="liquidGlass-text"></div>
+
           <NavigationMenuList className="gap-[50px] relative">
             <NavigationMenuItem>
               <Image src={"/logo.png"} alt={"logo"} width={30} height={30} className="rounded-full object-cover" />
@@ -71,6 +81,7 @@ export function Navbar() {
             {/* Tab links with animated pill indicator */}
             {tabs.map(tab => (
               <NavigationMenuItem key={tab.label} className="relative hover:cursor-pointer">
+                
                 <NavigationMenuLink
                   onClick={() => router.push(tab.href)}
                   className={navigationMenuTriggerStyle() + (selectedTab === tab.label ? "transition-colors text-white font-bold" : "")}
@@ -80,8 +91,12 @@ export function Navbar() {
                     <motion.span
                       layoutId="pill-tab"
                       transition={{ type: "spring", duration: 0.5 }}
-                      className="absolute inset-0 z-0 border-foreground/30 border bg-foreground/10 inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 rounded-full"
-                    ></motion.span>
+  className="absolute isolation-isolate inset-0 z-0 rounded-full
+             bg-gradient-to-br from-[#B372FF] to-[#9875C1]/30"
+                    > <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+                      <div className="liquidGlass-effect"></div>
+        <div className="liquidGlass-tint"></div>
+        <div className="liquidGlass-shine  relative w-[105.8%] h-[102.7%] !top-[-1px] !left-[-1.5px]"></div></div></motion.span>
                   )}
                 </NavigationMenuLink>
               </NavigationMenuItem>
@@ -126,7 +141,7 @@ export function Navbar() {
                 className="object-cover h-full"
               />
             </div>
-            <div className="text-foreground font-cinzel text-lg">Carcino <br /> Foundation</div>
+            <div className="text-foreground font-DM Sans text-lg">Carcino <br /> Foundation</div>
           </div>
           <div className="bg-accent px-5 w-full h-[1px] mb-5"></div>
           <nav className="flex flex-col gap-10 w-full h-full font-giest text-xl">
