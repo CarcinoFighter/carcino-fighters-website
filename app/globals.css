@@ -304,8 +304,10 @@
   inset: 0;
   border-radius: 55px;
   z-index: 2;
+  background: #ffffff;
+background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(224, 224, 224, 0.001) 5%, rgba(196, 189, 189, 0.1) 100%);
   overflow: visible; /* allow corners to show */
-    border-top: 0.5px solid rgba(255, 255, 255, 0.5); /* very light top border */
+    border-top: 0.5px solid rgba(255, 255, 255, 0.4); /* very light top border */
   border-bottom: 0.1px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -313,14 +315,23 @@
 .liquidGlass-shine::before {
   content: "";
   position: absolute;
-  top: -2px;   
+  top: -2px;
   left: -2px;
-  width: 26px;   
+  width: 26px;
   height: 55px;
-  border-top: 2px solid rgba(255,255,255,0.3);
-  border-left: 2px solid rgba(255,255,255,0.3);
-  border-radius: 55px 0 0 0; 
+  border-top: 2px solid white;
+  border-left: 2px solid white;
+  border-radius: 55px 0 0 0;
+
+  /* fade to right */
+  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0.9), rgba(0,0,0,0));
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-image: linear-gradient(to right, rgba(0,0,0,0.9), rgba(0,0,0,0));
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
 }
+
 
 
 .liquidGlass-shine::after {
@@ -330,10 +341,19 @@
   right: -2px;
   width: 26px;
   height: 55px;
-  border-bottom: 1.5px solid rgba(255,255,255,0.3);
-  border-right: 2px solid rgba(255,255,255,0.3);
+  border-bottom: 1.5px solid white;
+  border-right: 2px solid white;
   border-radius: 0 0 55px 0;
+
+  /* fade out towards left/up */
+  -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,0.9), rgba(0,0,0,0));
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-image: linear-gradient(to left, rgba(0,0,0,0.9), rgba(0,0,0,0));
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
 }
+
 
 
 
