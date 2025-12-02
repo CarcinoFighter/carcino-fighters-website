@@ -255,7 +255,7 @@ export default function Home() {
             >
 <Button
   variant="ghost"
-  className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm border border-foreground/30 bg-foreground/10 inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 font-giest font-medium hover:scale-[105%] transition-all duration-300"
+  className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-giest font-medium hover:scale-[105%] transition-all duration-300"
 >
   <Link href="/article" className="relative z-10 flex items-center gap-2">
     Read Our Documents <ArrowUpRight className="transition-transform" />
@@ -264,7 +264,7 @@ export default function Home() {
   {/* Liquid glass layers */}
   <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
   <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
-  <div className="absolute inset-0 liquidGlass-shine pointer-events-none"></div>
+  <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
   <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
 </Button>
 
@@ -406,16 +406,16 @@ export default function Home() {
           >
 <Button
   variant="ghost"
-  className="relative px-5 py-3 rounded-full overflow-hidden backdrop-blur-sm border border-foreground/30 bg-foreground/10 inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
+  className="relative px-5 py-3 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
 >
   <Link href="/article" className="relative z-10 flex items-center gap-2">
-    Read More Insights <ArrowUpRight className="transition-transform" />
+    Read More Insights <ArrowUpRight className="transition-transform border-none" />
   </Link>
 
   {/* Liquid glass layers */}
   <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
   <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
-  <div className="absolute inset-0 liquidGlass-shine pointer-events-none"></div>
+   <div className="liquidGlass-shine  relative w-[102.5%] h-[100%] !top-[-0.1px] !left-[-2.3px]"></div>
   <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
 </Button>
 
@@ -592,7 +592,7 @@ export default function Home() {
     {/* Liquid glass layers */}
     <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
     <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
-    <div className="absolute inset-0 liquidGlass-shine pointer-events-none"></div>
+    <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[-0.1px] !left-[-0.5px]"></div>
     <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
 
     {/* Content */}
@@ -608,28 +608,28 @@ export default function Home() {
         {/* Writing Team Button */}
         <Button
           variant="ghost"
-          className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm border border-foreground/30 bg-foreground/10 inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
+          className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
         >
           <Link href="/internship/writer" className="relative z-10 flex items-center gap-2">
             Writing Team <ArrowUpRight className="transition-transform" />
           </Link>
           <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
           <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
-          <div className="absolute inset-0 liquidGlass-shine pointer-events-none"></div>
+          <div className="liquidGlass-shine  relative w-[101%] h-[100%] !top-[0px] !left-[-1px]"></div>
           <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
         </Button>
 
         {/* Dev / Design Button */}
         <Button
           variant="ghost"
-          className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm border border-foreground/30 bg-foreground/10 inset-shadow-[0_0_15px_6px] inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
+          className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
         >
           <Link href="/internship/tech" className="relative z-10 flex items-center gap-2">
             Dev / Design <ArrowUpRight className="transition-transform" />
           </Link>
           <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
           <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
-          <div className="absolute inset-0 liquidGlass-shine pointer-events-none"></div>
+          <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
           <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
         </Button>
       </div>
