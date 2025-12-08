@@ -21,91 +21,47 @@ interface ArticlePageClientProps {
 
 export function ArticlePageClient({ article, moreArticles }: ArticlePageClientProps) {
   const [readmore, setReadmore] = useState(false);
-  const stickyRef = useRef<HTMLDivElement | null>(null);
   const firstCardRef = useRef<HTMLDivElement | null>(null);
   const [visibleCount, setVisibleCount] = useState(Math.min(3, moreArticles.length));
   const authorLabel = article.author ?? "Unknown Author";
   const positionLabel = article.position ?? "";
 
-  useEffect(() => {
-    if (!stickyRef.current) {
-      return;
-    }
-
-    const measure = () => {
-      const container = stickyRef.current;
-      if (!container) {
-        return;
-      }
-
-      if (!firstCardRef.current) {
-        setVisibleCount(Math.min(3, moreArticles.length));
-        return;
-      }
-
-      const cardRect = firstCardRef.current.getBoundingClientRect();
-      const cardHeight = cardRect.height || 0;
-      const style = window.getComputedStyle(container);
-      const gapStr = style.columnGap || style.gap || "0px";
-      const gap = parseFloat(gapStr) || 0;
-      const count = cardHeight > 0 ? Math.floor(container.clientHeight / (cardHeight + gap)) : 0;
-      const bounded = Math.max(0, Math.min(3, count));
-      const fallback = moreArticles.length > 0 ? 1 : 0;
-      setVisibleCount(Math.min(moreArticles.length, bounded > 0 ? bounded : fallback));
-    };
-
-    const raf = requestAnimationFrame(measure);
-    const resizeObserver = new ResizeObserver(measure);
-    resizeObserver.observe(stickyRef.current);
-    window.addEventListener("resize", measure);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      resizeObserver.disconnect();
-      window.removeEventListener("resize", measure);
-    };
-  }, [moreArticles]);
-
   return (
     <div>
-      <div className="w-screen px-5 sm:px-20 sm:pt-[80px] relative gap-6 sm:flex-row bg-background font-giest min-h-screen">
+      <div className="w-screen px-5 sm:px-20 sm:pt-[80px] relative gap-6 bg-background font-giest min-h-screen">
         <ScrollProgress className="hidden md:block" />
         <div className="relative pt-10 flex flex-col justify-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="w-full flex gap-5 flex-col sm:flex-row justify-between items-center"
+            className="w-full flex gap-5 flex-col sm:flex-row justify-center items-center"
           >
             <div className="sm:hidden">
               <Image src={`/logo.png`} alt="Logo" width={54} height={54} />
             </div>
+
             <div className="max-w-4xl sm:px-6">
-              <h1 className="text-6xl/25 text-center sm:text-left sm:text-7xl/30 font-wintersolace sm:font-bold text-foreground">
+              <h1
+                className="text-6xl/25 text-center sm:text-7xl/16 font-wintersolace sm:font-[700] bg-gradient-to-r
+    from-[#70429b] from-8%
+    to-[#dfcbf0] to-60%
+    bg-clip-text text-transparent
+    py-4">
                 {article.title}
               </h1>
-            </div>
-            <div className="flex max-sm:w-full flex-row gap-7 items-center sm:pr-15">
-              <div className="flex max-sm:text-xs max-sm:w-full flex-row items-center justify-center sm:flex-col sm:items-end gap-3 sm:gap-1">
-                <span>{authorLabel}</span>
+
+              <div className="flex flex-row items-center justify-center gap-2 text-center py-10 font-inter">
+                <span className="text-sm max-sm:text-xs ">{authorLabel}</span>
                 {positionLabel && (
                   <>
-                    <br className="max-sm:hidden" />
-                    <span className="sm:hidden">|</span>
-                    <span className="sm:text-xs text-foreground/50">{positionLabel}</span>
+                    <span className="text-sm max-sm:text-xs text-foreground/50">|</span>
+                    <span className="text-sm max-sm:text-xs text-foreground/50">
+                      {positionLabel}
+                    </span>
                   </>
                 )}
               </div>
-              <Avatar className="max-sm:hidden scale-140">
-                <AvatarImage
-                  src={article.profilePicture || "/dummy_image1.png"}
-                  onError={(e) => {
-                    console.warn("Hero avatar failed", article?.id, article?.profilePicture);
-                    console.warn(e);
-                  }}
-                />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
             </div>
           </motion.div>
 
@@ -113,13 +69,12 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
             initial={false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="flex flex-col sm:flex-row w-full pr-3 pl-3 sm:px-6 pt-12 transition-all duration-300"
+            className="flex flex-col w-full px-3 pt-12"
           >
-            <div className="relative">
+            <div className="relative max-w-4xl mx-auto ">
               <article
-                className={`prose relative max-w-4xl prose-lg dark:prose-invert prose-headings:font-giest prose-p:font-giest prose-a:text-primary hover:prose-a:text-primary/80 prose-pre:bg-muted prose-pre:text-muted-foreground ${
-                  readmore ? "" : "max-h-[60vh] overflow-hidden"
-                }`}
+                className={`prose relative max-w-4xl prose-lg dark:prose-invert
+                  ${readmore ? "" : "max-h-[60vh] overflow-hidden "}`}
               >
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
@@ -161,56 +116,81 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                 >
                   {article.content}
                 </ReactMarkdown>
-                <div
-                  className={`absolute bottom-0 left-0 right-0 h-[80%] bg-gradient-to-t from-background to-transparent${
-                    readmore ? " hidden" : ""
-                  }`}
-                ></div>
+
+                <div className={`absolute bottom-0 left-0 right-0 h-[80%]
+                  bg-gradient-to-t from-background to-transparent
+                  ${readmore ? "hidden" : ""}`} />
               </article>
+
               <Button
                 variant="secondary"
                 aria-expanded={readmore}
                 onClick={() => setReadmore((s) => !s)}
-                className={`mx-auto z-10 w-fit my-10 rounded-full bg-primary/44 backdrop-blur-xs cursor-pointer hover:!bg-primary/44 focus:!bg-primary/44 active:!bg-primary/44 transition-none flex items-center gap-2`}
+                className="mx-auto w-fit my-10 rounded-full bg-primary/44 backdrop-blur-xs flex justify-center"
               >
                 {readmore ? "Show less" : "Read more"}
                 <ArrowDown className={`transition-transform ${readmore ? "rotate-180" : ""}`} />
               </Button>
             </div>
 
-            <div
-              ref={stickyRef}
-              className="sm:ml-auto z-20 flex flex-col gap-4 self-center sm:self-start items-center sticky top-[80px] h-fit max-h-[calc(100vh-169px)]"
-            >
-              <div className="flex flex-col gap-4">
-                <h2 className="text-center font-geist font-thin text-sm tracking-wide">More Articles</h2>
-                {moreArticles.slice(0, visibleCount).map((a, idx) => (
-                  <Link key={a.id} href={a.slug ? `/article/${a.slug}` : `/article/${a.id}`} className="text-primary flex items-center gap-1 text-sm">
-                    <div ref={idx === 0 ? firstCardRef : undefined} className="w-full">
-                      <CardContainer className="w-full px-4 overflow-hidden">
-                        <CardBody className="relative group/card bg-background border-accent w-full h-auto rounded-[55px] p-[30px] px-[45px] border">
-                          <div className="flex flex-col gap-4 h-full justify-between">
-                            <CardItem translateZ="20" className="flex flex-col gap-2 h-full items-center">
-                              <div className="text-primary  bg-primary/10 px-2 rounded border-primary border/20 w-fit mb-2 text-xs font-medium">
-                                Research Article
-                              </div>
-                              <h3 className="text-lg font-giest text-foreground mb-1 line-clamp-2">{a.title}</h3>
-                              <div className="flex items-center gap-2 mb-2">
-                                <p className="text-muted-foreground text-sm line-clamp-3">Authored by {a.author ?? "Unknown Author"}</p>
-                              </div>
-                              <div className="text-primary flex items-center gap-1 text-sm hover:underline">
-                                Read it
-                                <ArrowUpRight size={14} />
-                              </div>
-                            </CardItem>
+            {/* AUTHOR SECTION */}
+            <div className="flex flex-col gap-6 mt-20 items-center">
+<h2 className="text-3xl font-instrumentserifitalic bg-gradient-to-r
+  from-[#b793d8] from-8%
+  to-[#ffffff] to-60%
+  bg-clip-text text-transparent">
+  About the Author
+</h2>
+
+
+              <Avatar className="w-20 h-20">
+                <AvatarImage src={article.profilePicture || "/dummy_image1.png"} />
+                <AvatarFallback>CN</AvatarFallback>
+              </Avatar>
+
+              <div className="text-center max-w-md flex flex-col gap-2">
+                <h3 className="text-lg font-semibold">{authorLabel}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {/*article.authorBio ||*/ "This author didn't provide a bio yet 😄"}
+                </p>
+              </div>
+            </div>
+
+            {/* MORE ARTICLES (NOW BELOW & VERTICAL ALWAYS) */}
+            <div className="flex flex-col gap-6 mt-20">
+              <h2 className="text-xl font-semibold text-center">More Articles</h2>
+
+              <div className="flex flex-col gap-4 w-full items-center">
+                {moreArticles.map((a, idx) => (
+                  <Link
+                    key={a.id}
+                    href={a.slug ? `/article/${a.slug}` : `/article/${a.id}`}
+                    className="w-full max-w-lg"
+                  >
+                    <CardContainer className="w-full px-4">
+                      <CardBody className="bg-background border rounded-[35px] p-6">
+                        <CardItem translateZ="20" className="flex flex-col gap-2 items-center">
+                          <div className="text-primary bg-primary/10 px-2 rounded border-primary border/20 text-xs font-medium">
+                            Research Article
                           </div>
-                        </CardBody>
-                      </CardContainer>
-                    </div>
+
+                          <h3 className="text-lg text-center line-clamp-2">{a.title}</h3>
+
+                          <p className="text-muted-foreground text-sm text-center">
+                            Authored by {a.author ?? "Unknown Author"}
+                          </p>
+
+                          <div className="text-primary flex items-center gap-1 text-sm hover:underline">
+                            Read it <ArrowUpRight size={14} />
+                          </div>
+                        </CardItem>
+                      </CardBody>
+                    </CardContainer>
                   </Link>
                 ))}
               </div>
             </div>
+
           </motion.div>
         </div>
       </div>

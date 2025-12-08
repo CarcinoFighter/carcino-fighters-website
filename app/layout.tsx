@@ -75,7 +75,26 @@ const cinzel = Cinzel({
   variable: "--font-cinzel",
   subsets: ["latin"],
 });
-
+const inter= localFont({
+  src: [
+    {
+      path: "../public/fonts/inter.ttf",
+      weight: '400',
+      style: "normal",
+    }
+  ],
+  variable: "--font-inter",
+})
+const instrumentserifitalic = localFont({
+  src: [
+    {
+      path: "../public/fonts/instrumentserifitalic.ttf",
+      weight: "400",
+      style: "italic",  // ✅ fix this
+    },
+  ],
+  variable: "--font-instrumentserifitalic",
+});
 
 export const metadata: Metadata = {
   title: "The Carcino Foundation – Breaking Down Cancer for Anyone and Everyone",
@@ -91,7 +110,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} ${michroma.variable} ${panchang.variable} ${wintersolace.variable} antialiased hide-scrollbar`}>
+        className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} ${michroma.variable} ${panchang.variable} ${wintersolace.variable} ${inter.variable} 
+        ${instrumentserifitalic.variable} antialiased hide-scrollbar`}>
     
         <ThemeProvider
         
