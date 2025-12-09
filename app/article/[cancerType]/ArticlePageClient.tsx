@@ -134,62 +134,79 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
             </div>
 
             {/* AUTHOR SECTION */}
-            <div className="flex flex-col gap-6 mt-20 items-center">
+            <div className="flex flex-col gap-10 mt-20 items-center ">
 <h2 className="text-3xl font-instrumentserifitalic bg-gradient-to-r
   from-[#b793d8] from-8%
   to-[#ffffff] to-60%
-  bg-clip-text text-transparent">
+  bg-clip-text text-transparent ">
   About the Author
 </h2>
+<div className="relative text-left flex flex-row gap-6  p-5 rounded-[55px] overflow-hidden">
 
 
-              <Avatar className="w-20 h-20">
-                <AvatarImage src={article.profilePicture || "/dummy_image1.png"} />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
+  <div className=" liquidGlass-effect pointer-events-none z-0  "></div>
+  <div className=" liquidGlass-tint pointer-events-none z-0 "></div>
+  <div className=" liquidGlass-shine pointer-events-none z-0 "></div>
 
-              <div className="text-center max-w-md flex flex-col gap-2">
-                <h3 className="text-lg font-semibold">{authorLabel}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {/*article.authorBio ||*/ "This author didn't provide a bio yet 😄"}
-                </p>
-              </div>
+
+  <Avatar className="w-20 h-20 relative z-10">
+    <AvatarImage src={article.profilePicture || "/dummy_image1.png"} />
+    <AvatarFallback>NC</AvatarFallback>
+  </Avatar>
+
+  <div className="text-left max-w-[500px] flex flex-col gap-0 relative z-10">
+    <h3 className="text-[26px] uppercase font-tttravelsnext font-bold">{authorLabel}</h3>
+    <p className="uppercase text-[13px] text-[#C1C1C1]">{positionLabel}</p>
+  </div>
+
+  <p className="text-sm text-[#CDA8E8] p-5 relative z-10">
+    Ex sapien vitae pellentesque sem placerat in id. Bibendum egestas iaculis massa nisl malesuada lacinia integer. Natoque penatibus et magnis dis parturient montes nascetur. Mauris pharetra vestibulum fusce dictum risus blandit quis.
+  </p>
+</div>
+
             </div>
 
-            {/* MORE ARTICLES (NOW BELOW & VERTICAL ALWAYS) */}
-            <div className="flex flex-col gap-6 mt-20">
-              <h2 className="text-xl font-semibold text-center">More Articles</h2>
 
-              <div className="flex flex-col gap-4 w-full items-center">
-                {moreArticles.map((a, idx) => (
-                  <Link
-                    key={a.id}
-                    href={a.slug ? `/article/${a.slug}` : `/article/${a.id}`}
-                    className="w-full max-w-lg"
-                  >
-                    <CardContainer className="w-full px-4">
-                      <CardBody className="bg-background border rounded-[35px] p-6">
-                        <CardItem translateZ="20" className="flex flex-col gap-2 items-center">
-                          <div className="text-primary bg-primary/10 px-2 rounded border-primary border/20 text-xs font-medium">
-                            Research Article
-                          </div>
+            <div className="flex flex-col gap-8 mt-25 items-center">
+              <h2 className="text-3xl font-instrumentserifitalic bg-gradient-to-r
+  from-[#b793d8] from-8%
+  to-[#ffffff] to-60%
+  bg-clip-text text-transparent">Suggested Articles</h2>
 
-                          <h3 className="text-lg text-center line-clamp-2">{a.title}</h3>
-
-                          <p className="text-muted-foreground text-sm text-center">
-                            Authored by {a.author ?? "Unknown Author"}
-                          </p>
-
-                          <div className="text-primary flex items-center gap-1 text-sm hover:underline">
-                            Read it <ArrowUpRight size={14} />
-                          </div>
-                        </CardItem>
-                      </CardBody>
-                    </CardContainer>
-                  </Link>
-                ))}
-              </div>
+ <div className="flex flex-row gap-4 items-center">
+  {moreArticles.map((a, idx) => (
+    <Link
+      key={a.id}
+      href={a.slug ? `/article/${a.slug}` : `/article/${a.id}`}
+      className="w-full max-w-lg"
+    >
+      <CardContainer className="w-full px-4 ">
+        <CardBody className="relative group/card bg-background/20 border-accent w-full h-full p-5 border flex flex-col justify-center min-h-[260px] overflow-hidden">
+          <CardItem translateZ="20" className="relative z-10 flex flex-col gap-2 items-center rounded-[55px] overflow-hidden">
+            <div className=" lowercase  text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] overflow-hidden">
+              Research Article
             </div>
+
+            <h3 className="text-[36px] uppercase text-center line-clamp-7 leading-[30px] p-2 font-tttravelsnext font-bold ">{a.title}</h3>
+
+            <p className="text-[20px] text-center text-[#CDA8E8]">
+               by {a.author ?? "Unknown Author"}
+            </p>
+
+            {/* <div className="text-primary flex items-center gap-1 text-sm hover:underline">
+              Read it <ArrowUpRight size={14} />
+            </div> */}
+          </CardItem>
+
+          <div className="liquidGlass-effect pointer-events-none z-0"></div>
+          <div className=" liquidGlass-tint pointer-events-none z-0"></div>
+          <div className=" liquidGlass-shine pointer-events-none z-0 overflow-hidden"></div>
+        </CardBody>
+      </CardContainer>
+    </Link>
+  ))}
+</div>
+</div>
 
           </motion.div>
         </div>
