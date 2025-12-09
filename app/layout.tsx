@@ -94,8 +94,16 @@ const instrumentserifitalic = localFont({
     },
   ],
   variable: "--font-instrumentserifitalic",
+})
+const tttravelsnext= localFont({
+  src: [
+    {
+      path: "../public/fonts/tttravelsnext.ttf",
+      style: "normal",
+    }
+  ],
+  variable: "--font-tttravelsnext",
 });
-
 export const metadata: Metadata = {
   title: "The Carcino Foundation – Breaking Down Cancer for Anyone and Everyone",
   description: "A simple hub, built to educate and help emerging and concurrent generations upon one of the leading causes of death in humanity.",
@@ -111,7 +119,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} ${michroma.variable} ${panchang.variable} ${wintersolace.variable} ${inter.variable} 
-        ${instrumentserifitalic.variable} antialiased hide-scrollbar`}>
+        ${instrumentserifitalic.variable} ${tttravelsnext.variable} antialiased hide-scrollbar`}>
     
         <ThemeProvider
         
