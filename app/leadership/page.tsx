@@ -1,5 +1,6 @@
 "use client"
 import { easeInOut, motion } from "framer-motion"
+import Image from "next/image";
 import { Label } from "@/components/ui/label"
 import { ArrowUpRight, LoaderCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -33,24 +34,59 @@ const leaders: Leader[] = [
   },
   {
     name: "Agnihotra Nath",
-    title: "Chief Operating Officer",
+    title: "Chief Operating Officer (COO)",
     description:
       "Head of Student Team at Google. Endless passion for cars, and music. Porsche enthusiast with a sick garage full of fast cars. Keen eye for detail and topped off with sweet ADHD.",
-    avatar: "/avatars/agnihotra.png",
+    avatar: "/avatars/agni.png",
   },
   {
     name: "Anjishnu Dey",
-    title: "Chief Technology Officer",
+    title: "Chief Technology Officer (CTO)",
     description:
       "Physicist by soul. Fights bugs, throws hands, hits gym. If it's complex, he's into it. If it's boring, he's out. Obsessed with clean design, clean lifts, and clean wins.",
     avatar: "/avatars/anjishnu.png",
   },
   {
     name: "Soushree Chakraborty",
-    title: "Chief Research Officer",
+    title: "Chief Research Officer (CRO)",
     description:
       "Fueled by curiosity and a love for new things, she dives headfirst into scientific discovery, artistic creation, and adrenaline-pumping adventures. She's the perfect blend of brains, heart, and thrill-seeker!",
-    avatar: "/avatars/soushree.png",
+    avatar: "/avatars/soushree-2.png",
+  },
+    {
+    name: "Jiya Haldar",
+    title: "Chief Editor",
+    description:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    avatar: "/avatars/jiya.png",
+  },
+    {
+    name: "Siran Pramanick",
+    title: "Deputy Chief Editor",
+    description:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    avatar: "/avatars/siran.png",
+  },
+    {
+    name: "Nishka Majumder",
+    title: "Proofreading Manager",
+    description:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    avatar: "/avatars/nishka.png",
+  },
+    {
+    name: "Adiya Roy",
+    title: "Design Manager",
+    description:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    avatar: "/avatars/flower.png",
+  },
+    {
+    name: "Ariona Talukdar",
+    title: "PR Manager",
+    description:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    avatar: "/avatars/ariona.png",
   },
 ]
 
@@ -163,20 +199,20 @@ const toneToColor: Record<BlobSpec["tone"], { inner: string; mid: string }> = {
 
 export default function Leadership() {
   return (
-    <div className="relative min-h-dvh w-full overflow-hidden bg-black text-white font-giest">
-      {/*
-      <div className="fixed inset-0 flex items-center justify-center pointer-events-none -z-10 pt-30 opacity-30 ">
+    <div className="relative min-h-dvh w-full overflow-hidden text-white font-dmsans">
+      
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none -z-10 pt-10 ">
         <Image
-          src={"/leadership_bg.png"}
+          src={"/leadership-bg-new.png"}
           alt="Leadership"
           width={1920}
           height={1080}
           quality={100}
-          className="object-cover min-w-[200%] sm:min-w-[10%] sm:max-w-[70%] overflow-hidden hidden dark:inline animate-door-open animate-rad "
+          className="object-cover min-w-[100%] sm:min-w-[10%] sm:max-w-[70%] overflow-hidden hidden dark:inline animate-door-open animate-rad "
         />
-        <div className="sm:hidden absolute inset-0 bg-[#241836]/80" />
+        {/* <div className="sm:hidden absolute inset-0 bg-[#241836]/80" /> */}
       </div>
-      */}
+     
 
       <div className="pointer-events-none absolute inset-0 z-10">
         {blobSpecs.map((blob, index) => (
@@ -219,28 +255,28 @@ export default function Leadership() {
             whileInView="show"
             viewport={{ once: true, amount: 0.6 }}
           >
-            <MotionLabel
+            {/* <MotionLabel
               variants={fadeUp}
               className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-5 py-2 text-sm font-medium text-white backdrop-blur-sm"
             >
               Meet the Team <ArrowUpRight size={18} />
-            </MotionLabel>
+            </MotionLabel> */}
             <motion.h1
               variants={fadeUp}
-              className="text-3xl font-semibold font-giest sm:text-4xl"
+              className="text-3xl font-semibold mt-4 font-dmsans sm:text-4xl"
             >
               Our Leadership
             </motion.h1>
             <motion.p
               variants={fadeUp}
-              className="text-base leading-relaxed text-zinc-300 sm:text-lg"
+              className="text-base leading-relaxed max-w-[470px] text-zinc-300 sm:text-lg"
             >
-              A collective of builders, writers, researchers, and operators working in sync to make oncology approachable for every learner. Thoughtful strategy meets warm humanity here.
+             Meet the team leading the organisation, who keep both speed and quality at the top of their priorities.
             </motion.p>
           </motion.div>
 
           <motion.div
-            className="grid w-full max-w-6xl grid-cols-1 gap-6 md:grid-cols-2"
+            className="grid w-full grid-cols-1 gap-6 md:grid-cols-3"
             variants={staggerContainer}
             initial="hidden"
             whileInView="show"
@@ -250,13 +286,13 @@ export default function Leadership() {
               <motion.article
                 key={leader.name}
                 variants={cardVariants}
-                className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.06] px-8 py-10 text-white backdrop-blur-[18px] transition-[box-shadow,transform] duration-300"
+                className="group relative overflow-hidden rounded-[55px] p-5 transition-[box-shadow,transform] duration-300"
               >
                 <motion.div
                   aria-hidden
                   className="pointer-events-none absolute -right-24 -top-24 h-48 w-48 rounded-full bg-white/10 blur-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                 />
-                <div className="flex flex-col items-center gap-6 text-center">
+                <div className="relative flex flex-col items-center gap-6 z-20 text-center">
                   <Avatar className="h-20 w-20 border border-white/15">
                     <AvatarImage className="object-cover" src={leader.avatar} />
                     <AvatarFallback className="flex h-full w-full items-center justify-center bg-white/10">
@@ -267,18 +303,19 @@ export default function Leadership() {
                     <h2 className="text-lg font-semibold">
                       {leader.name}
                     </h2>
-                    <p className="text-sm font-medium text-primary">
+                    <p className="text-sm font-[300] color-white">
                       {leader.title}
                     </p>
                   </div>
                   <p className="text-sm leading-relaxed text-zinc-300">
                     {leader.description}
                   </p>
-                </div>
+                </div><div className="divGlass-effect pointer-events-none z-0"></div>
+          <div className=" cardGlass-shine pointer-events-none z-0 overflow-hidden "></div>
               </motion.article>
             ))}
           </motion.div>
-        </div>
+        </div>          
       </div>
   );
 }
