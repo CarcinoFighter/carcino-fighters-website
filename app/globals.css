@@ -348,10 +348,6 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
 }
 
 
-
-
-
-
 .liquidGlass-shine::after {
   content: "";
   position: absolute;
@@ -390,6 +386,116 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
 
 
 .liquidGlass-text {
+  z-index: 3;
+  font-size: 2rem;
+  font-family: "DM Sans", sans-serif;
+  color: white;
+}
+
+
+.divGlass-effect {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: 55px;
+  backdrop-filter: blur(3px);
+  filter: url(#glass-distortion);
+  overflow: hidden;
+  isolation: isolate;
+}
+.divGlass-tint {
+  z-index: 1;
+    border-radius: 55px;
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 1, 31, 0.308);
+}
+
+.divGlass-shine {
+  position: absolute;
+  inset: 0;
+  border-radius: 55px;
+  z-index: 2;
+box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
+
+
+    border-top: 0.7px solid rgba(255, 255, 255, 0.356);
+  border-bottom: 0.1px solid rgba(255, 255, 255, 0.3);
+}
+
+
+.divGlass-shine::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  width: 39px;
+  height: 105px;
+
+  border-radius: 40px 0 0 0;
+  border-top: 1.2px solid #fff;
+  border-left: 2px solid #fff;
+
+  /* shadow from top-left corner */
+  box-shadow: inset 0.1px 0.1px 2.5px rgba(255, 255, 255, 1);
+
+  /* fade stops inward from top-left */
+  mask-image: radial-gradient(
+    farthest-corner at top left,
+    rgba(0,0,0,1) 5px,
+    rgba(0,0,0,1) 4px,
+    rgba(0,0,0,0) 20px
+  );
+  -webkit-mask-image: radial-gradient(
+    farthest-corner at top left,
+    rgba(0,0,0,1) 5px,
+    rgba(0,0,0,1) 4px,
+    rgba(0,0,0,0) 20px
+  );
+
+  /* clip so it doesn’t bleed beyond edge */
+  clip-path: inset(0 5px 0 0 round 40px 0 0 0);
+}
+
+
+.divGlass-shine::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 26px;
+  height: 55px;
+
+  border-bottom: 1.5px solid #fff;
+  border-right: 1.5px solid #fff;
+  border-radius: 0 0 55px 0;
+
+  /* shadow from bottom-right corner */
+  box-shadow: inset -0.1px -0.1px 2.5px rgba(255, 255, 255, 1);
+
+  /* fade stops inward from bottom-right */
+  mask-image: radial-gradient(
+    farthest-corner at bottom right,
+    rgba(0,0,0,1) 0px,
+    rgba(0,0,0,1) 4px,
+    rgba(0,0,0,0) 20px
+  );
+  -webkit-mask-image: radial-gradient(
+    farthest-corner at bottom right,
+    rgba(0,0,0,1) 0px,
+    rgba(0,0,0,1) 4px,
+    rgba(0,0,0,0) 20px
+  );
+
+  /* clip to prevent bleed */
+  clip-path: inset(0 0 0 5px round 0 0 55px 0);
+}
+
+
+
+
+
+.divGlass-text {
   z-index: 3;
   font-size: 2rem;
   font-family: "DM Sans", sans-serif;

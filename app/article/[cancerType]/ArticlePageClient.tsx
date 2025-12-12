@@ -144,9 +144,9 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
 <div className="relative text-left flex flex-row gap-6  p-5 rounded-[55px] overflow-hidden">
 
 
-  <div className=" liquidGlass-effect pointer-events-none z-0  "></div>
-  <div className=" liquidGlass-tint pointer-events-none z-0 "></div>
-  <div className=" liquidGlass-shine pointer-events-none z-0 "></div>
+  <div className=" divGlass-effect pointer-events-none z-0  "></div>
+  <div className=" divGlass-tint pointer-events-none z-0 "></div>
+  <div className=" divGlass-shine pointer-events-none z-0 relative "></div>
 
 
   <Avatar className="w-20 h-20 relative z-10">
@@ -159,7 +159,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
     <p className="uppercase text-[13px] text-[#C1C1C1]">{positionLabel}</p>
   </div>
 
-  <p className="text-sm text-[#CDA8E8] p-5 relative z-10">
+  <p className="text-sm text-[#CDA8E8] p-5 relative z-10 ">
     Ex sapien vitae pellentesque sem placerat in id. Bibendum egestas iaculis massa nisl malesuada lacinia integer. Natoque penatibus et magnis dis parturient montes nascetur. Mauris pharetra vestibulum fusce dictum risus blandit quis.
   </p>
 </div>
