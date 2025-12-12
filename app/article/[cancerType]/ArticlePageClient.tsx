@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type ImgHTMLAttributes } from "react";
+import { useRef, useState, type ImgHTMLAttributes } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowDown, ArrowUpRight } from "lucide-react";
+import { ArrowDown} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,8 +21,7 @@ interface ArticlePageClientProps {
 
 export function ArticlePageClient({ article, moreArticles }: ArticlePageClientProps) {
   const [readmore, setReadmore] = useState(false);
-  const firstCardRef = useRef<HTMLDivElement | null>(null);
-  const [visibleCount, setVisibleCount] = useState(Math.min(3, moreArticles.length));
+  // const firstCardRef = useRef<HTMLDivElement | null>(null);
   const authorLabel = article.author ?? "Unknown Author";
   const positionLabel = article.position ?? "";
 
@@ -174,7 +173,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   bg-clip-text text-transparent">Suggested Articles</h2>
 
  <div className="flex flex-row gap-4 items-center">
-  {moreArticles.map((a, idx) => (
+  {moreArticles.map((a) => (
     <Link
       key={a.id}
       href={a.slug ? `/article/${a.slug}` : `/article/${a.id}`}
