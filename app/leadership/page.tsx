@@ -199,7 +199,7 @@ const toneToColor: Record<BlobSpec["tone"], { inner: string; mid: string }> = {
 
 export default function Leadership() {
   return (
-    <div className="relative min-h-dvh w-full overflow-hidden text-white font-dmsans">
+    <div className="relative min-h-dvh w-full  overflow-hidden text-white font-dmsans">
       
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none -z-10 pt-10 ">
         <Image
@@ -247,7 +247,7 @@ export default function Leadership() {
         ))}
       </div>
 
-      <div className="relative z-10 flex flex-col items-center gap-14 px-6 pb-20 pt-32 sm:px-10 lg:px-20">
+      <div className="relative z-10 mx-[150px]  flex flex-col items-center gap-14 px-6 pb-20 pt-32 sm:px-10 lg:px-20">
           <motion.div
             className="flex flex-col items-center gap-6 text-center max-w-2xl"
             variants={staggerContainer}
@@ -276,7 +276,7 @@ export default function Leadership() {
           </motion.div>
 
           <motion.div
-            className="grid w-full grid-cols-1 gap-6 md:grid-cols-3"
+            className="grid w-full  gap-6 md:grid-cols-3"
             variants={staggerContainer}
             initial="hidden"
             whileInView="show"
@@ -292,22 +292,22 @@ export default function Leadership() {
                   aria-hidden
                   className="pointer-events-none absolute -right-24 -top-24 h-48 w-48 rounded-full bg-white/10 blur-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                 />
-                <div className="relative flex flex-col items-center gap-6 z-20 text-center">
-                  <Avatar className="h-20 w-20 border border-white/15">
+                <div className="relative flex flex-col items-center gap-3 z-20 text-center">
+                  <Avatar className="h-30 w-30 border border-white/15">
                     <AvatarImage className="object-cover" src={leader.avatar} />
                     <AvatarFallback className="flex h-full w-full items-center justify-center bg-white/10">
                       <LoaderCircle size={18} className="animate-spin text-white/50" />
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex flex-col items-center gap-1">
+                  <div className="flex flex-col items-center gap-1 leading-1">
                     <h2 className="text-lg font-semibold">
                       {leader.name}
                     </h2>
-                    <p className="text-sm font-[300] color-white">
+                    <p className="text-sm font-[300] color-white leading-1">
                       {leader.title}
                     </p>
                   </div>
-                  <p className="text-sm leading-relaxed text-zinc-300">
+                  <p className="text-sm leading-relaxed p-6 text-white gap-4 font-dmsans font-light">
                     {leader.description}
                   </p>
                 </div><div className="divGlass-effect pointer-events-none z-0"></div>
