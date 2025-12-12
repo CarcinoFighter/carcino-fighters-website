@@ -103,6 +103,15 @@ const tttravelsnext= localFont({
     }
   ],
   variable: "--font-tttravelsnext",
+})
+const dmsans= localFont({
+  src: [
+    {
+      path: "../public/fonts/dmsans.ttf",
+      style: "normal",
+    }
+  ],
+  variable: "--font-dmsans",
 });
 export const metadata: Metadata = {
   title: "The Carcino Foundation – Breaking Down Cancer for Anyone and Everyone",
@@ -119,7 +128,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} ${michroma.variable} ${panchang.variable} ${wintersolace.variable} ${inter.variable} 
-        ${instrumentserifitalic.variable} ${tttravelsnext.variable} antialiased hide-scrollbar`}>
+        ${instrumentserifitalic.variable} ${tttravelsnext.variable} ${dmsans.variable} antialiased hide-scrollbar`}>
     
         <ThemeProvider
         
