@@ -146,7 +146,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
 
   <div className=" divGlass-effect pointer-events-none z-0  "></div>
   <div className=" divGlass-tint pointer-events-none z-0 "></div>
-  <div className=" divGlass-shine pointer-events-none z-0 relative "></div>
+  <div className=" divGlass-shine pointer-events-none z-0 relative opacity-70"></div>
 
 
   <Avatar className="w-20 h-20 relative z-10">
@@ -154,12 +154,12 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
     <AvatarFallback>NC</AvatarFallback>
   </Avatar>
 
-  <div className="text-left max-w-[500px] flex flex-col gap-0 relative z-10">
-    <h3 className="text-[26px] uppercase font-tttravelsnext font-bold">{authorLabel}</h3>
-    <p className="uppercase text-[13px] text-[#C1C1C1]">{positionLabel}</p>
+  <div className="text-left max-w-[500px] flex flex-col gap-0 p-2 relative z-10">
+    <h3 className="text-[26px] uppercase font-tttravelsnext leading-[20px] font-bold">{authorLabel}</h3>
+    <p className="uppercase text-[13px] leading-[30px]  text-[#C1C1C1]">{positionLabel}</p>
   </div>
 
-  <p className="text-sm text-[#CDA8E8] p-5 relative z-10 ">
+  <p className="text-sm text-[#CDA8E8] leading-[15px] p-5 relative z-10 pr-15 ">
     Ex sapien vitae pellentesque sem placerat in id. Bibendum egestas iaculis massa nisl malesuada lacinia integer. Natoque penatibus et magnis dis parturient montes nascetur. Mauris pharetra vestibulum fusce dictum risus blandit quis.
   </p>
 </div>
@@ -198,9 +198,9 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
             </div> */}
           </CardItem>
 
-          <div className="liquidGlass-effect pointer-events-none z-0"></div>
-          <div className=" liquidGlass-tint pointer-events-none z-0"></div>
-          <div className=" liquidGlass-shine pointer-events-none z-0 overflow-hidden"></div>
+          <div className="divGlass-effect pointer-events-none z-0"></div>
+          <div className=" divGlass-tint pointer-events-none z-0"></div>
+          <div className=" divGlass-shine pointer-events-none z-0 overflow-hidden opacity-70"></div>
         </CardBody>
       </CardContainer>
     </Link>
