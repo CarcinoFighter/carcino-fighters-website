@@ -461,10 +461,10 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
 .divGlass-shine::after {
   content: "";
   position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 26px;
-  height: 55px;
+  bottom: 3px;
+  right: 6px;
+  width: 39px;
+  height: 105px;
 
   border-bottom: 1.5px solid #fff;
   border-right: 1.5px solid #fff;
