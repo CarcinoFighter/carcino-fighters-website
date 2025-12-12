@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ImgHTMLAttributes } from "react";
+import { useState, type ImgHTMLAttributes } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
