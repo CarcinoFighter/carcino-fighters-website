@@ -247,7 +247,7 @@ export default function Leadership() {
         ))}
       </div>
 
-      <div className="relative z-10 mx-[150px]  flex flex-col items-center gap-14 px-6 pb-20 pt-32 sm:px-10 lg:px-20">
+      <div className="relative z-10 flex flex-col items-center gap-14 px-6 pb-20 pt-32 sm:px-10 lg:px-20">
           <motion.div
             className="flex flex-col items-center gap-6 text-center max-w-2xl"
             variants={staggerContainer}
@@ -276,7 +276,13 @@ export default function Leadership() {
           </motion.div>
 
           <motion.div
-            className="grid w-full  gap-6 md:grid-cols-3"
+            className="    grid w-full gap-6
+    sm:max-w-2xl
+    md:max-w-5xl
+    lg:max-w-6xl
+    xl:max-w-7xl
+    md:grid-cols-3
+    mx-auto"
             variants={staggerContainer}
             initial="hidden"
             whileInView="show"
