@@ -65,7 +65,7 @@ export function Navbar() {
       <div className="flex-row px-auto py-4 fixed w-full justify-center lg:px-14 md:px-10 px-6 top-0 z-30 hidden items-center sm:flex">
 <NavigationMenu
   className={cn(
-    "w-full flex flex-row px-10 py-1 rounded-full items-center justify-between relative z-10 font-['DM_Sans'] tracking-[-0.02em]",
+    "w-full flex flex-row px-2 py-1 rounded-full items-center justify-between relative z-10 font-['DM_Sans'] tracking-[-0.02em]",
     "overflow-hidden relative isolation-isolate",
     "liquid-glass !shadow-none"
   )}
