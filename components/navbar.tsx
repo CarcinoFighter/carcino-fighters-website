@@ -62,7 +62,7 @@ export function Navbar() {
   return (
     <div className="">
       {/* Navbar */}
-      <div className="flex-row px-auto py-4 fixed w-full justify-center lg:px-14 md:px-10 px-6 top-0 z-30 hidden items-center sm:flex">
+      <div className="flex-row py-4 fixed w-full justify-center lg:px-14 md:px-10 px-6 top-0 z-30 hidden items-center sm:flex">
 <NavigationMenu
   className={cn(
     "w-full flex flex-row px-2 py-1 rounded-full items-center justify-between relative z-10 font-['DM_Sans'] tracking-[-0.02em]",
@@ -76,7 +76,9 @@ export function Navbar() {
 
           <NavigationMenuList className="gap-[50px] relative">
             <NavigationMenuItem>
-              <Image src={"/logo.png"} alt={"logo"} width={30} height={30} className="rounded-full object-cover" />
+              <div className="pl-4">
+              <Image src={"/logo.svg"} alt={"logo"} width={25} height={25} className=" object-cover" />
+              </div>
             </NavigationMenuItem>
             {/* Tab links with animated pill indicator */}
             {tabs.map(tab => (

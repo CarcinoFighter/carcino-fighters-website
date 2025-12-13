@@ -42,20 +42,26 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
 
             <div className="max-w-4xl sm:px-6">
               <h1
-                className="text-6xl/25 text-center sm:text-7xl/16 font-wintersolace sm:font-[700] bg-gradient-to-r
-    from-[#70429b] from-8%
-    to-[#dfcbf0] to-60%
-    bg-clip-text text-transparent
-    py-4">
+                className="  text-4xl leading-tight
+  sm:text-6xl sm:leading-snug
+  lg:text-7xl lg:leading-[1.1]
+  text-center font-wintersolace font-bold
+  bg-gradient-to-r from-[#70429b] from-8% to-[#dfcbf0] to-60%
+  bg-clip-text text-transparent py-4">
                 {article.title}
               </h1>
 
-              <div className="flex flex-row items-center justify-center gap-2 text-center py-10 font-inter ">
-                <span className="text-sm max-sm:text-xs ">{authorLabel}</span>
+              <div className="
+  flex flex-wrap items-center justify-center
+  gap-1 sm:gap-2
+  py-6 sm:py-10
+  text-center font-inter
+">
+                <span className="text-xs sm:text-sm">{authorLabel}</span>
                 {positionLabel && (
                   <>
-                    <span className="text-sm max-sm:text-xs text-foreground/50">|</span>
-                    <span className="text-sm max-sm:text-xs text-foreground/50">
+                    <span className="text-xs sm:text-sm text-foreground/50">|</span>
+                    <span className="text-xs sm:text-sm text-foreground/50">
                       {positionLabel}
                     </span>
                   </>
@@ -70,10 +76,17 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
             transition={{ duration: 0.6, delay: 0.1 }}
             className="flex flex-col w-full px-3 pt-12"
           >
-            <div className="relative max-w-4xl mx-auto ">
+            <div className="relative max-w-4xl mx-auto px-2 sm:px-0">
               <article
-                className={`prose relative max-w-4xl prose-lg dark:prose-invert
-                  ${readmore ? "" : "max-h-[60vh] overflow-hidden "}`}
+                className={`
+  prose
+  prose-sm sm:prose-base lg:prose-lg
+  relative
+  max-w-full sm:max-w-4xl
+  dark:prose-invert
+  ${readmore ? "" : "max-h-[50vh] sm:max-h-[60vh] overflow-hidden"}
+`}
+
               >
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
@@ -140,7 +153,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   bg-clip-text text-transparent ">
   About the Author
 </h2>
-<div className="relative text-left flex flex-row gap-6  p-5 rounded-[55px] overflow-hidden ">
+<div className="relative text-left flex flex-col sm:flex-row gap-6  p-5 rounded-[55px] overflow-hidden ">
 
 
   <div className=" divGlass-effect pointer-events-none z-0  "></div>
@@ -148,12 +161,12 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   <div className=" divGlass-shine pointer-events-none z-0 relative opacity-70"></div>
 
 
-  <Avatar className="w-20 h-20 relative z-10">
+  <Avatar className="w-20 h-20 relative z-10 mx-auto sm:mx-0">
     <AvatarImage src={article.profilePicture || "/dummy_image1.png"} />
     <AvatarFallback>NC</AvatarFallback>
   </Avatar>
 
-  <div className="text-left max-w-[500px] flex flex-col gap-0 p-2 relative z-10 ">
+ <div className="max-w-[500px] flex flex-col gap-1 p-2 relative z-10 items-center sm:items-start">
     <h3 className="text-[26px] uppercase font-tttravelsnext leading-[20px] font-bold">{authorLabel}</h3>
     <p className="uppercase text-[13px] leading-[30px]  text-[#C1C1C1]">{positionLabel}</p>
   </div>
@@ -172,7 +185,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   to-[#ffffff] to-60%
   bg-clip-text text-transparent">Suggested Articles</h2>
 
- <div className="flex flex-row gap-4 items-center">
+ <div className="flex flex-col sm:flex-row gap-4 items-center">
   {moreArticles.map((a) => (
     <Link
       key={a.id}
