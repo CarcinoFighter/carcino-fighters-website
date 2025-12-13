@@ -27,9 +27,9 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
 
   return (
     <div>
-      <div className="w-screen px-5 sm:px-20 sm:pt-[80px] relative gap-6 bg-background font-giest min-h-screen">
+      <div className="w-screen px-5 sm:px-20 sm:pt-[80px] relative gap-6 bg-background font-giest min-h-screen ">
         <ScrollProgress className="hidden md:block" />
-        <div className="relative pt-10 flex flex-col justify-center">
+        <div className="relative pt-10 flex flex-col justify-center ">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -50,7 +50,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                 {article.title}
               </h1>
 
-              <div className="flex flex-row items-center justify-center gap-2 text-center py-10 font-inter">
+              <div className="flex flex-row items-center justify-center gap-2 text-center py-10 font-inter ">
                 <span className="text-sm max-sm:text-xs ">{authorLabel}</span>
                 {positionLabel && (
                   <>
@@ -140,7 +140,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   bg-clip-text text-transparent ">
   About the Author
 </h2>
-<div className="relative text-left flex flex-row gap-6  p-5 rounded-[55px] overflow-hidden">
+<div className="relative text-left flex flex-row gap-6  p-5 rounded-[55px] overflow-hidden ">
 
 
   <div className=" divGlass-effect pointer-events-none z-0  "></div>
@@ -153,7 +153,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
     <AvatarFallback>NC</AvatarFallback>
   </Avatar>
 
-  <div className="text-left max-w-[500px] flex flex-col gap-0 p-2 relative z-10">
+  <div className="text-left max-w-[500px] flex flex-col gap-0 p-2 relative z-10 ">
     <h3 className="text-[26px] uppercase font-tttravelsnext leading-[20px] font-bold">{authorLabel}</h3>
     <p className="uppercase text-[13px] leading-[30px]  text-[#C1C1C1]">{positionLabel}</p>
   </div>
@@ -179,8 +179,8 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
       href={a.slug ? `/article/${a.slug}` : `/article/${a.id}`}
       className="w-full max-w-lg"
     >
-      <CardContainer className="w-full px-4 ">
-        <CardBody className="relative group/card bg-background/20 border-accent w-full h-full p-5 border flex flex-col justify-center min-h-[260px] overflow-hidden">
+      <CardContainer className="w-full px-4 rounded-[55px] ">
+        <CardBody className="relative group/card bg-background/20 border-accent w-full h-full p-5 flex flex-col justify-center min-h-[260px] overflow-hidden">
           <CardItem translateZ="20" className="relative z-10 flex flex-col gap-2 items-center rounded-[55px] overflow-hidden">
             <div className=" lowercase  text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] overflow-hidden">
               Research Article
@@ -198,8 +198,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
           </CardItem>
 
           <div className="divGlass-effect pointer-events-none z-0"></div>
-          <div className=" divGlass-tint pointer-events-none z-0"></div>
-          <div className=" divGlass-shine pointer-events-none z-0 overflow-hidden opacity-70"></div>
+          <div className=" cardGlass-shine pointer-events-none z-0 overflow-hidden"></div>
         </CardBody>
       </CardContainer>
     </Link>
