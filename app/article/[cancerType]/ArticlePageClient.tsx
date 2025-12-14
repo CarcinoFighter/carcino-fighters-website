@@ -27,7 +27,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
 
   return (
     <div>
-      <div className="w-screen px-5 sm:px-20 sm:pt-[80px] relative gap-6 bg-background font-giest min-h-screen ">
+      <div className="w-screen px-5 sm:px-20 sm:pt-[80px] relative gap-6 bg-background font-giest min-h-screen overflow-x-hidden">
         <ScrollProgress className="hidden md:block" />
         <div className="relative pt-10 flex flex-col justify-center ">
           <motion.div
@@ -40,7 +40,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
               <Image src={`/logo.png`} alt="Logo" width={54} height={54} />
             </div>
 
-            <div className="max-w-4xl sm:px-10 sm:overflow-visible">
+            <div className="max-w-4xl sm:px-10 sm:overflow-y-visible overflow-x-hidden">
               <h1
                 className="  text-5xl leading-[0.9]
   sm:text-6xl sm:leading-[0.9]
@@ -76,7 +76,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
             transition={{ duration: 0.6, delay: 0.1 }}
             className="flex flex-col w-full px-3 pt-12"
           >
-            <div className="relative max-w-4xl mx-auto px-2 sm:px-0">
+            <div className="relative max-w-4xl mx-1 px-2 sm:px-0 overflow-hidden">
               <article
                 className={`
   prose
@@ -120,7 +120,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                           width={1200}
                           height={800}
                           sizes="(max-width: 768px) 100vw, 800px"
-                          className="rounded-lg shadow-lg my-8 max-w-full h-auto"
+                          className="rounded-lg shadow-lg my-8 max-w-full overflow-hidden h-auto"
                         />
                       );
                     },
