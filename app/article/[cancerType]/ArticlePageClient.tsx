@@ -40,14 +40,14 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
               <Image src={`/logo.png`} alt="Logo" width={54} height={54} />
             </div>
 
-            <div className="max-w-4xl sm:px-6">
+            <div className="max-w-4xl sm:px-10 sm:overflow-visible">
               <h1
-                className="  text-4xl leading-tight
-  sm:text-6xl sm:leading-snug
-  lg:text-7xl lg:leading-[1.1]
+                className="  text-5xl leading-[0.9]
+  sm:text-6xl sm:leading-[0.9]
+  lg:text-7xl lg:leading-[0.9] whitespace-pre-wrap
   text-center font-wintersolace font-bold
   bg-gradient-to-r from-[#70429b] from-8% to-[#dfcbf0] to-60%
-  bg-clip-text text-transparent py-4">
+  bg-clip-text text-transparent py-4 px-10">
                 {article.title}
               </h1>
 
@@ -147,7 +147,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
 
             {/* AUTHOR SECTION */}
             <div className="flex flex-col gap-10 mt-20 items-center ">
-<h2 className="text-3xl font-instrumentserifitalic bg-gradient-to-r
+<h2 className="sm:text-3xl text-4xl font-instrumentserifitalic bg-gradient-to-r
   from-[#b793d8] from-8%
   to-[#ffffff] to-60%
   bg-clip-text text-transparent ">
@@ -167,11 +167,14 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   </Avatar>
 
  <div className="max-w-[500px] flex flex-col gap-1 p-2 relative z-10 items-center sm:items-start">
-    <h3 className="text-[26px] uppercase font-tttravelsnext leading-[20px] font-bold">{authorLabel}</h3>
+    <h3 className="text-[26px] uppercase font-tttravelsnext leading-[20px] font-bold text-center sm:text-left">
+  {authorLabel}
+</h3>
+
     <p className="uppercase text-[13px] leading-[30px]  text-[#C1C1C1]">{positionLabel}</p>
   </div>
 
-  <p className="text-sm text-[#CDA8E8] leading-[15px] p-5 relative z-10 pr-15 ">
+  <p className="text-sm text-[#CDA8E8] leading-[15px] p-5 relative z-10 sm:pr-15 ">
     Ex sapien vitae pellentesque sem placerat in id. Bibendum egestas iaculis massa nisl malesuada lacinia integer. Natoque penatibus et magnis dis parturient montes nascetur. Mauris pharetra vestibulum fusce dictum risus blandit quis.
   </p>
 </div>
@@ -180,12 +183,14 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
 
 
             <div className="flex flex-col gap-8 mt-25 items-center">
-              <h2 className="text-3xl font-instrumentserifitalic bg-gradient-to-r
+              <h2 className="sm:text-3xl text-4xl font-instrumentserifitalic bg-gradient-to-r
   from-[#b793d8] from-8%
   to-[#ffffff] to-60%
   bg-clip-text text-transparent">Suggested Articles</h2>
 
- <div className="flex flex-col sm:flex-row gap-4 items-center">
+ <div className="flex flex-col sm:flex-row gap-4 items-center 
+w-full max-w-screen-sm sm:max-w-none mx-auto px-4
+">
   {moreArticles.map((a) => (
     <Link
       key={a.id}
@@ -194,14 +199,17 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
     >
       <CardContainer className="w-full px-4 rounded-[55px] ">
         <CardBody className="relative group/card bg-background/20 border-accent w-full h-full p-5 flex flex-col justify-center min-h-[260px] overflow-hidden">
-          <CardItem translateZ="20" className="relative z-10 flex flex-col gap-2 items-center rounded-[55px] overflow-hidden">
-            <div className=" lowercase  text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] overflow-hidden">
+          <CardItem translateZ="20" className="relative z-10 flex flex-col gap-2 items-center rounded-[55px] ">
+            <div className=" lowercase  text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] overflow-hidden">
               Research Article
             </div>
 
-            <h3 className="text-[36px] uppercase text-center line-clamp-7 leading-[30px] p-2 font-tttravelsnext font-bold ">{a.title}</h3>
+           <h3 className="text-[25px] leading-[20px] uppercase text-center sm:text-center sm:text-[35px] line-clamp-7 sm:leading-[30px] p-2 font-tttravelsnext font-bold">
+  {a.title}
+</h3>
 
-            <p className="text-[20px] text-center text-[#CDA8E8]">
+
+            <p className=" text-[15px] sm:text-[20px] text-center text-[#CDA8E8]">
                by {a.author ?? "Unknown Author"}
             </p>
 
