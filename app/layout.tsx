@@ -139,76 +139,83 @@ export default function RootLayout({
         >
           
           <Navbar></Navbar>
-         {/* Global hidden SVG filter */}
-<svg width={0} height={0} style={{ position: "absolute" }}>
-  <defs>
+        <svg
+    style={{ display: "none" }}
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <filter
-      id="nav-glass"
-      x="-20%"
-      y="-20%"
-      width="140%"
-      height="140%"
+      id="glass-distortion"
+      x="0%"
+      y="0%"
+      width="100%"
+      height="100%"
       filterUnits="objectBoundingBox"
     >
-      {/* Horizontal refraction bias */}
       <feTurbulence
         type="fractalNoise"
-        baseFrequency="0.002 0.05"
-        numOctaves="3"
-        seed="7"
-        result="warpNoise"
+         baseFrequency="0.0001 0.0001" 
+        numOctaves={1}
+        seed={5}
+        result="turbulence"
       />
 
-      {/* Stretch distortion stronger in middle, weaker edges */}
-      <feComponentTransfer in="warpNoise" result="centerWarp">
-        <feFuncR type="gamma" exponent="2.4" amplitude="1" offset="0" />
-        <feFuncG type="gamma" exponent="1.8" amplitude="1" offset="0" />
-        <feFuncB type="gamma" exponent="2.4" amplitude="1" offset="0" />
+      <feComponentTransfer in="turbulence" result="mapped">
+        <feFuncR
+          type="gamma"
+          amplitude={0.2}
+          exponent={10}
+          offset={0.5}
+        />
+        <feFuncG
+          type="gamma"
+          amplitude={-0.5}
+          exponent={1}
+          offset={0}
+        />
+        <feFuncB
+          type="gamma"
+          amplitude={0}
+          exponent={1}
+          offset={0.5}
+        />
       </feComponentTransfer>
 
-      {/* Refraction */}
-      <feDisplacementMap
-        in="SourceGraphic"
-        in2="centerWarp"
-        scale="30"
-        xChannelSelector="R"
-        yChannelSelector="G"
-        result="refracted"
+      <feGaussianBlur
+        in="turbulence"
+        stdDeviation={1}
+        result="softMap"
       />
 
-      {/* Frosted blur */}
-      <feGaussianBlur in="refracted" stdDeviation="10" result="frost" />
-
-      {/* Slight brightness lift like real glass */}
-      <feColorMatrix
-        in="frost"
-        type="matrix"
-        values="
-          1 0 0 0 0
-          0 1 0 0 0
-          0 0 1 0 0
-          0 0 0 .28 0
-        "
-        result="glass"
-      />
-
-      {/* Edge highlight */}
       <feSpecularLighting
-        in="centerWarp"
-        specularConstant="1.3"
-        specularExponent="70"
-        surfaceScale="4"
-        lightingColor="#ffffff"
-        result="shine"
+        in="softMap"
+        surfaceScale={10}
+        specularConstant={1}
+        specularExponent={10}
+        lightingColor="white"
+        result="specLight"
       >
-        <fePointLight x="0" y="-200" z="150" />
+        <fePointLight x={-200} y={-200} z={300} />
       </feSpecularLighting>
 
-      {/* Add rim glow */}
-      <feBlend in="glass" in2="shine" mode="screen" />
+      <feComposite
+        in="specLight"
+        operator="arithmetic"
+        k1={0}
+        k2={1}
+        k3={1}
+        k4={0}
+        result="litImage"
+      />
+
+      <feDisplacementMap
+        in="SourceGraphic"
+        in2="softMap"
+        scale={150}
+        xChannelSelector="R"
+        yChannelSelector="G"
+      />
     </filter>
-  </defs>
-</svg>
+  </svg>
 
 
           {children}

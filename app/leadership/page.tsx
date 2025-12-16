@@ -316,7 +316,8 @@ export default function Leadership() {
                   <p className="text-sm leading-relaxed p-6 text-white gap-4 font-dmsans font-light">
                     {leader.description}
                   </p>
-                </div><div className="divGlass-effect pointer-events-none z-0"></div>
+                </div><div className="liquidGlass-effect"></div>
+                <div className="divGlass-effect pointer-events-none z-0"></div>
           <div className=" cardGlass-shine pointer-events-none z-0 overflow-hidden "></div>
               </motion.article>
             ))}
