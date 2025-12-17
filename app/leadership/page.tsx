@@ -36,7 +36,7 @@ const leaders: Leader[] = [
     name: "Agnihotra Nath",
     title: "Chief Operating Officer (COO)",
     description:
-      "Head of Student Team at Google. Endless passion for cars, and music. Porsche enthusiast with a sick garage full of fast cars. Keen eye for detail and topped off with sweet ADHD.",
+      "Loves designing and being autistic. This car enthusiast does not miss when it comes to perfection, efficiency and speed.",
     avatar: "/avatars/agni.png",
   },
   {
@@ -57,7 +57,7 @@ const leaders: Leader[] = [
     name: "Jiya Haldar",
     title: "Chief Editor",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "This marine biology enthusiast is an impeccable photographer and multitasking pro, known for her incredible writing skills.",
     avatar: "/avatars/jiya.png",
   },
     {
@@ -85,7 +85,7 @@ const leaders: Leader[] = [
     name: "Ariona Talukdar",
     title: "PR Manager",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "A quick learner with strong communication and problem-solving skills, she handles tasks with focus, clarity, and confidence.",
     avatar: "/avatars/ariona.png",
   },
 ]
