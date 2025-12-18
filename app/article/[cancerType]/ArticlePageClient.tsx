@@ -84,7 +84,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   relative
   max-w-full sm:max-w-4xl
   dark:prose-invert
-  ${readmore ? "" : "max-h-[50vh] sm:max-h-[60vh] overflow-hidden"}
+  ${readmore ? "" : "max-h-[50vh] cursor-none sm:max-h-[60vh] overflow-hidden"}
 `}
 
               >
@@ -138,7 +138,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                 variant="secondary"
                 aria-expanded={readmore}
                 onClick={() => setReadmore((s) => !s)}
-                className="mx-auto w-fit my-10 rounded-full bg-primary/44 backdrop-blur-xs flex justify-center"
+                className="mx-auto w-fit my-10 cursor-none rounded-full bg-primary/44 backdrop-blur-xs flex justify-center"
               >
                 {readmore ? "Show less" : "Read more"}
                 <ArrowDown className={`transition-transform ${readmore ? "rotate-180" : ""}`} />
@@ -195,21 +195,31 @@ w-full max-w-screen-sm sm:max-w-none mx-auto px-4
     <Link
       key={a.id}
       href={a.slug ? `/article/${a.slug}` : `/article/${a.id}`}
-      className="w-full max-w-lg"
+      className="w-full max-w-lg cursor-none"
     >
       <CardContainer className="w-full px-4 rounded-[55px] ">
-        <CardBody className="relative group/card bg-background/20 border-accent w-full h-full p-5 flex flex-col justify-center min-h-[260px] overflow-hidden">
-          <CardItem translateZ="20" className="relative z-10 flex flex-col gap-2 items-center rounded-[55px] ">
-            <div className=" lowercase  text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] overflow-hidden">
+        <CardBody className="    relative z-20
+    vision-pro-ui-hoverable
+    group/card
+    bg-background/20
+    border-accent
+    w-full h-full p-5
+    flex flex-col justify-center
+    min-h-[260px]
+    overflow-hidden
+    select-none
+    cursor-none">
+          <CardItem translateZ="20" className="relative select-none cursor-none z-10 flex flex-col gap-2 items-center rounded-[55px] ">
+            <div className=" lowercase select-none cursor-none text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] overflow-hidden">
               Research Article
             </div>
 
-           <h3 className="text-[25px] leading-[20px] uppercase text-center sm:text-center sm:text-[35px] line-clamp-7 sm:leading-[30px] p-2 font-tttravelsnext font-bold">
+           <h3 className="text-[25px] select-none cursor-none leading-[20px] uppercase text-center sm:text-center sm:text-[35px] line-clamp-7 sm:leading-[30px] p-2 font-tttravelsnext font-bold">
   {a.title}
 </h3>
+ 
 
-
-            <p className=" text-[15px] sm:text-[20px] text-center text-[#CDA8E8]">
+            <p className=" text-[15px] sm:text-[20px] select-none cursor-none text-center text-[#CDA8E8]">
                by {a.author ?? "Unknown Author"}
             </p>
 

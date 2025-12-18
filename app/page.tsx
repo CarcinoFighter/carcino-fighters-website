@@ -255,9 +255,9 @@ export default function Home() {
             >
 <Button
   variant="ghost"
-  className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-giest font-medium hover:scale-[105%] transition-all duration-300"
+  className="relative px-6 py-5 cursor-none rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-giest font-medium transition-all duration-300"
 >
-  <Link href="/article" className="relative z-10 flex items-center gap-2">
+  <Link href="/article" className="relative z-10 flex items-center gap-2 cursor-none">
     Read Our Documents <ArrowUpRight className="transition-transform" />
   </Link>
 
@@ -406,9 +406,9 @@ export default function Home() {
           >
 <Button
   variant="ghost"
-  className="relative px-5 py-3 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
+  className="relative cursor-none px-5 py-3 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
 >
-  <Link href="/article" className="relative z-10 flex items-center gap-2">
+  <Link href="/article" className="relative z-10 flex items-center cursor-none gap-2">
     Read More Insights <ArrowUpRight className="transition-transform border-none" />
   </Link>
 
@@ -608,9 +608,9 @@ export default function Home() {
         {/* Writing Team Button */}
         <Button
           variant="ghost"
-          className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
+          className="relative px-6 py-5 cursor-none rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
         >
-          <Link href="/internship/writer" className="relative z-10 flex items-center gap-2">
+          <Link href="/internship/writer" className="relative z-10 cursor-none flex items-center gap-2">
             Writing Team <ArrowUpRight className="transition-transform" />
           </Link>
           <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
@@ -622,9 +622,9 @@ export default function Home() {
         {/* Dev / Design Button */}
         <Button
           variant="ghost"
-          className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
+          className="relative cursor-none px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
         >
-          <Link href="/internship/tech" className="relative z-10 flex items-center gap-2">
+          <Link href="/internship/tech" className="relative z-10 cursor-none flex items-center gap-2">
             Dev / Design <ArrowUpRight className="transition-transform" />
           </Link>
           <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
