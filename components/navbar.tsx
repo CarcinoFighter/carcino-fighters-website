@@ -65,16 +65,16 @@ export function Navbar() {
       <div className="flex-row py-4 fixed w-full justify-center lg:px-14 md:px-10 px-6 top-0 z-30 hidden items-center sm:flex">
 <NavigationMenu
   className={cn(
-    "w-full flex flex-row px-2 py-1 rounded-full items-center justify-between relative z-10 font-['DM_Sans'] tracking-[-0.02em]",
-    "overflow-hidden relative isolation-isolate",
-    "liquid-glass !shadow-none"
+    "w-full flex flex-row px-2 py-1 rounded-full items-center justify-between relative z-10",
+    "overflow-hidden isolation-isolate liquid-glass !shadow-none",
+    "[&_a]:cursor-none [&_button]:cursor-none [&_img]:cursor-none [&_*]:cursor-none"
   )}
-><div className="liquidGlass-effect"></div>
+><div className="liquidGlass-effect "></div>
         <div className="liquidGlass-tint"></div>
         <div className="liquidGlass-shine"></div>
         <div className="liquidGlass-text"></div>
 
-          <NavigationMenuList className="gap-[50px] relative">
+          <NavigationMenuList className="gap-[50px] relative cursor-none">
             <NavigationMenuItem>
               <div className="pl-4">
               <Image src={"/logo.svg"} alt={"logo"} width={25} height={25} className=" object-cover" />
@@ -82,13 +82,14 @@ export function Navbar() {
             </NavigationMenuItem>
             {/* Tab links with animated pill indicator */}
             {tabs.map(tab => (
-              <NavigationMenuItem key={tab.label} className="relative hover:cursor-pointer">
+              <NavigationMenuItem key={tab.label} className="relative">
                 
                 <NavigationMenuLink
                   onClick={() => router.push(tab.href)}
-                  className={navigationMenuTriggerStyle() + (selectedTab === tab.label ? "transition-colors text-white font-bold" : "")}
+                  className={navigationMenuTriggerStyle() + (selectedTab === tab.label ? "transition-colors z-10 text-white font-bold" : "")}
                 >
-                  <span className="relative z-10">{tab.label}</span>
+                  <span className="relative z-10 vision-pro-ui-hoverable
+">{tab.label}</span>
                   {selectedTab === tab.label && (
                     <motion.span
                       layoutId="pill-tab"
@@ -109,7 +110,7 @@ export function Navbar() {
       {/* Mobile NavMenu */}
       <div className="sm:hidden fixed top-5 left-5 z-20 ">
         <Menu
-          className="text-foreground cursor-pointer p-1 backdrop-blur-xs border-accent-forground border rounded-sm"
+          className="text-foreground cursor-none p-1 backdrop-blur-xs border-accent-forground border rounded-sm"
           size={28}
           onClick={() => setMobileMenuOpen(true)}
         />

@@ -4,6 +4,8 @@ import { Geist, Space_Grotesk, Cinzel, Michroma } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import localFont from "next/font/local";
+import { Cursor } from "@/components/cursor"
+
 // import { Footer } from "@/components/footer";
 
 
@@ -216,7 +218,7 @@ export default function RootLayout({
       />
     </filter>
   </svg>
-
+    <Cursor />
 
           {children}
 
