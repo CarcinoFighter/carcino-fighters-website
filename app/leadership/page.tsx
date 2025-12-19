@@ -2,8 +2,10 @@
 import { easeInOut, motion } from "framer-motion"
 import Image from "next/image";
 import { Label } from "@/components/ui/label"
-import { ArrowUpRight, LoaderCircle } from "lucide-react";
+import {LoaderCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useRef } from "react"
+import { useInView } from "framer-motion"
 
 type Leader = {
   name: string
@@ -23,6 +25,7 @@ type BlobSpec = {
   focusY: string
   tone: "primary" | "accent" | "secondary"
 }
+
 
 const leaders: Leader[] = [
   {
@@ -198,54 +201,78 @@ const toneToColor: Record<BlobSpec["tone"], { inner: string; mid: string }> = {
 }
 
 export default function Leadership() {
+
+    const blobRef = useRef<HTMLDivElement | null>(null)
+  const blobsInView = useInView(blobRef, {
+    margin: "-150px",
+    
+  })
+  
   return (
+    
     <div className="relative min-h-dvh w-full  overflow-hidden text-white font-dmsans">
       
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none -z-10 pt-10 ">
         <Image
-          src={"/leadership-bg-new.png"}
+          src={"/leadership-bg-new-2.jpg"}
           alt="Leadership"
           width={1920}
           height={1080}
-          quality={100}
-          className="object-cover min-w-[100%] sm:min-w-[10%] sm:max-w-[70%] overflow-hidden hidden dark:inline animate-door-open animate-rad "
-        />
+        //   className="object-cover min-w-[100%] sm:min-w-[10%] sm:max-w-[70%] overflow-hidden hidden dark:inline animate-door-open animate-rad "
+        
+          className="
+  fixed inset-0
+  w-screen h-screen
+  object-cover
+  overflow-hidden
+  hidden dark:inline
+  animate-door-open animate-rad
+"/> <div className="absolute inset-0 bg-black/20" />
         {/* <div className="sm:hidden absolute inset-0 bg-[#241836]/80" /> */}
       </div>
      
 
-      <div className="pointer-events-none absolute inset-0 z-10">
-        {blobSpecs.map((blob, index) => (
-            <motion.span
-              key={`blob-${index}`}
-              className="absolute rounded-[999px] blur-[120px] mix-blend-screen saturate-150"
-              style={{
-                top: blob.top,
-                left: blob.left,
-                width: blob.size,
-                height: blob.size,
-                background: `radial-gradient(ellipse at ${blob.focusX} ${blob.focusY}, ${toneToColor[blob.tone].inner} 0%, ${toneToColor[blob.tone].mid} 40%, transparent 75%)`,
-                opacity: blob.opacity,
-              }}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{
-                opacity: [blob.opacity * 0.85, blob.opacity, blob.opacity * 0.9, blob.opacity * 0.82, blob.opacity * 0.85],
-                scale: [0.92, 1.14, 0.98, 1.08, 0.92],
-                x: [0, 110, -80, 45, 0],
-                y: [0, -130, 80, -40, 0],
-                rotate: [0, 18, -14, 6, 0],
-              }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{
-                duration: blob.duration,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: blob.delay,
-                repeatType: "loop",
-              }}
-            />
-        ))}
-      </div>
+      <div
+  ref={blobRef}
+  className="pointer-events-none absolute inset-0 z-10"
+>
+  {blobSpecs.map((blob, index) => (
+    <motion.span
+      key={`blob-${index}`}
+      className="absolute rounded-[999px] blur-[80px] saturate-125"
+      style={{
+        top: blob.top,
+        left: blob.left,
+        width: blob.size,
+        height: blob.size,
+        background: `radial-gradient(
+          ellipse at ${blob.focusX} ${blob.focusY},
+          ${toneToColor[blob.tone].inner} 0%,
+          ${toneToColor[blob.tone].mid} 40%,
+          transparent 75%
+        )`,
+        opacity: blob.opacity,
+      }}
+      initial={{ scale: 0.9 }}
+      animate={
+        blobsInView
+          ? {
+              x: [0, 90, -60, 40, 0],
+              y: [0, -100, 60, -30, 0],
+              scale: [0.95, 1.1, 0.98, 1.05, 0.95],
+            }
+          : false
+      }
+      transition={{
+        duration: blob.duration,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay: blob.delay,
+      }}
+    />
+  ))}
+  
+</div>
 
       <div className="relative z-10 flex flex-col items-center gap-14 px-6 pb-20 pt-32 sm:px-10 lg:px-20">
           <motion.div
@@ -292,13 +319,13 @@ export default function Leadership() {
               <motion.article
                 key={leader.name}
                 variants={cardVariants}
-                className="group relative overflow-hidden rounded-[55px] p-5 transition-[box-shadow,transform] duration-300"
+                className="group relative overflow-hidden rounded-[55px] p-5 transition-[box-shadow,transform] backdrop-blur-md bg-black/10  duration-300"
               >
                 <motion.div
                   aria-hidden
                   className="pointer-events-none absolute -right-24 -top-24 h-48 w-48 rounded-full bg-white/10 blur-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                 />
-                <div className="relative flex flex-col items-center gap-3 z-20 text-center">
+                <div className="relative flex flex-col items-center gap-3 z-20 text-center ">
                   <Avatar className="h-30 w-30 border border-white/15">
                     <AvatarImage className="object-cover" src={leader.avatar} />
                     <AvatarFallback className="flex h-full w-full items-center justify-center bg-white/10">
@@ -313,7 +340,7 @@ export default function Leadership() {
                       {leader.title}
                     </p>
                   </div>
-                  <p className="text-sm leading-relaxed p-6 text-white gap-4 font-dmsans font-light">
+                  <p className="text-sm leading-relaxed p-6 text-white gap-4 font-dmsans font-light ">
                     {leader.description}
                   </p>
                 </div>
