@@ -401,7 +401,7 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
   inset: 0;
   border-radius: 55px;
   backdrop-filter: blur(3px);
-  filter: url(#glass-distortion);
+  /* filter: url(#glass-distortion); */
   overflow: hidden;
   isolation: isolate;
 }
@@ -511,10 +511,10 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
   position: absolute;
   top: 3px;
   left: 2px;
-  width: 39px;
+  width: 44px;
   height: 105px;
 
-  border-radius: 55px 0 0 0;
+  border-radius: 65px 0 0 0;
   border-top: 2px solid #fff;
   border-left: 2px solid #fff;
 
@@ -545,7 +545,7 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
   position: absolute;
   bottom: 3px;
   right: 2px;
-  width: 39px;
+  width: 44px;
   height: 105px;
 
   border-bottom: 1.5px solid #fff;
