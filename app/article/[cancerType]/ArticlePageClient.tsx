@@ -27,7 +27,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
 
   return (
     <div>
-      <div className="w-screen px-5 sm:px-20 sm:pt-[80px] relative gap-6 bg-background font-giest min-h-screen overflow-x-hidden">
+      <div className="w-full px-5 sm:px-20 sm:pt-[80px] relative gap-6 bg-background font-giest min-h-screen overflow-x-hidden">
         <ScrollProgress className="hidden md:block" />
         <div className="relative pt-10 flex flex-col justify-center ">
           <motion.div
@@ -76,7 +76,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
             transition={{ duration: 0.6, delay: 0.1 }}
             className="flex flex-col w-full px-3 pt-12"
           >
-            <div className="relative max-w-4xl mx-1 px-2 sm:px-0 overflow-hidden">
+            <div className="relative max-w-4xl mx-auto px-2 sm:px-0 overflow-hidden">
               <article
                 className={`
   prose
@@ -188,14 +188,14 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   to-[#ffffff] to-60%
   bg-clip-text text-transparent">Suggested Articles</h2>
 
- <div className="flex flex-col sm:flex-row gap-4 items-center 
+ <div className="flex flex-col sm:flex-row gap-4 items-center justify-center
 w-full max-w-screen-sm sm:max-w-none mx-auto px-4
 ">
   {moreArticles.map((a) => (
     <Link
       key={a.id}
       href={a.slug ? `/article/${a.slug}` : `/article/${a.id}`}
-      className="w-full max-w-lg cursor-none"
+      className="w-full max-w-lg sm:w-auto cursor-none"
     >
       <CardContainer className="w-full px-4 rounded-[55px] ">
         <CardBody className="    relative z-20
