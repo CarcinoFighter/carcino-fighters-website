@@ -77,7 +77,7 @@ export function Navbar() {
           <NavigationMenuList className="gap-[50px] relative cursor-none">
             <NavigationMenuItem>
               <div className="pl-4">
-              <Image src={"/logo.svg"} alt={"logo"} width={25} height={25} className=" object-cover" />
+              <Image src={"/logo-w.svg"} alt={"logo"} width={25} height={25} className=" object-cover" />
               </div>
             </NavigationMenuItem>
             {/* Tab links with animated pill indicator */}
