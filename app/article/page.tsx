@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import Script from "next/script";
 import { ArrowUpRight, Search } from "lucide-react";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import { Input } from "@/components/ui/input";
@@ -50,8 +51,35 @@ export default function ArticleListPage() {
             return words.some(w => w.startsWith(q));
         });
     }, [articles, debouncedQuery]);
+const articleGallerySchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Research Articles – The Carcino Foundation",
+  "url": "https://carcinofoundation.org/article",
+  "about": {
+    "@type": "NGO",
+    "name": "The Carcino Foundation"
+  },
+  "hasPart": articles.map((article) => ({
+    "@type": "BlogPosting",
+    "headline": article.title,
+    "url": `https://carcinofoundation.org/article/${article.slug}`,
+    "publisher": {
+      "@type": "NGO",
+      "name": "The Carcino Foundation"
+    }
+  }))
+};
 
   return (
+      <>
+    <Script
+      id="article-gallery-schema"
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(articleGallerySchema),
+      }}
+    />
     <div className="flex flex-col min-h-screen overflow-scroll relative"
                 style={{
                 width: "100vw",
@@ -132,7 +160,7 @@ export default function ArticleListPage() {
             </motion.div>
 
         </div>
-    </div>
+    </div></>
     
   );
 }

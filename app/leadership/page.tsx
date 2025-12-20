@@ -1,6 +1,7 @@
 "use client"
 import { easeInOut, motion } from "framer-motion"
 import Image from "next/image";
+import Script from "next/script";
 import { Label } from "@/components/ui/label"
 import {LoaderCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -207,9 +208,37 @@ export default function Leadership() {
     margin: "-150px",
     
   })
-  
+  const leadershipSchema = {
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "name": "Leadership – The Carcino Foundation",
+  "url": "https://thecarcinofoundation.org/leadership",
+  "about": {
+    "@type": "NGO",
+    "name": "The Carcino Foundation"
+  },
+  "mainEntity": leaders.map((leader) => ({
+    "@type": "Person",
+    "name": leader.name,
+    "jobTitle": leader.title,
+    "description": leader.description,
+    "image": `https://thecarcinofoundation.org${leader.avatar}`,
+    "affiliation": {
+      "@type": "NGO",
+      "name": "The Carcino Foundation"
+    }
+  }))
+};
+
   return (
-    
+      <>
+    <Script
+      id="leadership-schema"
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(leadershipSchema),
+      }}
+    />
     <div className="relative min-h-dvh w-full  overflow-hidden text-white font-dmsans">
       
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none -z-10 pt-10 ">
@@ -350,7 +379,7 @@ export default function Leadership() {
             ))}
           </motion.div>
         </div>          
-      </div>
+      </div></>
   );
 }
 
