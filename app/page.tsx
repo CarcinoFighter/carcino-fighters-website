@@ -2,6 +2,7 @@
 "use client";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import * as React from "react";
+import Script from "next/script";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -127,8 +128,27 @@ export default function Home() {
     if (articles.length === 0) return [];
     return [...articles].sort(() => Math.random() - 0.5).slice(0, 6);
   }, [articles]);
+const homePageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "The Carcino Foundation",
+  "url": "https://thecarcinofoundation.org",
+  "publisher": {
+    "@type": "NGO",
+    "name": "The Carcino Foundation"
+  },
+  "inLanguage": "en-IN"
+};
 
   return (
+      <>
+    <Script
+      id="home-schema"
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(homePageSchema),
+      }}
+    />
     <div
       ref={containerRef}
       className=" flex flex-col relative lg:block lg:h-screen w-screen overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background"
@@ -671,6 +691,7 @@ export default function Home() {
 
       {/* Footer */}
       <Footer></Footer>
-    </div>
+    </div></>
   );
 }
+
