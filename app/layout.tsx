@@ -1,4 +1,5 @@
 import "./globals.css";
+import Script from "next/script";
 import type { Metadata } from "next";
 import { Geist, Space_Grotesk, Cinzel, Michroma } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -92,7 +93,7 @@ const instrumentserifitalic = localFont({
     {
       path: "../public/fonts/instrumentserifitalic.ttf",
       weight: "400",
-      style: "italic",  // ✅ fix this
+      style: "italic",
     },
   ],
   variable: "--font-instrumentserifitalic",
@@ -125,13 +126,34 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+const orgSchema = {
+  "@context": "https://schema.org",
+  "@type": "NGO",
+  "name": "The Carcino Foundation",
+  "url": "https://thecarcinofoundation.org",
+  "logo": "https://thecarcinofoundation.org/logo.png",
+  "description":
+    "At the Carcino Foundation, we believe that everyone should be able to learn about one of the leading causes of human mortality, but in a way everyone can understand.",
+  "sameAs": [
+    "https://www.instagram.com/thecarcinofoundation/",
+    "https://www.linkedin.com/company/thecarcinofoundation/"
+  ]
+};
 
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} ${michroma.variable} ${panchang.variable} ${wintersolace.variable} ${inter.variable} 
         ${instrumentserifitalic.variable} ${tttravelsnext.variable} ${dmsans.variable} antialiased hide-scrollbar`}>
-    
+    <Script
+  id="carcino-org-schema"
+  type="application/ld+json"
+  strategy="afterInteractive"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify(orgSchema),
+  }}
+/>
+
         <ThemeProvider
         
           attribute="class"
