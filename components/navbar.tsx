@@ -86,7 +86,7 @@ export function Navbar() {
                 
                 <NavigationMenuLink
                   onClick={() => router.push(tab.href)}
-                  className={navigationMenuTriggerStyle() + (selectedTab === tab.label ? "transition-colors z-10 text-white font-bold" : "")}
+                  className={navigationMenuTriggerStyle() + (selectedTab === tab.label ? "transition-colors z-10 text-white font-dmsans font-bold" : "")}
                 >
                   <span className="relative z-10 vision-pro-ui-hoverable
 ">{tab.label}</span>
@@ -143,10 +143,10 @@ export function Navbar() {
                 className="object-cover h-full"
               />
             </div>
-            <div className="text-foreground font-DM Sans text-lg">Carcino <br /> Foundation</div>
+            <div className="text-foreground font-dmsans text-lg">Carcino <br /> Foundation</div>
           </div>
           <div className="bg-accent px-5 w-full h-[1px] mb-5"></div>
-          <nav className="flex flex-col gap-10 w-full h-full font-giest text-xl">
+          <nav className="flex flex-col gap-10 w-full h-full font-dmsans text-xl">
             <Link onClick={() => setMobileMenuOpen(false)} href="/" className={pathname === "/" ? "text-primary font-bold" : ""}>
               <div className="flex flex-row items-center gap-2">
                 <House size={24} />
