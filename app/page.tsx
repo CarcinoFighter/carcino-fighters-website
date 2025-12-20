@@ -433,7 +433,7 @@ export default function Home() {
           className="flex flex-col items-center gap-5 w-full h-fit justify-center lg:hidden py-16 z-10"
         >
           <motion.h2
-            className="font-giest px-3 text-lg text-center font-semibold"
+            className="font-instrumentserifitalic px-3 text-lg text-center"
             variants={fadeUp}
           >
             “The human spirit was built to outlast despair. So, live life to the
@@ -456,24 +456,23 @@ export default function Home() {
           variants={staggerContainer}
           className="z-10 flex flex-col lg:gap-6 md:gap-4 gap-4 items-center lg:items-start text-center lg:text-left justify-center w-full lg:w-fit h-fit max-h-[1200px] lg:px-14 md:px-10 px-6 pb-6"
         >
-          <MotionLabel
+          {/* <MotionLabel
             className="border p-3 rounded-full font-space_grotesk text-base text-foreground"
             variants={fadeUp}
           >
             Why Trust Us
-          </MotionLabel>
+          </MotionLabel> */}
           <motion.h1
-            className="text-2xl font-giest text-foreground"
+            className="pt-3 text-4xl font-dmsans font-semibold text-foreground"
             variants={fadeUp}
           >
-            We want everyone to be aware
+            We want everyone to be aware.
           </motion.h1>
           <motion.p
-            className="text-lg text-muted-foreground font-space_grotesk"
+            className="text-lg max-w-[480px] text-muted-foreground leading-[20px] font-dmsans"
             variants={fadeUp}
           >
-            We need the world to realise the threat, and for that we have a
-            plan...
+            There’s plenty of misconceptions about cancer, especially amongst our current generation.
           </motion.p>
           <div className="flex flex-row items-center justify-center w-full h-fit">
             <motion.div
@@ -487,14 +486,14 @@ export default function Home() {
               <Card className="animate-floaty lg:border-0 shadow-none bg-transparent">
                 <CardHeader className="flex flex-col items-center lg:items-start gap-2">
                 <div className="animate-floaty">
-                  <Award />
+                  <Award size={40} />
                 </div>
-                <p className="text-xl lg:text-2xl font-giest">
+                <p className="text-xl lg:text-2xl font-instrumentserifitalic">
                   Verified Research
                 </p>
                 </CardHeader>
                 <CardContent>
-                <p className="font-giest text-muted-foreground text-sm lg:text-lg">
+                <p className="font-dmsans leading-[20px] text-muted-foreground text-sm lg:text-lg">
                   Working with plenty of pioneers in the field of medicine has
                   helped us bring out the truth behind cancer.
                 </p>
@@ -508,14 +507,14 @@ export default function Home() {
                   className="animate-floaty"
                   style={{ animationDelay: "0.15s" }}
                 >
-                  <CalendarCheck />
+                  <CalendarCheck size={40}/>
                 </div>
-                <p className="text-xl lg:text-2xl font-giest">
+                <p className="text-xl lg:text-2xl font-instrumentserifitalic">
                   Up-to-Date Articles
                 </p>
                 </CardHeader>
                 <CardContent>
-                <p className="font-giest text-muted-foreground lg:text-lg">
+                <p className="font-dmsans  leading-[20px] text-muted-foreground lg:text-lg">
                   From start to finish, all our writers prioritize accuracy,
                   ensuring up to date facts and studies.
                 </p>
@@ -529,14 +528,14 @@ export default function Home() {
                   className="animate-floaty"
                   style={{ animationDelay: "0.3s" }}
                 >
-                  <PaintBucket />
+                  <PaintBucket size={40}/>
                 </div>
-                <p className="text-xl lg:text-2xl font-giest">
+                <p className="text-xl lg:text-2xl font-instrumentserifitalic">
                   Made for Everyone
                 </p>
                 </CardHeader>
                 <CardContent>
-                <p className="font-giest text-muted-foreground lg:text-lg">
+                <p className="font-dmsans leading-[20px] text-muted-foreground lg:text-lg">
                   We try to keep things simple, to break the language barrier
                   and improve communication.
                 </p>
@@ -550,14 +549,14 @@ export default function Home() {
                   className="animate-floaty"
                   style={{ animationDelay: "0.45s" }}
                 >
-                  <UserCheck />
+                  <UserCheck size={40} />
                 </div>
-                <p className="text-xl lg:text-2xl font-giest">
-                  Run By Students
+                <p className="text-xl lg:text-2xl font-instrumentserifitalic">
+                  Run by Students
                 </p>
                 </CardHeader>
                 <CardContent>
-                <p className="font-giest text-muted-foreground lg:text-lg">
+                <p className="font-dmsans leading-[20px] text-muted-foreground lg:text-lg">
                   We believe that our generation can beat cancer. And we try
                   our best to educate our peers.
                 </p>
@@ -566,13 +565,29 @@ export default function Home() {
               </motion.div>
             </motion.div>
             <div className="lg:flex flex-col items-center gap-7 max-w-[50%] w-full h-full justify-center hidden">
-              <h2 className="font-giest text-lg font-semibold max-w-[60%] text-center">
+              <h2 className="font-instrumentserifitalic text-4xl max-w-[70%] text-center">
                 “The human spirit was built to outlast despair. So, live life to
                 the fullest and don't think about things too much.”
               </h2>
-              <p className="font-giest text-center">
-                Rajannya Das <br /> Founder & Managing Director
+              <p className="font-dmsans text-2xl text-center">
+                <span className="font-bold">Rajannya Das</span> <br /> Founder & Managing Director
               </p>
+
+
+          <Button
+  variant="ghost"
+  className="relative cursor-none px-5 py-3 mt-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+>
+  <Link href="/leadership" className="relative z-10 flex items-center cursor-none gap-2">
+    Meet the team <ArrowUpRight className="transition-transform border-none" />
+  </Link>
+
+  {/* Liquid glass layers */}
+  <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+  <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
+   <div className="liquidGlass-shine  relative w-[102.5%] h-[100%] !top-[-0.1px] !left-[-2.3px]"></div>
+  <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+</Button>
             </div>
           </div>
         </motion.div>
@@ -591,20 +606,24 @@ export default function Home() {
 
     {/* Liquid glass layers */}
     <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-    <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
     <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[-0.1px] !left-[-0.5px]"></div>
     <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
 
     {/* Content */}
     <div className="text-whte flex flex-col items-center xl:items-start xl:max-w-[60%] justify-center gap-6 w-full h-fit lg:px-14 md:px-10 px-6 py-10 sm:py-14 md:py-18 lg:py-20 relative z-10">
-      <h1 className="text-5xl">Lets change the world together!</h1>
-      <p className="text-lg">
+      <h1 className="text-4xl leading-[0.9]
+  sm:text-6xl sm:leading-[0.9]
+  lg:text-7xl lg:leading-[0.9] whitespace-pre-wrap
+  text-left font-instrumentserifitalic
+  bg-gradient-to-r from-[#70429b] from-8% to-[#dfcbf0] to-60%
+  bg-clip-text text-transparent py-2 px-10 max-w-[70%]">Lets change the world together!</h1>
+      <p className="text-lg px-10 font-dmsans max-w-[70%] leading-[20px] text-muted-foreground">
         Do you wish to contribute to the cause? Write to us or send us
         articles, and our Writing Team will work on it and share it with
         the world.
       </p>
 
-      <div className="flex flex-row gap-3">
+      <div className="flex flex-row ml-10 gap-3">
         {/* Writing Team Button */}
         <Button
           variant="ghost"
@@ -614,7 +633,7 @@ export default function Home() {
             Writing Team <ArrowUpRight className="transition-transform" />
           </Link>
           <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-          <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
+          <div className="absolute inset-0 liquidGlass-tint pointer-events-none !bg-[rgba(32,2,51,0.84)]"></div>
           <div className="liquidGlass-shine  relative w-[101%] h-[100%] !top-[0px] !left-[-1px]"></div>
           <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
         </Button>
@@ -628,7 +647,7 @@ export default function Home() {
             Dev / Design <ArrowUpRight className="transition-transform" />
           </Link>
           <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-          <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
+          <div className="absolute inset-0 liquidGlass-tint pointer-events-none !bg-[rgba(32,2,51,0.84)]"></div>
           <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
           <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
         </Button>
@@ -636,13 +655,13 @@ export default function Home() {
     </div>
 
     {/* Image */}
-    <div className="hidden xl:inline relative z-10">
+    <div className="hidden xl:inline my-10 mr-20 relative z-10">
       <Image
-        src={`/Shape.png`}
-        height={590}
-        width={559.63}
+        src={`/logo-outline.png`}
+        height={300}
+        width={300}
         alt=""
-        className="object-cover h-full"
+        className="object-contain h-full"
       />
     </div>
   </div>
