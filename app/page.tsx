@@ -630,24 +630,27 @@ const homePageSchema = {
     <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
 
     {/* Content */}
-    <div className="text-whte flex flex-col items-center xl:items-start xl:max-w-[60%] justify-center gap-6 w-full h-fit lg:px-14 md:px-10 px-6 py-10 sm:py-14 md:py-18 lg:py-20 relative z-10">
-      <h1 className="text-4xl leading-[0.9]
-  sm:text-6xl sm:leading-[0.9]
-  lg:text-7xl lg:leading-[0.9] whitespace-pre-wrap
-  text-left font-instrumentserifitalic
-  bg-gradient-to-r from-[#70429b] from-8% to-[#dfcbf0] to-60%
-  bg-clip-text text-transparent py-2 px-10 max-w-[70%]">Lets change the world together!</h1>
-      <p className="text-lg px-10 font-dmsans max-w-[70%] leading-[20px] text-muted-foreground">
+    <div className="text-white flex flex-col items-center xl:items-start xl:max-w-[60%] justify-center gap-6 w-full h-fit lg:px-14 md:px-10 px-6 py-10 sm:py-14 md:py-18 lg:py-20 relative z-10">
+      <h1 className="        text-4xl sm:text-5xl lg:text-6xl xl:text-7xl
+        leading-[0.95]
+        font-instrumentserifitalic
+        bg-gradient-to-r from-[#70429b] to-[#dfcbf0]
+        bg-clip-text text-transparent sm:ml-10 
+        max-w-full py-2 sm:max-w-[70%]">Lets change the world together!</h1>
+      <p className=" text-base sm:text-lg
+        font-dmsans
+        text-muted-foreground sm:ml-10
+        max-w-full sm:max-w-[85%] xl:max-w-[70%]">
         Do you wish to contribute to the cause? Write to us or send us
         articles, and our Writing Team will work on it and share it with
         the world.
       </p>
 
-      <div className="flex flex-row ml-10 gap-3">
+      <div className="flex flex-row sm:ml-10 gap-3">
         {/* Writing Team Button */}
         <Button
           variant="ghost"
-          className="relative px-6 py-5 cursor-none rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
+          className="flex flex-col sm:flex-row relative px-6 py-5 cursor-none rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
         >
           <Link href="/internship/writer" className="relative z-10 cursor-none flex items-center gap-2">
             Writing Team <ArrowUpRight className="transition-transform" />
@@ -661,7 +664,7 @@ const homePageSchema = {
         {/* Dev / Design Button */}
         <Button
           variant="ghost"
-          className="relative cursor-none px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
+          className="relative cursor-none px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
         >
           <Link href="/internship/tech" className="relative z-10 cursor-none flex items-center gap-2">
             Dev / Design <ArrowUpRight className="transition-transform" />
