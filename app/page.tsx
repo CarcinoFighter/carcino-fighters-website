@@ -257,11 +257,11 @@ export default function Home() {
                 text={"Breaking Down Cancer for Everyone"}
                 disabled={true}
                 speed={4}
-                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium w-5xl mt-5"
+                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium w-5xl mt-5 max-sm:text-2xl max-sm:max-w-[50%]"
                 textColor="#f8f8f8"
               />
               <motion.span
-                className="font-dmsans text-xl max-sm:px-6 sm:max-w-[35%] w-full text-center"
+                className="font-dmsans text-xl max-sm:px-6 sm:max-w-[35%] w-full text-center max-sm:text-sm"
                 variants={fadeUp}
               >
                 At the Carcino Foundation, we believe that everyone should be
@@ -323,13 +323,13 @@ export default function Home() {
             </MotionLabel>
 
             <motion.h1
-              className="text-2xl font-giest text-foreground "
+              className="text-4xl font-giest pt-5 text-foreground max-sm:pt-10 max-sm:text-3xl max-sm:pb-2"
               variants={fadeUp}
             >
               Our Articles
             </motion.h1>
             <motion.p
-              className="text-lg text-muted-foreground font-space_grotesk"
+              className="text-lg text-muted-foreground font-space_grotesk max-sm:text-md w-2/3 text-center"
               variants={fadeUp}
             >
               Here's the latest collection of articles we offer, tailored to be
@@ -391,7 +391,7 @@ export default function Home() {
                     layout
                     whileHover={{ y: -4, scale: 1.015 }}
                   >
-                    <CardContainer className="w-xs sm:w-sm px-4 my-2 overflow-hidden aspect-[3/2]">
+                    <CardContainer className="w-xs sm:w-sm px-4 my-2 overflow-hidden aspect-[3/2] max-sm:w-60 max-sm:h-60">
                       <CardBody className="inset-shadow-[0_0_10px_10px] inset-shadow-foreground/2 relative group/card aspect-3/2 bg-background/20 backdrop-blur-sm border-accent w-full h-full rounded-[55px] p-[30px] px-[45px] border">
                         <div className="flex flex-col gap-4 h-full justify-between">
                           <Link
@@ -460,10 +460,10 @@ export default function Home() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={staggerContainer}
-            className="flex flex-col items-center gap-5 w-full h-fit justify-center lg:hidden py-16 z-10"
+            className="flex flex-col items-center gap-5 w-full h-fit justify-center lg:hidden py-16 z-10 max-sm:pt-0 max-sm:pb-20"
           >
             <motion.h2
-              className="font-instrumentserifitalic px-3 text-lg text-center"
+              className="font-instrumentserifitalic px-3 text-lg text-center max-sm:w-60"
               variants={fadeUp}
             >
               “The human spirit was built to outlast despair. So, live life to
@@ -666,7 +666,7 @@ export default function Home() {
                   with the world.
                 </p>
 
-                <div className="flex flex-row sm:ml-10 gap-3">
+                <div className="flex flex-row sm:ml-10 gap-3 max-sm:flex-col">
                   {/* Writing Team Button */}
                   <Button
                     variant="ghost"
