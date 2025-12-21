@@ -254,7 +254,7 @@ export default function Home() {
               variants={staggerContainer}
             >
               <ShinyText
-                text={"Breaking Down Cancer for Everyone!"}
+                text={"Breaking Down Cancer for Everyone"}
                 disabled={true}
                 speed={4}
                 className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-bold w-5xl mt-5"
