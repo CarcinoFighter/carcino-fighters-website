@@ -1,4 +1,4 @@
-![hero logo](./readme-hero.svg)
+![Hero](./readme-hero.svg)
 <div align="center">
 
 # The Carcino Foundation
