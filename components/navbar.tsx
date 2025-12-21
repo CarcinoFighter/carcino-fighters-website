@@ -70,7 +70,7 @@ export function Navbar() {
     "[&_a]:cursor-none [&_button]:cursor-none [&_img]:cursor-none [&_*]:cursor-none"
   )}
 ><div className="liquidGlass-effect "></div>
-        <div className="liquidGlass-tint"></div>
+        {/* <div className="liquidGlass-tint"></div> */}
         <div className="liquidGlass-shine"></div>
         <div className="liquidGlass-text"></div>
 
