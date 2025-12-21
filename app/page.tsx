@@ -257,16 +257,17 @@ export default function Home() {
                 text={"Breaking Down Cancer for Everyone"}
                 disabled={true}
                 speed={4}
-                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium w-5xl mt-5 max-sm:text-2xl max-sm:max-w-[50%]"
-                textColor="#f8f8f8"
+                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium w-5xl mt-5 max-sm:text-3xl max-sm:w-4/5"
+                textColor="#fafafa"
               />
               <motion.span
-                className="font-dmsans text-xl max-sm:px-6 sm:max-w-[35%] w-full text-center max-sm:text-sm"
+                className="font-dmsans text-xl max-sm:px-6 sm:max-w-[35%] w-full text-center max-sm:text-xs max-sm:w-4/5 max-sm:font-light"
                 variants={fadeUp}
               >
                 At the Carcino Foundation, we believe that everyone should be
                 able to learn about one of the leading causes of human
-                mortality, but in a way everyone can understand.
+                mortality.
+                {/* but in a way everyone can understand. */}
               </motion.span>
               <motion.div
                 variants={fadeUp}
