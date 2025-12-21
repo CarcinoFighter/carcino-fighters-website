@@ -1,33 +1,40 @@
-import { motion } from 'framer-motion';
-import React from 'react';
+import { motion } from "framer-motion";
+import React from "react";
 
 interface ShinyTextProps {
   text: string;
   disabled?: boolean;
   speed?: number;
   className?: string;
+  textColor?: string;
 }
 
-const ShinyText: React.FC<ShinyTextProps> = ({ text, disabled = false, speed = 5, className = '' }) => {
+const ShinyText: React.FC<ShinyTextProps> = ({
+  text,
+  disabled = false,
+  speed = 5,
+  className = "",
+  textColor = "#b5b5b5af",
+}) => {
   const animationDuration = `${speed}s`;
 
   return (
     <motion.div
-      initial={{ opacity: 0,
-        y:-20,
-       }}
-      animate={{ 
-        opacity: 1, 
+      initial={{ opacity: 0, y: -20 }}
+      animate={{
+        opacity: 1,
         y: 0,
       }}
       exit={{ opacity: 0, y: 20 }}
-      className={`text-[#b5b5b5a4] bg-clip-text inline-block ${disabled ? '' : 'animate-shine'} ${className}`}
+      className={`text-[${textColor}] bg-clip-text inline-block ${
+        disabled ? "" : "animate-shine"
+      } ${className}`}
       style={{
         backgroundImage:
-          'linear-gradient(120deg, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 60%)',
-        backgroundSize: '200% 100%',
-        WebkitBackgroundClip: 'text',
-        animationDuration: animationDuration
+          "linear-gradient(120deg, rgba(255, 255, 255, 0) 40%, rgb(255, 255, 255) 50%, rgba(255, 255, 255, 0) 60%)",
+        backgroundSize: "200% 100%",
+        WebkitBackgroundClip: "text",
+        animationDuration: animationDuration,
       }}
     >
       {text}
