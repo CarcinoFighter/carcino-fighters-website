@@ -1,8 +1,6 @@
 ![Hero](./readme-hero.svg)
 <div align="center">
 
-# The Carcino Foundation
-
 ### Breaking Down Cancer for Anyone and Everyone
 
 [![Live Site](https://img.shields.io/badge/live-thecarcinofoundation.org-blue?style=for-the-badge)](https://thecarcinofoundation.org)
