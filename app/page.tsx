@@ -237,16 +237,16 @@ export default function Home() {
               variants={fadeScale}
             >
               <Image
-                src={`/landing/Background5.png`}
+                src={`/landing/Background.png`}
                 height={888}
                 width={1440}
                 alt="background"
-                className="object-cover w-full h-full blur-sm"
+                className="object-cover w-full h-full"
                 priority
               />
 
-              {/* <div className="absolute inset-0 bg-[#471F77]/52" /> */}
-              <div className="absolute inset-0 bg-[#000000] blur-sm opacity-45" />
+              <div className="absolute inset-0 bg-[#471F77]/52" />
+              <div className="absolute inset-0 bg-[#000000] opacity-55" />
             </motion.div>
 
             <motion.div
@@ -261,7 +261,7 @@ export default function Home() {
                 textColor="#fafafa"
               />
               <motion.span
-                className="font-dmsans text-xl max-sm:px-6 sm:max-w-[35%] w-full text-center max-sm:text-xs max-sm:w-4/5 max-sm:font-light"
+                className="font-dmsans text-2xl max-sm:px-6 sm:max-w-[35%] w-full text-center max-sm:text-xs max-sm:w-4/5 max-sm:font-light"
                 variants={fadeUp}
               >
                 At the Carcino Foundation, we believe that everyone should be
@@ -632,7 +632,7 @@ export default function Home() {
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            className="z-10 font-giest text-foreground flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center xl:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6 lg:py-18"
+            className="z-10 font-giest text-foreground flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center xl:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pb-6 lg:py-18 max-sm:mb-0"
           >
             {/* Main glass container */}
             <div className="w-full flex flex-row items-center justify-between relative overflow-hidden rounded-4xl">
