@@ -237,16 +237,16 @@ export default function Home() {
               variants={fadeScale}
             >
               <Image
-                src={`/landing/Background3.png`}
+                src={`/landing/Background5.png`}
                 height={888}
                 width={1440}
                 alt="background"
-                className="object-cover w-full h-full blur-[10]"
+                className="object-cover w-full h-full blur-sm"
                 priority
               />
 
               {/* <div className="absolute inset-0 bg-[#471F77]/52" /> */}
-              <div className="absolute inset-0 bg-[#000000] blur-[10] opacity-45" />
+              <div className="absolute inset-0 bg-[#000000] blur-sm opacity-45" />
             </motion.div>
 
             <motion.div
@@ -257,7 +257,7 @@ export default function Home() {
                 text={"Breaking Down Cancer for Everyone"}
                 disabled={true}
                 speed={4}
-                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-bold w-5xl mt-5"
+                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium w-5xl mt-5"
                 textColor="#f8f8f8"
               />
               <motion.span
