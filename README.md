@@ -8,7 +8,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 
-**Educating the next generation about cancer through accessible, student-led content**
+**Educating the next generation about cancer through accessible, student-led content.**
 
 [Visit Website](https://thecarcinofoundation.org) • [Report Bug](https://github.com/CarcinoFighter/carcino-fighters-website/issues) • [Request Feature](https://github.com/CarcinoFighter/carcino-fighters-website/issues)
 
@@ -91,10 +91,10 @@ carcino-fighters-website/
 - Categorized content for easy navigation
 
 **Content Features**
-- Verified research from medical pioneers
-- Up-to-date articles with current facts and studies
-- Simplified language for universal accessibility
-- Student-written and peer-reviewed content
+- Verified research from medical pioneers.
+- Up-to-date articles with current facts and studies.
+- Simplified language for universal accessibility.
+- Student-written and peer-reviewed content.
 
 ### 2. Responsive Design
 
@@ -356,21 +356,21 @@ We welcome contributions from developers and designers who share our mission!
 ### Development Guidelines
 
 **Code Standards**
-- Use TypeScript for all new files
-- Follow component composition patterns
-- Implement responsive design for all features
-- Test across multiple devices and browsers
+- Use TypeScript for all new files.
+- Follow component composition patterns.
+- Implement responsive design for all features.
+- Test across multiple devices and browsers.
 
 **Commit Messages**
-- Use clear, descriptive commit messages
-- Reference issue numbers when applicable
-- Follow conventional commits format
+- Use clear, descriptive commit messages.
+- Reference issue numbers when applicable.
+- Follow conventional commits format.
 
 **Testing**
-- Manually test all changes
-- Verify responsive behavior
-- Check accessibility with screen readers
-- Ensure cross-browser compatibility
+- Manually test all changes.
+- Verify responsive behavior.
+- Check accessibility with screen readers.
+- Ensure cross-browser compatibility.
 
 ---
 
@@ -441,10 +441,10 @@ This project is open source and available for educational purposes. Please see t
 
 Built by students, for students, with the goal of making cancer education accessible to everyone. Special thanks to:
 
-- Medical advisors and researchers who verify our content
-- The writing team creating accessible educational material
-- Open source contributors improving the platform
-- The Next.js and React communities for excellent documentation
+- Medical advisors and researchers who verify our content.
+- The writing team creating accessible educational material.
+- Open source contributors improving the platform.
+- The Next.js and React communities for excellent documentation.
 
 ---
 
@@ -454,6 +454,6 @@ Built by students, for students, with the goal of making cancer education access
 
 [Home](https://thecarcinofoundation.org) • [About](https://thecarcinofoundation.org/about) • [Articles](https://thecarcinofoundation.org/article) • [Contribute](https://thecarcinofoundation.org/internship)
 
-Made with dedication by the Carcino Foundation team
+Made with dedication by The Carcino Foundation Team
 
 </div>
