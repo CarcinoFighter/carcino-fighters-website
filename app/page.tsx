@@ -336,7 +336,7 @@ export default function Home() {
               key={loading ? "skeleton" : "cards"}
               variants={staggerContainer}
             >
-              <div className="pointer-events-none absolute z-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+              {/* <div className="pointer-events-none absolute z-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <motion.div
                   initial={false}
                   style={{ y: yBlob1 }}
@@ -345,7 +345,7 @@ export default function Home() {
                 >
                   <div className="w-full h-full rounded-full bg-[radial-gradient(closest-side,rgba(213,176,255,0.8),transparent)]" />
                 </motion.div>
-              </div>
+              </div> */}
               {loading ? (
                 <div className="col-span-full flex flex-col items-center gap-4 py-16">
                   <motion.div
@@ -394,6 +394,7 @@ export default function Home() {
           bg-background/30
           border-accent
           rounded-[55px]
+         bg-gradient-to-br from-[#9875c1]/25 via-[#9875c1]/5 to-transparent
           backdrop-blur-xl backdrop-saturate-150 border  shadow-xl
           w-full h-full p-5
           flex flex-col justify-center
