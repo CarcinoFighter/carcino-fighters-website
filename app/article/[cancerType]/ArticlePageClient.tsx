@@ -209,17 +209,17 @@ w-full max-w-screen-sm sm:max-w-none mx-auto px-4
     overflow-hidden
     select-none
     cursor-none">
-          <CardItem translateZ="20" className="relative select-none cursor-none z-10 flex flex-col gap-2 items-center rounded-[55px] ">
-            <div className=" lowercase select-none cursor-none text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] overflow-hidden">
+          <CardItem translateZ="20" className="relative pointer-events-none select-none cursor-none z-10 flex flex-col gap-2 items-center rounded-[55px] ">
+            <div className=" lowercase select-none pointer-events-none cursor-none text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] overflow-hidden">
               Research Article
             </div>
 
-           <h3 className="text-[25px] select-none cursor-none leading-[20px] uppercase text-center sm:text-center sm:text-[35px] line-clamp-7 sm:leading-[30px] p-2 font-tttravelsnext font-bold">
+           <h3 className="text-[25px] select-none pointer-events-none cursor-none leading-[20px] uppercase text-center sm:text-center sm:text-[35px] line-clamp-7 sm:leading-[30px] p-2 font-tttravelsnext font-bold">
   {a.title}
 </h3>
  
 
-            <p className=" text-[15px] sm:text-[20px] select-none cursor-none text-center text-[#CDA8E8]">
+            <p className=" text-[15px] pointer-events-none sm:text-[20px] select-none cursor-none text-center text-[#CDA8E8]">
                by {a.author ?? "Unknown Author"}
             </p>
 

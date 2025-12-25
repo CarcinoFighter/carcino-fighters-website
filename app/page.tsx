@@ -304,33 +304,22 @@ export default function Home() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={staggerContainer}
-            className="z-10 font-giest flex flex-col lg:gap-8 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full sm:max-w-[70%] mx-auto h-fit lg:px-14 md:px-10 px-6 pb-6 py-7 relative"
+            className="z-10 font-giest flex flex-col lg:gap-8 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full sm:max-w-[90%] mx-auto h-fit lg:px-14 md:px-10 px-6 pb-6 py-7 relative"
           >
-            <MotionLabel
-              className="relative border rounded-full overflow-hidden font-space_grotesk text-base text-foreground"
-              variants={fadeUp}
-            >
-              {/* Wrapper for content + layers */}
-              <div className="relative px-5 py-3 flex items-center justify-center">
-                {/* Text content */}
-                <span className="relative z-10">Research and Development</span>
-
-                {/* Liquid glass layers */}
-                <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-                <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
-                <div className="absolute inset-0 liquidGlass-shine pointer-events-none"></div>
-                <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
-              </div>
-            </MotionLabel>
 
             <motion.h1
-              className="text-4xl font-giest pt-5 text-foreground max-sm:pt-10 max-sm:text-3xl max-sm:pb-2"
+              className="text-5xl leading-[0.9]
+  sm:text-5xl sm:leading-[0.9]
+  lg:text-6xl lg:leading-[0.9] whitespace-pre-wrap
+  text-center font-wintersolace font-bold
+  bg-gradient-to-r from-[#70429b] from-8% to-[#dfcbf0] to-60%
+  bg-clip-text text-transparent py-6 px-10"
               variants={fadeUp}
             >
-              Our Articles
+              Article Gallery
             </motion.h1>
             <motion.p
-              className="text-lg text-muted-foreground font-space_grotesk max-sm:text-md w-2/3 text-center"
+              className="text-lg text-muted-foreground font-dmsans max-sm:text-md w-2/3 text-center"
               variants={fadeUp}
             >
               Here's the latest collection of articles we offer, tailored to be
@@ -340,7 +329,7 @@ export default function Home() {
             {/* subtle parallax blobs behind the grid */}
 
             <motion.div
-              className="relative justify-center z-10 grid lg:grid-flow-col lg:grid-rows-2 gap-3 py-6 w-screen"
+              className="relative justify-center z-10 grid lg:grid-flow-col lg:grid-rows-2 gap-x-3 gap-y-10 py-6 w-screen"
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
@@ -379,51 +368,65 @@ export default function Home() {
                 </div>
               ) : (
                 featuredArticles.map((article) => (
-                  <motion.div
-                    key={article.id}
-                    variants={{
-                      hidden: { opacity: 0, y: 12 },
-                      visible: {
-                        opacity: 1,
-                        y: 0,
-                        transition: { duration: 0.55, ease: easeSoft },
-                      },
-                    }}
-                    layout
-                    whileHover={{ y: -4, scale: 1.015 }}
-                  >
-                    <CardContainer className="w-xs sm:w-sm px-4 my-2 overflow-hidden aspect-[3/2] max-sm:w-60 max-sm:h-60">
-                      <CardBody className="inset-shadow-[0_0_10px_10px] inset-shadow-foreground/2 relative group/card aspect-3/2 bg-background/20 backdrop-blur-sm border-accent w-full h-full rounded-[55px] p-[30px] px-[45px] border">
-                        <div className="flex flex-col gap-4 h-full justify-between">
-                          <Link
-                            href={`/article/${article.slug}`}
-                            className="my-auto"
-                          >
-                            <CardItem
-                              translateZ="20"
-                              className="flex flex-col gap-2 h-full items-center"
-                            >
-                              <div className="text-primary bg-primary/10 px-2 rounded border-primary border/20 w-fit mb-2 text-xs font-medium">
-                                Research Article
-                              </div>
-                              <h2 className="text-lg lg:text-2xl md:text-xl font-giest text-foreground mb-2 line-clamp-2 text-center">
-                                {article.title}
-                              </h2>
-                              <div className="flex items-center gap-2 mb-2">
-                                <p className="text-muted-foreground text-sm line-clamp-3">
-                                  Authored by{" "}
-                                  {article.author ?? "Anonymous Author"}
-                                </p>
-                              </div>
-                              <p className="text-sm text-primary flex flex-row items-center gap-1 font-medium hover:underline justify-center">
-                                View Article <ArrowUpRight size={14} />
-                              </p>
-                            </CardItem>
-                          </Link>
-                        </div>
-                      </CardBody>
-                    </CardContainer>
-                  </motion.div>
+          <Link
+  key={article.id}
+  href={article.slug ? `/article/${article.slug}` : `/article/${article.id}`}
+  className="cursor-none"
+>
+  <motion.div
+    variants={{
+      hidden: { opacity: 0, y: 12 },
+      visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.55, ease: easeSoft },
+      },
+    }}
+    layout
+    whileHover={{ y: -4, scale: 1.015 }}
+  >
+    <CardContainer className="w-full max-w-lg sm:w-auto px-4 rounded-[55px]">
+      <CardBody
+        className="
+          relative z-20
+          vision-pro-ui-hoverable
+          group/card
+          bg-background/30
+          border-accent
+          rounded-[55px]
+          backdrop-blur-xl backdrop-saturate-150 border  shadow-xl
+          w-full h-full p-5
+          flex flex-col justify-center
+          min-h-[260px]
+          overflow-hidden
+          select-none
+          cursor-none
+        "
+      >
+        <CardItem
+          translateZ="20"
+          className="relative z-10  pointer-events-none flex flex-col gap-2 items-center rounded-[55px] cursor-none"
+        >
+          <div className="lowercase text-[20px] pointer-events-none sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] cursor-none">
+            Research Article
+          </div>
+
+          <h3 className="text-[25px] leading-[20px] pointer-events-none uppercase text-center sm:text-[35px] sm:leading-[30px] p-2 font-tttravelsnext font-bold line-clamp-7 cursor-none">
+            {article.title}
+          </h3>
+
+          <p className="text-[15px] pointer-events-none sm:text-[20px] text-center text-[#CDA8E8] cursor-none">
+            by {article.author ?? "Unknown Author"}
+          </p>
+        </CardItem>
+
+         <div className="divGlass-effect pointer-events-none z-0" />
+       {/* <div className="cardGlass-shine pointer-events-none z-0 overflow-hidden" /> */}
+      </CardBody>
+    </CardContainer>
+  </motion.div>
+</Link>
+
                 ))
               )}
             </motion.div>
@@ -435,13 +438,13 @@ export default function Home() {
             >
               <Button
                 variant="ghost"
-                className="relative cursor-none px-5 py-3 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-giest font-medium hover:scale-[105%]"
+                className="relative cursor-none px-7 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
               >
                 <Link
                   href="/article"
                   className="relative z-10 flex items-center cursor-none gap-2"
                 >
-                  Read More Insights{" "}
+                  Visit the Articles Tab{" "}
                   <ArrowUpRight className="transition-transform border-none" />
                 </Link>
 
