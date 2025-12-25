@@ -139,6 +139,27 @@ export default function Home() {
     },
     inLanguage: "en-IN",
   };
+React.useEffect(() => {
+  if (loading) return;
+
+  const cards = document.querySelectorAll<HTMLElement>(".article-card");
+  let maxHeight = 0;
+
+  // reset heights first
+  cards.forEach((card) => {
+    card.style.height = "auto";
+  });
+
+  // measure tallest
+  cards.forEach((card) => {
+    maxHeight = Math.max(maxHeight, card.offsetHeight);
+  });
+
+  // apply height
+  cards.forEach((card) => {
+    card.style.height = `${maxHeight}px`;
+  });
+}, [loading, featuredArticles]);
 
   return (
     <>
@@ -328,14 +349,26 @@ export default function Home() {
             </motion.p>
             {/* subtle parallax blobs behind the grid */}
 
-            <motion.div
-              className="relative justify-center z-10 grid lg:grid-flow-col lg:grid-rows-2 gap-x-3 gap-y-10 py-6 w-screen"
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              key={loading ? "skeleton" : "cards"}
-              variants={staggerContainer}
-            >
+           <motion.div
+  className="
+    relative z-10
+    grid
+    lg:grid-flow-col lg:grid-rows-2
+    lg:auto-cols-fr
+    auto-rows-fr
+    items-stretch
+    gap-x-6 gap-y-10
+    py-6
+    w-full
+    justify-center
+  "
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.2 }}
+  key={loading ? 'skeleton' : 'cards'}
+  variants={staggerContainer}
+>
+
               {/* <div className="pointer-events-none absolute z-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <motion.div
                   initial={false}
@@ -368,12 +401,15 @@ export default function Home() {
                 </div>
               ) : (
                 featuredArticles.map((article) => (
-          <Link
+        <Link
   key={article.id}
   href={article.slug ? `/article/${article.slug}` : `/article/${article.id}`}
-  className="cursor-none"
+  className="cursor-none h-full block"
 >
   <motion.div
+  className="h-full"
+    layout
+    whileHover={{ y: -4, scale: 1.015 }}
     variants={{
       hidden: { opacity: 0, y: 12 },
       visible: {
@@ -382,23 +418,22 @@ export default function Home() {
         transition: { duration: 0.55, ease: easeSoft },
       },
     }}
-    layout
-    whileHover={{ y: -4, scale: 1.015 }}
   >
-    <CardContainer className="w-full max-w-lg sm:w-auto px-4 rounded-[55px]">
+    <CardContainer className="w-full h-full px-4 rounded-[55px]">
       <CardBody
         className="
+        article-card
           relative z-20
-          vision-pro-ui-hoverable
           group/card
-          bg-background/30
-          border-accent
-          rounded-[55px]
-         bg-gradient-to-br from-[#9875c1]/25 via-[#9875c1]/5 to-transparent
-          backdrop-blur-xl backdrop-saturate-150 border  shadow-xl
-          w-full h-full p-5
+          vision-pro-ui-hoverable
+          w-full h-full min-h-[260px]
+          py-5
           flex flex-col justify-center
-          min-h-[260px]
+          rounded-[55px]
+          bg-background/30
+          bg-gradient-to-br from-[#9875c1]/25 via-[#9875c1]/5 to-transparent
+          backdrop-blur-xl backdrop-saturate-150
+          border border-accent shadow-xl
           overflow-hidden
           select-none
           cursor-none
@@ -406,23 +441,28 @@ export default function Home() {
       >
         <CardItem
           translateZ="20"
-          className="relative z-10  pointer-events-none flex flex-col gap-2 items-center rounded-[55px] cursor-none"
+          className="
+            relative z-10
+            flex flex-col items-center gap-2
+            rounded-[55px]
+            pointer-events-none
+          "
         >
-          <div className="lowercase text-[20px] pointer-events-none sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] cursor-none">
+          <div className="lowercase text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8]">
             Research Article
           </div>
 
-          <h3 className="text-[25px] leading-[20px] pointer-events-none uppercase text-center sm:text-[35px] sm:leading-[30px] p-2 font-tttravelsnext font-bold line-clamp-7 cursor-none">
+          <h3 className="text-[25px] sm:text-[35px] leading-[20px] sm:leading-[30px] p-2 text-center uppercase font-tttravelsnext font-bold line-clamp-7">
             {article.title}
           </h3>
 
-          <p className="text-[15px] pointer-events-none sm:text-[20px] text-center text-[#CDA8E8] cursor-none">
+          <p className="text-[15px] sm:text-[20px] text-center text-[#CDA8E8]">
             by {article.author ?? "Unknown Author"}
           </p>
         </CardItem>
 
-         <div className="divGlass-effect pointer-events-none z-0" />
-       {/* <div className="cardGlass-shine pointer-events-none z-0 overflow-hidden" /> */}
+        <div className="divGlass-effect pointer-events-none z-0" />
+        {/* <div className="cardGlass-shine pointer-events-none z-0 overflow-hidden" /> */}
       </CardBody>
     </CardContainer>
   </motion.div>
