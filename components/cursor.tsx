@@ -295,13 +295,19 @@ const Cursor = ({ visibleOnTouch = false }: CursorProps) => {
       setIsUsingTouch(false)
     }
 
+    const handleMouseDown = () => {
+      setIsUsingTouch(false)
+    }
+
     // Listen for actual touch and mouse usage
     window.addEventListener('touchstart', handleTouchStart, { passive: true })
     window.addEventListener('mousemove', handleMouseMove, { passive: true })
+    window.addEventListener('mousedown', handleMouseDown, { passive: true })
 
     return () => {
       window.removeEventListener('touchstart', handleTouchStart)
       window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mousedown', handleMouseDown)
     }
   }, [])
 
