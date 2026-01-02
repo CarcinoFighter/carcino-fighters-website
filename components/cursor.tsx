@@ -280,23 +280,31 @@ type CursorProps = {
 }
 
 const Cursor = ({ visibleOnTouch = false }: CursorProps) => {
-  const [isTouchDevice, setIsTouchDevice] = useState(false)
-
-  const checkIfTouchDevice = () => {
-    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
-    setIsTouchDevice(isTouch)
-  }
+  const [isUsingTouch, setIsUsingTouch] = useState(false)
 
   useEffect(() => {
-    checkIfTouchDevice()
-    window.addEventListener('resize', checkIfTouchDevice)
+    // Show cursor by default (assume mouse)
+    setIsUsingTouch(false)
+
+    const handleTouchStart = () => {
+      setIsUsingTouch(true)
+    }
+
+    const handleMouseMove = () => {
+      setIsUsingTouch(false)
+    }
+
+    // Listen for actual touch and mouse usage
+    window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('mousemove', handleMouseMove, { passive: true })
 
     return () => {
-      window.removeEventListener('resize', checkIfTouchDevice)
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('mousemove', handleMouseMove)
     }
   }, [])
 
-  return !isTouchDevice || visibleOnTouch ? <CursorInner /> : null
+  return !isUsingTouch || visibleOnTouch ? <CursorInner /> : null
 }
 
 export { Cursor }
