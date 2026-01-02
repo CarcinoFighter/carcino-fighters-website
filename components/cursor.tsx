@@ -281,10 +281,11 @@ type CursorProps = {
 
 const Cursor = ({ visibleOnTouch = false }: CursorProps) => {
   const [isUsingTouch, setIsUsingTouch] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
-    // Show cursor by default (assume mouse)
-    setIsUsingTouch(false)
+    // Show cursor once mounted
+    setIsMounted(true)
 
     const handleTouchStart = () => {
       setIsUsingTouch(true)
@@ -304,6 +305,8 @@ const Cursor = ({ visibleOnTouch = false }: CursorProps) => {
     }
   }, [])
 
+  if (!isMounted) return null
+  
   return !isUsingTouch || visibleOnTouch ? <CursorInner /> : null
 }
 
