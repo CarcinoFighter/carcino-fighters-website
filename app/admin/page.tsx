@@ -9,7 +9,7 @@ const supabase = createClient(
 );
 
 const ADMIN_PASS_HASH =
-  "$2a$12$hO6g3hvavdsyejG4ESJOueW/kZlrtmeizB0vRut5ArGv4dBZlNAyG";
+  "$2b$10$ZuLF7PXKUjtwZ.anjjg7G.dnwB5Hbm3LroRUcgf3Iv8k1DXb1zFzK";
 
 export default function AdminPage() {
   const [unlocked, setUnlocked] = useState(false);
