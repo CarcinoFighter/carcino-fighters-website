@@ -25,6 +25,7 @@ export interface Article {
   author: string | null;
   content: string;
   position: string | null;
+  author_user_id?: string | null;
 }
 
 export interface ArticleWithAvatar extends Article { profilePicture?: string | null }
@@ -40,7 +41,7 @@ export async function getDocBySlug(slug: string): Promise<Article | null> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('id, slug, title, author, content, position')
+      .select('id, slug, title, content, author_user_id')
       .eq('slug', slug)
       .single();
 
@@ -49,7 +50,25 @@ export async function getDocBySlug(slug: string): Promise<Article | null> {
       return null;
     }
 
-    return data as Article;
+    const doc = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null };
+
+    let author: string | null = null;
+    let position: string | null = null;
+    if (doc.author_user_id) {
+      const { data: authorRow, error: authorErr } = await supabase
+        .from('users')
+        .select('id, name, username, email, position')
+        .eq('id', doc.author_user_id)
+        .limit(1)
+        .single();
+
+      if (!authorErr && authorRow) {
+        author = authorRow.name ?? authorRow.username ?? authorRow.email ?? null;
+        position = authorRow.position ?? null;
+      }
+    }
+
+    return { ...doc, author, position } as Article;
   } catch (error) {
     console.error('Error in getDocBySlug:', error);
     return null;
@@ -60,13 +79,29 @@ export async function getDocBySlugWithAvatar(slug: string): Promise<ArticleWithA
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('id, slug, title, author, content, position')
+      .select('id, slug, title, content, author_user_id')
       .eq('slug', slug)
       .single();
 
     if (error || !data) { if (error) console.error('Error fetching document:', error); return null }
 
-    const doc = data as Article;
+    const doc = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null };
+
+    let author: string | null = null;
+    let position: string | null = null;
+    if (doc.author_user_id) {
+      const { data: authorRow, error: authorErr } = await supabase
+        .from('users')
+        .select('id, name, username, email, position')
+        .eq('id', doc.author_user_id)
+        .limit(1)
+        .single();
+
+      if (!authorErr && authorRow) {
+        author = authorRow.name ?? authorRow.username ?? authorRow.email ?? null;
+        position = authorRow.position ?? null;
+      }
+    }
 
     let profilePicture: string | null = null;
     try {
@@ -85,7 +120,7 @@ export async function getDocBySlugWithAvatar(slug: string): Promise<ArticleWithA
       console.warn('Avatar API error', e);
     }
 
-    return { ...doc, profilePicture } as ArticleWithAvatar;
+    return { ...doc, author, position, profilePicture } as ArticleWithAvatar;
   } catch (error) {
     console.error('Error in getDocBySlugWithAvatar:', error);
     return null;
@@ -96,15 +131,40 @@ export async function getAllDocs(): Promise<Article[]> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('id, slug, title, author, content, position')
+      .select('id, slug, title, content, author_user_id')
       .order('title');
 
-    if (error) {
-      console.error('Error fetching documents:', error);
+    if (error || !data) {
+      if (error) console.error('Error fetching documents:', error);
       return [];
     }
 
-    return data as Article[];
+    const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null }[];
+    const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
+
+    let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null }> = {};
+    if (authorIds.length) {
+      const { data: authors, error: authorErr } = await supabase
+        .from('users')
+        .select('id, name, username, email, position')
+        .in('id', authorIds);
+      if (authorErr) {
+        console.error('Error fetching authors:', authorErr);
+      } else {
+        authorMap = Object.fromEntries(
+          (authors ?? []).map(a => [a.id, { name: a.name ?? null, username: a.username ?? null, email: a.email ?? null, position: a.position ?? null }])
+        );
+      }
+    }
+
+    return docs
+      .filter((d) => d.author_user_id)
+      .map((d) => {
+      const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
+      const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
+      const position = meta?.position ?? null;
+      return { ...d, author, position } as Article;
+    });
   } catch (error) {
     console.error('Error in getAllDocs:', error);
     return [];
@@ -115,12 +175,28 @@ export async function getAllDocsWithAvatars(): Promise<ArticleWithAvatar[]> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('id, slug, title, author, content, position')
+      .select('id, slug, title, content, author_user_id')
       .order('title');
 
     if (error || !data) { if (error) console.error('Error fetching documents:', error); return [] }
 
-    const docs = data as Article[];
+    const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null }[];
+    const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
+
+    let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null }> = {};
+    if (authorIds.length) {
+      const { data: authors, error: authorErr } = await supabase
+        .from('users')
+        .select('id, name, username, email, position')
+        .in('id', authorIds);
+      if (authorErr) {
+        console.error('Error fetching authors:', authorErr);
+      } else {
+        authorMap = Object.fromEntries(
+          (authors ?? []).map(a => [a.id, { name: a.name ?? null, username: a.username ?? null, email: a.email ?? null, position: a.position ?? null }])
+        );
+      }
+    }
     if (!docs.length) return [];
 
     // Prefer server API for signing URLs
@@ -142,7 +218,14 @@ export async function getAllDocsWithAvatars(): Promise<ArticleWithAvatar[]> {
       console.warn('Avatars API error', e);
     }
 
-    return docs.map(d => ({ ...d, profilePicture: picMap[d.id] ?? null }));
+    return docs
+      .filter((d) => d.author_user_id)
+      .map(d => {
+      const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
+      const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
+      const position = meta?.position ?? null;
+      return { ...d, author, position, profilePicture: picMap[d.id] ?? null } as ArticleWithAvatar;
+    });
   } catch (error) {
     console.error('Error in getAllDocsWithAvatars:', error);
     return [];
