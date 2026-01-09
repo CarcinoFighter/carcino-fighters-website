@@ -5,7 +5,7 @@ import { Geist, Space_Grotesk, Cinzel, Michroma } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import localFont from "next/font/local";
-import { Cursor } from "@/components/cursor"
+import { CursorToggle } from "@/components/cursor-toggle";
 
 // import { Footer } from "@/components/footer";
 
@@ -240,7 +240,7 @@ const orgSchema = {
       />
     </filter>
   </svg>
-    <Cursor />
+    <CursorToggle />
 
           {children}
 
