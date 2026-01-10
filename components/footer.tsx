@@ -7,7 +7,7 @@ export function Footer() {
       <div className="flex flex-col sm:flex-row text-center sm:text-left justify-between items-center mb-5 md:-mb-6">
         <h1 className="w-full flex flex-col md:flex-row sm:w-[50%] leading-[80%] font-tttravelsnext font-extrabold text-[#B185E5] text-3xl sm:text-4xl md:text-5xl lg:text-[6rem] max-sm:text-[#B185E5] max-sm:pb-1 max-sm:text-2xl opacity-40 md:tracking-[-6px] max-md:items-center">
           <Image
-            src="logo-footer.svg"
+            src="/logo-footer.svg"
             alt="TCF"
             width={215}
             height={215}
