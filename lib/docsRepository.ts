@@ -1,5 +1,6 @@
 // lib/docsRepository.ts
 import { supabase } from '@/lib/initSupabase';
+import { getNotionArticles, getNotionArticleBySlug } from './notion';
 
 function resolveApiUrl(path: string) {
   if (typeof window !== 'undefined') {
@@ -43,11 +44,15 @@ export async function getDocBySlug(slug: string): Promise<Article | null> {
       .from('cancer_docs')
       .select('id, slug, title, content, author_user_id')
       .eq('slug', slug)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      console.error('Error fetching document:', error);
-      return null;
+      console.error('Error fetching document from Supabase:', error);
+      return await getNotionArticleBySlug(slug);
+    }
+
+    if (!data) {
+      return await getNotionArticleBySlug(slug);
     }
 
     const doc = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null };
@@ -71,8 +76,26 @@ export async function getDocBySlug(slug: string): Promise<Article | null> {
     return { ...doc, author, position } as Article;
   } catch (error) {
     console.error('Error in getDocBySlug:', error);
-    return null;
   }
+
+
+  const notionArticle = await getNotionArticleBySlug(slug);
+  if (notionArticle) {
+
+    if (notionArticle.author) {
+      const { data: user } = await supabase
+        .from('users')
+        .select('position')
+        .eq('name', notionArticle.author)
+        .maybeSingle();
+
+      if (user?.position) {
+        notionArticle.position = user.position;
+      }
+    }
+    return notionArticle;
+  }
+  return null;
 }
 
 export async function getDocBySlugWithAvatar(slug: string): Promise<ArticleWithAvatar | null> {
@@ -81,9 +104,28 @@ export async function getDocBySlugWithAvatar(slug: string): Promise<ArticleWithA
       .from('cancer_docs')
       .select('id, slug, title, content, author_user_id')
       .eq('slug', slug)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) { if (error) console.error('Error fetching document:', error); return null }
+    if (error || !data) {
+      if (error) console.error('Error fetching document from Supabase:', error);
+
+      const notionArticle = await getNotionArticleBySlug(slug);
+      if (notionArticle) {
+
+        if (notionArticle.author) {
+          const { data: user } = await supabase
+            .from('users')
+            .select('position')
+            .eq('name', notionArticle.author)
+            .maybeSingle();
+          if (user?.position) {
+            notionArticle.position = user.position;
+          }
+        }
+        return { ...notionArticle, profilePicture: null } as ArticleWithAvatar;
+      }
+      return null;
+    }
 
     const doc = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null };
 
@@ -123,6 +165,22 @@ export async function getDocBySlugWithAvatar(slug: string): Promise<ArticleWithA
     return { ...doc, author, position, profilePicture } as ArticleWithAvatar;
   } catch (error) {
     console.error('Error in getDocBySlugWithAvatar:', error);
+
+    const notionArticle = await getNotionArticleBySlug(slug);
+    if (notionArticle) {
+
+      if (notionArticle.author) {
+        const { data: user } = await supabase
+          .from('users')
+          .select('position')
+          .eq('name', notionArticle.author)
+          .maybeSingle();
+        if (user?.position) {
+          notionArticle.position = user.position;
+        }
+      }
+      return { ...notionArticle, profilePicture: null } as ArticleWithAvatar;
+    }
     return null;
   }
 }
@@ -134,40 +192,61 @@ export async function getAllDocs(): Promise<Article[]> {
       .select('id, slug, title, content, author_user_id')
       .order('title');
 
-    if (error || !data) {
-      if (error) console.error('Error fetching documents:', error);
-      return [];
-    }
+    let supabaseDocs: Article[] = [];
+    if (data) {
+      const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null }[];
+      const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
 
-    const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null }[];
-    const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
-
-    let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null }> = {};
-    if (authorIds.length) {
-      const { data: authors, error: authorErr } = await supabase
-        .from('users')
-        .select('id, name, username, email, position')
-        .in('id', authorIds);
-      if (authorErr) {
-        console.error('Error fetching authors:', authorErr);
-      } else {
-        authorMap = Object.fromEntries(
-          (authors ?? []).map(a => [a.id, { name: a.name ?? null, username: a.username ?? null, email: a.email ?? null, position: a.position ?? null }])
-        );
+      let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null }> = {};
+      if (authorIds.length) {
+        const { data: authors, error: authorErr } = await supabase
+          .from('users')
+          .select('id, name, username, email, position')
+          .in('id', authorIds);
+        if (authorErr) {
+          console.error('Error fetching authors:', authorErr);
+        } else {
+          authorMap = Object.fromEntries(
+            (authors ?? []).map(a => [a.id, { name: a.name ?? null, username: a.username ?? null, email: a.email ?? null, position: a.position ?? null }])
+          );
+        }
       }
+
+      supabaseDocs = docs
+        .filter((d) => d.author_user_id)
+        .map((d) => {
+          const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
+          const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
+          const position = meta?.position ?? null;
+          return { ...d, author, position } as Article;
+        });
     }
 
-    return docs
-      .filter((d) => d.author_user_id)
-      .map((d) => {
-        const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
-        const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
-        const position = meta?.position ?? null;
-        return { ...d, author, position } as Article;
-      });
+    const notionDocs = await getNotionArticles();
+
+    const supabaseSlugs = new Set(supabaseDocs.map(d => d.slug));
+    const uniqueNotionDocs = notionDocs.filter(d => !supabaseSlugs.has(d.slug));
+
+    const enrichedNotionDocs = await Promise.all(uniqueNotionDocs.map(async (doc) => {
+      if (doc.author) {
+        const { data: user } = await supabase
+          .from('users')
+          .select('position')
+          .eq('name', doc.author)
+          .maybeSingle();
+        if (user?.position) {
+          return { ...doc, position: user.position };
+        }
+      }
+      return doc;
+    }));
+
+    console.log(`Fetched ${supabaseDocs.length} Supabase docs and ${enrichedNotionDocs.length} Notion docs (after deduplication)`);
+    return [...supabaseDocs, ...enrichedNotionDocs];
   } catch (error) {
     console.error('Error in getAllDocs:', error);
-    return [];
+    const notionDocs = await getNotionArticles();
+    return notionDocs;
   }
 }
 
@@ -178,57 +257,81 @@ export async function getAllDocsWithAvatars(): Promise<ArticleWithAvatar[]> {
       .select('id, slug, title, content, author_user_id')
       .order('title');
 
-    if (error || !data) { if (error) console.error('Error fetching documents:', error); return [] }
+    if (error) console.error('Error fetching documents from Supabase:', error);
 
-    const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null }[];
-    const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
+    let supabaseDocs: ArticleWithAvatar[] = [];
+    if (data) {
+      const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null }[];
+      const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
 
-    let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null }> = {};
-    if (authorIds.length) {
-      const { data: authors, error: authorErr } = await supabase
-        .from('users')
-        .select('id, name, username, email, position')
-        .in('id', authorIds);
-      if (authorErr) {
-        console.error('Error fetching authors:', authorErr);
-      } else {
-        authorMap = Object.fromEntries(
-          (authors ?? []).map(a => [a.id, { name: a.name ?? null, username: a.username ?? null, email: a.email ?? null, position: a.position ?? null }])
-        );
+      let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null }> = {};
+      if (authorIds.length) {
+        const { data: authors, error: authorErr } = await supabase
+          .from('users')
+          .select('id, name, username, email, position')
+          .in('id', authorIds);
+        if (authorErr) {
+          console.error('Error fetching authors:', authorErr);
+        } else {
+          authorMap = Object.fromEntries(
+            (authors ?? []).map(a => [a.id, { name: a.name ?? null, username: a.username ?? null, email: a.email ?? null, position: a.position ?? null }])
+          );
+        }
       }
-    }
-    if (!docs.length) return [];
 
-    // Prefer server API for signing URLs
-    let picMap: Record<string, string | null> = {};
-    const ids = docs.map(d => d.id);
-    try {
-      const res = await fetch(resolveApiUrl('/api/avatars'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids })
-      });
-      if (res.ok) {
-        const json = await res.json();
-        picMap = json?.map || {};
-      } else {
-        console.warn('Avatars API failed', res.status);
+
+      let picMap: Record<string, string | null> = {};
+      const ids = docs.map(d => d.id);
+      try {
+        const res = await fetch(resolveApiUrl('/api/avatars'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids })
+        });
+        if (res.ok) {
+          const json = await res.json();
+          picMap = json?.map || {};
+        }
+      } catch (e) {
+        console.warn('Avatars API error', e);
       }
-    } catch (e) {
-      console.warn('Avatars API error', e);
+
+      supabaseDocs = docs
+        .filter((d) => d.author_user_id)
+        .map(d => {
+          const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
+          const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
+          const position = meta?.position ?? null;
+          return { ...d, author, position, profilePicture: picMap[d.id] ?? null } as ArticleWithAvatar;
+        });
     }
 
-    return docs
-      .filter((d) => d.author_user_id)
-      .map(d => {
-        const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
-        const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
-        const position = meta?.position ?? null;
-        return { ...d, author, position, profilePicture: picMap[d.id] ?? null } as ArticleWithAvatar;
-      });
+    const notionDocs = await getNotionArticles();
+
+    const supabaseSlugs = new Set(supabaseDocs.map(d => d.slug));
+    const uniqueNotionDocs = notionDocs.filter(d => !supabaseSlugs.has(d.slug));
+
+    const enrichedNotionDocs = await Promise.all(uniqueNotionDocs.map(async (doc) => {
+      if (doc.author) {
+        const { data: user } = await supabase
+          .from('users')
+          .select('position')
+          .eq('name', doc.author)
+          .maybeSingle();
+        if (user?.position) {
+          return { ...doc, position: user.position };
+        }
+      }
+      return doc;
+    }));
+
+    const mappedNotionDocs: ArticleWithAvatar[] = enrichedNotionDocs.map(d => ({ ...d, profilePicture: null }));
+
+    return [...supabaseDocs, ...mappedNotionDocs];
   } catch (error) {
     console.error('Error in getAllDocsWithAvatars:', error);
-    return [];
+    const notionDocs = await getNotionArticles();
+    return notionDocs.map(d => ({ ...d, profilePicture: null }));
   }
 }
 
@@ -285,12 +388,43 @@ export async function getRandomArticleSummaries(limit = 3, excludeSlug?: string)
       }
     }
 
-    return shuffled.map(d => ({
+    const supabaseSummaries = shuffled.map(d => ({
       id: d.id,
       slug: d.slug,
       title: d.title,
       author: (d.author_user_id ? authorMap[d.author_user_id] : null) ?? "Unknown Author"
     }));
+
+    const notionDocs = await getNotionArticles();
+
+    const supabaseSlugs = new Set(supabaseSummaries.map(d => d.slug));
+    const uniqueNotionDocs = notionDocs.filter(d => !supabaseSlugs.has(d.slug));
+
+    const enrichedNotionDocs = await Promise.all(uniqueNotionDocs.map(async (doc) => {
+      if (doc.author) {
+        const { data: user } = await supabase
+          .from('users')
+          .select('position')
+          .eq('name', doc.author)
+          .maybeSingle();
+        if (user?.position) {
+          return { ...doc, position: user.position };
+        }
+      }
+      return doc;
+    }));
+
+    const notionSummaries = enrichedNotionDocs
+      .filter(d => d.slug !== excludeSlug)
+      .map(d => ({
+        id: d.id,
+        slug: d.slug,
+        title: d.title,
+        author: d.author ?? "Notion Author"
+      }));
+
+    const allSummaries = [...supabaseSummaries, ...notionSummaries];
+    return allSummaries.sort(() => 0.5 - Math.random()).slice(0, limit);
 
   } catch (error) {
     console.error('Error in getRandomArticleSummaries:', error);
