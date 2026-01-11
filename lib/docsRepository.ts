@@ -160,11 +160,11 @@ export async function getAllDocs(): Promise<Article[]> {
     return docs
       .filter((d) => d.author_user_id)
       .map((d) => {
-      const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
-      const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
-      const position = meta?.position ?? null;
-      return { ...d, author, position } as Article;
-    });
+        const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
+        const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
+        const position = meta?.position ?? null;
+        return { ...d, author, position } as Article;
+      });
   } catch (error) {
     console.error('Error in getAllDocs:', error);
     return [];
@@ -221,11 +221,11 @@ export async function getAllDocsWithAvatars(): Promise<ArticleWithAvatar[]> {
     return docs
       .filter((d) => d.author_user_id)
       .map(d => {
-      const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
-      const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
-      const position = meta?.position ?? null;
-      return { ...d, author, position, profilePicture: picMap[d.id] ?? null } as ArticleWithAvatar;
-    });
+        const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
+        const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
+        const position = meta?.position ?? null;
+        return { ...d, author, position, profilePicture: picMap[d.id] ?? null } as ArticleWithAvatar;
+      });
   } catch (error) {
     console.error('Error in getAllDocsWithAvatars:', error);
     return [];
@@ -238,7 +238,7 @@ export async function deleteDoc(id: string): Promise<boolean> {
       .from('cancer_docs')
       .delete()
       .eq('id', id);
-    
+
     if (error) throw error;
     return true;
   } catch (error) {
@@ -249,15 +249,10 @@ export async function deleteDoc(id: string): Promise<boolean> {
 
 export async function getRandomArticleSummaries(limit = 3, excludeSlug?: string): Promise<ArticleSummary[]> {
   try {
-    let query = supabase
-      .from('cancer_docs_random')
-      .select('id, slug, title, author')
-
-    if (excludeSlug) {
-      query = query.neq('slug', excludeSlug);
-    }
-
-    const { data, error } = await query.limit(limit);
+    const { data, error } = await supabase
+      .from('cancer_docs')
+      .select('id, slug, title, author_user_id')
+      .limit(20);
 
     if (error || !data) {
       if (error) {
@@ -266,7 +261,37 @@ export async function getRandomArticleSummaries(limit = 3, excludeSlug?: string)
       return [];
     }
 
-    return data as ArticleSummary[];
+    const docsRaw = data as { id: string; slug: string; title: string; author_user_id: string | null }[];
+
+    let docs = excludeSlug ? docsRaw.filter(d => d.slug !== excludeSlug) : docsRaw;
+
+    const shuffled = docs.sort(() => 0.5 - Math.random()).slice(0, limit);
+
+    const authorIds = Array.from(new Set(shuffled.map(d => d.author_user_id).filter(Boolean))) as string[];
+    let authorMap: Record<string, string | null> = {};
+
+    if (authorIds.length > 0) {
+      const { data: authors, error: authorErr } = await supabase
+        .from('users')
+        .select('id, name, username, email')
+        .in('id', authorIds);
+
+      if (authorErr) {
+        console.error('Error fetching authors for summaries:', authorErr);
+      } else {
+        authors?.forEach(a => {
+          authorMap[a.id] = a.name ?? a.username ?? a.email ?? null;
+        });
+      }
+    }
+
+    return shuffled.map(d => ({
+      id: d.id,
+      slug: d.slug,
+      title: d.title,
+      author: (d.author_user_id ? authorMap[d.author_user_id] : null) ?? "Unknown Author"
+    }));
+
   } catch (error) {
     console.error('Error in getRandomArticleSummaries:', error);
     return [];
