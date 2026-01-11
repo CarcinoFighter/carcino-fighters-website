@@ -6,7 +6,7 @@ import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowDown} from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,7 +18,7 @@ interface ArticlePageClientProps {
   article: ArticleWithAvatar;
   moreArticles: ArticleSummary[];
 }
-
+const easeSoft = [0.33, 1, 0.68, 1] as const;
 export function ArticlePageClient({ article, moreArticles }: ArticlePageClientProps) {
   const [readmore, setReadmore] = useState(false);
   // const firstCardRef = useRef<HTMLDivElement | null>(null);
@@ -147,95 +147,120 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
 
             {/* AUTHOR SECTION */}
             <div className="flex flex-col gap-10 mt-20 items-center ">
-<h2 className="sm:text-3xl text-4xl font-instrumentserifitalic bg-gradient-to-r
+              <h2 className="sm:text-3xl text-4xl font-instrumentserifitalic bg-gradient-to-r
   from-[#b793d8] from-8%
   to-[#ffffff] to-60%
   bg-clip-text text-transparent ">
-  About the Author
-</h2>
-<div className="relative text-left flex flex-col sm:flex-row gap-6  p-5 rounded-[55px] overflow-hidden ">
+                About the Author
+              </h2>
+              <div className="relative text-left flex flex-col sm:flex-row gap-6  p-5 rounded-[55px] overflow-hidden ">
 
 
-  <div className=" divGlass-effect pointer-events-none z-0  "></div>
-  <div className=" divGlass-tint pointer-events-none z-0 "></div>
-  <div className=" divGlass-shine pointer-events-none z-0 relative opacity-70"></div>
+                <div className=" divGlass-effect pointer-events-none z-0  "></div>
+                <div className=" divGlass-tint pointer-events-none z-0 "></div>
+                <div className=" divGlass-shine pointer-events-none z-0 relative opacity-70"></div>
 
 
-  <Avatar className="w-20 h-20 relative z-10 mx-auto sm:mx-0">
-    <AvatarImage src={article.profilePicture || "/dummy_image1.png"} />
-    <AvatarFallback>NC</AvatarFallback>
-  </Avatar>
+                <Avatar className="w-20 h-20 relative z-10 mx-auto sm:mx-0">
+                  <AvatarImage src={article.profilePicture || "/dummy_image1.png"} />
+                  <AvatarFallback>NC</AvatarFallback>
+                </Avatar>
 
- <div className="max-w-[500px] flex flex-col gap-1 p-2 relative z-10 items-center sm:items-start">
-    <h3 className="text-[26px] uppercase font-tttravelsnext leading-[20px] font-bold text-center sm:text-left">
-  {authorLabel}
-</h3>
+                <div className="max-w-[500px] flex flex-col gap-1 p-2 relative z-10 items-center sm:items-start">
+                  <h3 className="text-[26px] uppercase font-tttravelsnext leading-[20px] font-bold text-center sm:text-left">
+                    {authorLabel}
+                  </h3>
 
-    <p className="uppercase text-[13px] leading-[30px]  text-[#C1C1C1]">{positionLabel}</p>
-  </div>
+                  <p className="uppercase text-[13px] leading-[30px]  text-[#C1C1C1]">{positionLabel}</p>
+                </div>
 
-  <p className="text-sm text-[#CDA8E8] leading-[15px] p-5 relative z-10 sm:pr-15 ">
-    Ex sapien vitae pellentesque sem placerat in id. Bibendum egestas iaculis massa nisl malesuada lacinia integer. Natoque penatibus et magnis dis parturient montes nascetur. Mauris pharetra vestibulum fusce dictum risus blandit quis.
-  </p>
-</div>
+                <p className="text-sm text-[#CDA8E8] leading-[15px] p-5 relative z-10 sm:pr-15 ">
+                  Ex sapien vitae pellentesque sem placerat in id. Bibendum egestas iaculis massa nisl malesuada lacinia integer. Natoque penatibus et magnis dis parturient montes nascetur. Mauris pharetra vestibulum fusce dictum risus blandit quis.
+                </p>
+              </div>
 
             </div>
 
 
-            <div className="flex flex-col gap-8 mt-25 items-center">
+            <div className="flex flex-col gap-8 mt-24 items-center">
               <h2 className="sm:text-3xl text-4xl font-instrumentserifitalic bg-gradient-to-r
   from-[#b793d8] from-8%
   to-[#ffffff] to-60%
   bg-clip-text text-transparent">Suggested Articles</h2>
 
- <div className="flex flex-col sm:flex-row gap-4 items-center justify-center
+              <div className="flex flex-col sm:flex-row gap-4 items-center justify-center
 w-full max-w-screen-sm sm:max-w-none mx-auto px-4
 ">
-  {moreArticles.map((a) => (
-    <Link
-      key={a.id}
-      href={a.slug ? `/article/${a.slug}` : `/article/${a.id}`}
-      className="w-full max-w-lg sm:w-auto cursor-none"
-    >
-      <CardContainer className="w-full px-4 rounded-[55px] ">
-        <CardBody className="    relative z-20
-    vision-pro-ui-hoverable
-    group/card
-    bg-background/20
-    border-accent
-    w-full h-full p-5
-    flex flex-col justify-center
-    min-h-[260px]
-    overflow-hidden
-    select-none
-    cursor-none">
-          <CardItem translateZ="20" className="relative pointer-events-none select-none cursor-none z-10 flex flex-col gap-2 items-center rounded-[55px] ">
-            <div className=" lowercase select-none pointer-events-none cursor-none text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] overflow-hidden">
-              Research Article
+                {moreArticles.map((a) => (
+                  <Link
+                    key={a.id}
+                    href={a.slug ? `/article/${a.slug}` : `/article/${a.id}`}
+                    className="w-full max-w-lg sm:w-auto cursor-none h-full block"
+                  >
+                    <motion.div
+                      className="h-full"
+                      layout
+                      whileHover={{ y: -4, scale: 1.015 }}
+                      variants={{
+                        hidden: { opacity: 0, y: 12 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          transition: { duration: 0.55, ease: easeSoft },
+                        },
+                      }}
+                    >
+                      <CardContainer className="w-full h-full px-4 rounded-[55px]">
+                        <CardBody
+                          className="
+                            article-card
+                            relative z-20
+                            group/card
+                            vision-pro-ui-hoverable
+                            w-full h-full min-h-[260px]
+                            py-5
+                            flex flex-col justify-center
+                            rounded-[55px]
+                            bg-background/30
+                            bg-gradient-to-br from-[#9875c1]/25 via-[#9875c1]/5 to-transparent
+                            backdrop-blur-xl backdrop-saturate-150
+                            border border-accent shadow-xl
+                            overflow-hidden
+                            select-none
+                            cursor-none
+                          "
+                        >
+                          <CardItem
+                            translateZ="20"
+                            className="
+                              relative z-10
+                              flex flex-col items-center gap-2
+                              rounded-[55px]
+                              pointer-events-none
+                            "
+                          >
+                            <div className="lowercase text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8]">
+                              Research Article
+                            </div>
+
+                            <h3 className="text-[25px] sm:text-[35px] leading-[20px] sm:leading-[30px] p-2 text-center uppercase font-tttravelsnext font-bold line-clamp-7">
+                              {a.title}
+                            </h3>
+
+                            <p className="text-[15px] sm:text-[20px] text-center text-[#CDA8E8]">
+                              by {a.author ?? "Unknown Author"}
+                            </p>
+                          </CardItem>
+
+                          <div className="divGlass-effect pointer-events-none z-0" />
+                          {/* <div className="cardGlass-shine pointer-events-none z-0 overflow-hidden" /> */}
+                        </CardBody>
+                      </CardContainer>
+                    </motion.div>
+                  </Link>
+                ))}
+              </div>
             </div>
-
-           <h3 className="text-[25px] select-none pointer-events-none cursor-none leading-[20px] uppercase text-center sm:text-center sm:text-[35px] line-clamp-7 sm:leading-[30px] p-2 font-tttravelsnext font-bold">
-  {a.title}
-</h3>
- 
-
-            <p className=" text-[15px] pointer-events-none sm:text-[20px] select-none cursor-none text-center text-[#CDA8E8]">
-               by {a.author ?? "Unknown Author"}
-            </p>
-
-            {/* <div className="text-primary flex items-center gap-1 text-sm hover:underline">
-              Read it <ArrowUpRight size={14} />
-            </div> */}
-          </CardItem>
-
-          <div className="divGlass-effect pointer-events-none z-0"></div>
-          <div className=" cardGlass-shine pointer-events-none z-0 overflow-hidden"></div>
-        </CardBody>
-      </CardContainer>
-    </Link>
-  ))}
-</div>
-</div>
 
           </motion.div>
         </div>
