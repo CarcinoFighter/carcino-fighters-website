@@ -94,12 +94,12 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                     h1: (props) => <h1 className="text-3xl font-bold mt-8 mb-4" {...props} />,
                     h2: (props) => <h2 className="text-2xl font-bold mt-8 mb-4" {...props} />,
                     h3: (props) => <h3 className="text-xl font-bold mt-6 mb-3" {...props} />,
-                    p: (props) => <p className="my-4 leading-relaxed" {...props} />,
+                    p: (props) => <p className="mb-4 last:mb-0 leading-relaxed" {...props} />,
                     a: (props) => (
                       <a className="text-primary hover:text-primary/80 underline" {...props} />
                     ),
                     ul: (props) => <ul className="list-disc list-inside my-4" {...props} />,
-                    ol: (props) => <ol className="list-decimal list-inside my-4" {...props} />,
+                    ol: (props) => <ol className="list-decimal pl-6 my-4 space-y-1" {...props} />,
                     blockquote: (props) => (
                       <blockquote className="border-l-4 border-primary/30 pl-4 italic my-4" {...props} />
                     ),
