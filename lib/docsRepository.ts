@@ -222,7 +222,8 @@ export async function getAllDocs(): Promise<Article[]> {
         });
     }
 
-    const notionDocs = await getNotionArticles();
+    // Fetch metadata only (no content conversion) - FAST!
+    const notionDocs = await getNotionArticles(false);
 
     const supabaseSlugs = new Set(supabaseDocs.map(d => d.slug));
     const uniqueNotionDocs = notionDocs.filter(d => !supabaseSlugs.has(d.slug));
@@ -245,7 +246,7 @@ export async function getAllDocs(): Promise<Article[]> {
     return [...supabaseDocs, ...enrichedNotionDocs];
   } catch (error) {
     console.error('Error in getAllDocs:', error);
-    const notionDocs = await getNotionArticles();
+    const notionDocs = await getNotionArticles(false);
     return notionDocs;
   }
 }
@@ -306,7 +307,8 @@ export async function getAllDocsWithAvatars(): Promise<ArticleWithAvatar[]> {
         });
     }
 
-    const notionDocs = await getNotionArticles();
+    // Fetch metadata only (no content conversion) - FAST!
+    const notionDocs = await getNotionArticles(false);
 
     const supabaseSlugs = new Set(supabaseDocs.map(d => d.slug));
     const uniqueNotionDocs = notionDocs.filter(d => !supabaseSlugs.has(d.slug));
@@ -330,7 +332,7 @@ export async function getAllDocsWithAvatars(): Promise<ArticleWithAvatar[]> {
     return [...supabaseDocs, ...mappedNotionDocs];
   } catch (error) {
     console.error('Error in getAllDocsWithAvatars:', error);
-    const notionDocs = await getNotionArticles();
+    const notionDocs = await getNotionArticles(false);
     return notionDocs.map(d => ({ ...d, profilePicture: null }));
   }
 }
@@ -395,7 +397,8 @@ export async function getRandomArticleSummaries(limit = 3, excludeSlug?: string)
       author: (d.author_user_id ? authorMap[d.author_user_id] : null) ?? "Unknown Author"
     }));
 
-    const notionDocs = await getNotionArticles();
+    // Fetch metadata only (no content conversion) - FAST! This is critical for performance.
+    const notionDocs = await getNotionArticles(false);
 
     const supabaseSlugs = new Set(supabaseSummaries.map(d => d.slug));
     const uniqueNotionDocs = notionDocs.filter(d => !supabaseSlugs.has(d.slug));
