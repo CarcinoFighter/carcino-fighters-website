@@ -12,6 +12,34 @@ const n2m = new NotionToMarkdown({ notionClient: notion });
 const DATABASE_ID = process.env.NOTION_DATABASE_ID!;
 const NOTION_SECRET = process.env.NOTION_SECRET!;
 
+// In-memory cache with TTL
+interface CacheEntry<T> {
+    data: T;
+    timestamp: number;
+}
+
+const metadataCache = new Map<string, CacheEntry<Article[]>>();
+const articleCache = new Map<string, CacheEntry<Article>>();
+const METADATA_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const ARTICLE_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+function getCachedData<T>(cache: Map<string, CacheEntry<T>>, key: string, ttl: number): T | null {
+    const entry = cache.get(key);
+    if (!entry) return null;
+
+    const age = Date.now() - entry.timestamp;
+    if (age > ttl) {
+        cache.delete(key);
+        return null;
+    }
+
+    return entry.data;
+}
+
+function setCachedData<T>(cache: Map<string, CacheEntry<T>>, key: string, data: T): void {
+    cache.set(key, { data, timestamp: Date.now() });
+}
+
 async function notionFetch(path: string, options: RequestInit = {}) {
     const url = `https://api.notion.com/v1/${path}`;
     const response = await fetch(url, {
@@ -32,14 +60,26 @@ async function notionFetch(path: string, options: RequestInit = {}) {
     return response.json();
 }
 
-export async function getNotionArticles(): Promise<Article[]> {
+/**
+ * Fetch Notion articles metadata only (fast) or with full content (slow)
+ * @param includeContent - If true, fetches and converts full markdown content. If false, only fetches metadata.
+ */
+export async function getNotionArticles(includeContent: boolean = false): Promise<Article[]> {
     try {
         if (!NOTION_SECRET || !DATABASE_ID) {
             console.warn("Notion environment variables are not set.");
             return [];
         }
 
-        console.log(`Querying Notion Database via fetch: ${DATABASE_ID}`);
+        // Check cache first
+        const cacheKey = includeContent ? 'full' : 'metadata';
+        const cached = getCachedData(metadataCache, cacheKey, METADATA_CACHE_TTL);
+        if (cached) {
+            console.log(`Returning cached Notion articles (${cacheKey}): ${cached.length} articles`);
+            return cached;
+        }
+
+        console.log(`Querying Notion Database via fetch: ${DATABASE_ID} (includeContent: ${includeContent})`);
         const response = await notionFetch(`databases/${DATABASE_ID}/query`, {
             method: "POST",
             body: JSON.stringify({}),
@@ -64,7 +104,7 @@ export async function getNotionArticles(): Promise<Article[]> {
                 })
                 .map(async (page: any) => {
                     try {
-                        const article = await notionPageToArticle(page);
+                        const article = await notionPageToArticle(page, includeContent);
                         return article;
                     } catch (e) {
                         console.error(`Error mapping page ${page.id}:`, e);
@@ -75,6 +115,10 @@ export async function getNotionArticles(): Promise<Article[]> {
 
         const filteredArticles = articles.filter((a: Article | null): a is Article => a !== null);
         console.log(`Final processed Notion articles count: ${filteredArticles.length}`);
+
+        // Cache the results
+        setCachedData(metadataCache, cacheKey, filteredArticles);
+
         return filteredArticles;
     } catch (error: any) {
         console.error("Error fetching Notion articles:", error.message || error);
@@ -87,15 +131,45 @@ export async function getNotionArticleBySlug(slug: string): Promise<Article | nu
         if (!NOTION_SECRET || !DATABASE_ID) {
             return null;
         }
-        const articles = await getNotionArticles();
-        const article = articles.find(a => a.slug === slug || a.id === slug || a.id.replace(/-/g, '') === slug.replace(/-/g, ''));
 
-        if (article) return article;
+        // Check cache first
+        const cached = getCachedData(articleCache, slug, ARTICLE_CACHE_TTL);
+        if (cached) {
+            console.log(`Returning cached article: ${slug}`);
+            return cached;
+        }
 
+        // Try to find in metadata first (fast)
+        const articles = await getNotionArticles(false); // metadata only
+        const metadataMatch = articles.find(a => a.slug === slug || a.id === slug || a.id.replace(/-/g, '') === slug.replace(/-/g, ''));
+
+        if (metadataMatch) {
+            // Fetch full content for this specific article
+            try {
+                const page = await notionFetch(`pages/${metadataMatch.id}`);
+                if (page) {
+                    const fullArticle = await notionPageToArticle(page, true);
+                    if (fullArticle) {
+                        setCachedData(articleCache, slug, fullArticle);
+                        return fullArticle;
+                    }
+                }
+            } catch (e) {
+                console.error(`Error fetching full content for ${slug}:`, e);
+            }
+        }
+
+        // Fallback: try direct page fetch if slug looks like a page ID
         if (slug.length >= 32) {
             try {
                 const page = await notionFetch(`pages/${slug}`);
-                if (page) return await notionPageToArticle(page);
+                if (page) {
+                    const article = await notionPageToArticle(page, true);
+                    if (article) {
+                        setCachedData(articleCache, slug, article);
+                        return article;
+                    }
+                }
             } catch {
                 return null;
             }
@@ -108,11 +182,13 @@ export async function getNotionArticleBySlug(slug: string): Promise<Article | nu
     }
 }
 
-async function notionPageToArticle(page: any): Promise<Article | null> {
+/**
+ * Convert a Notion page to an Article
+ * @param page - The Notion page object
+ * @param includeContent - If true, converts page content to markdown. If false, only extracts metadata.
+ */
+async function notionPageToArticle(page: any, includeContent: boolean = true): Promise<Article | null> {
     try {
-        const mdblocks = await n2m.pageToMarkdown(page.id);
-        const mdString = n2m.toMarkdownString(mdblocks);
-
         const properties = page.properties;
 
         const titleProp = properties.Name || properties.Title;
@@ -148,12 +224,20 @@ async function notionPageToArticle(page: any): Promise<Article | null> {
             }
         }
 
+        // Only convert to markdown if content is needed (expensive operation)
+        let content = "";
+        if (includeContent) {
+            const mdblocks = await n2m.pageToMarkdown(page.id);
+            const mdString = n2m.toMarkdownString(mdblocks);
+            content = mdString.parent || "";
+        }
+
         return {
             id: page.id,
             slug,
             title,
             author,
-            content: mdString.parent || "",
+            content,
             position: "Writer",
         };
     } catch (error) {
