@@ -57,7 +57,7 @@ const organizationHierarchy: Leader = {
       title: "Chief Technology Officer (CTO)",
       description:
         "Physicist by soul. Fights bugs, throws hands, hits gym. If it's complex, he's into it. If it's boring, he's out. Obsessed with clean design, clean lifts, and clean wins.",
-      avatar: "/avatars/anjishnu.png",
+      avatar: "/avatars/anjishnu.jpeg",
       children: [
         {
           name: "Naitik Chattaraj",
