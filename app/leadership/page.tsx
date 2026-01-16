@@ -261,75 +261,94 @@ function LeaderCard({ leader }: { leader: Leader }) {
   const cardHeight = isMobile ? (showExpanded ? 380 : 260) : (showExpanded ? 420 : 280)
 
   return (
-    <HolographicCard
-      onClick={handleClick}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className="group cursor-pointer"
-      borderRadius={currentRadius}
+    <div
+  style={{
+    background: "rgba(0,0,0,0.20)",
+    backdropFilter: "blur(14px)",
+    WebkitBackdropFilter: "blur(14px)",
+    borderRadius: currentRadius,
+  }}
+>
+<HolographicCard
+  onClick={handleClick}
+  onMouseEnter={handleMouseEnter}
+  onMouseLeave={handleMouseLeave}
+  className="group cursor-pointer"
+  borderRadius={currentRadius}
+>
+  <motion.article
+    variants={itemFade}
+    className="relative overflow-hidden"
+    animate={{
+      width: cardWidth,
+      height: cardHeight,
+      borderRadius: currentRadius,
+    }}
+    transition={{ duration: 0.4, ease: easeSoft }}
+  >
+
+    {/* CONTENT */}
+    <motion.div
+      className="relative z-10 flex flex-col items-center h-full"
+      animate={{
+        gap: showExpanded ? "12px" : "16px",
+        padding: isMobile
+          ? "16px"
+          : showExpanded
+          ? "20px"
+          : "20px",
+      }}
+      transition={{ duration: 0.4, ease: easeSoft }}
     >
-      <motion.article
-        variants={itemFade}
-        className="relative overflow-hidden"
-        style={{
-          borderRadius: currentRadius,
-          background: "rgba(0, 0, 0, 0.07)",
-          backdropFilter: "blur(100px)",
-          WebkitBackdropFilter: "blur(100px)",
-          border: "1px solid rgba(255, 255, 255, 0.18)",
-          boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.37)"
-        }}
-        animate={{
-          width: cardWidth,
-          height: cardHeight,
-          borderRadius: currentRadius
-        }}
-        transition={{ duration: 0.4, ease: easeSoft }}
+      <motion.div
+        className="relative z-20 flex flex-col items-center text-center w-full"
+        animate={{ gap: "12px" }}
       >
-        <motion.div
-          className="relative flex flex-col items-center h-full"
-          animate={{
-            gap: showExpanded ? '12px' : '16px',
-            padding: isMobile ? (showExpanded ? '16px' : '16px') : (showExpanded ? '20px' : '20px'),
+        <div
+          className="border border-white/20 shadow-inner flex-shrink-0 rounded-full overflow-hidden flex items-center justify-center bg-white/5"
+          style={{
+            width: isMobile ? "100px" : "120px",
+            height: isMobile ? "100px" : "120px",
           }}
-          transition={{ duration: 0.4, ease: easeSoft }}
         >
-          <motion.div
-            className="relative z-20 flex flex-col items-center text-center w-full"
-            animate={{ gap: showExpanded ? '12px' : '12px' }}
-          >
-            <div
-              className="border border-white/20 shadow-inner flex-shrink-0 rounded-full overflow-hidden flex items-center justify-center bg-white/5"
-              style={{
-                width: isMobile ? '100px' : '120px',
-                height: isMobile ? '100px' : '120px',
-              }}
-            >
-              <img src={leader.avatar} alt={leader.name} className="w-full h-full object-cover" />
-            </div>
+          <img
+            src={leader.avatar}
+            alt={leader.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
 
-            <div className="flex flex-col items-center gap-1 w-full">
-              <h2 className="text-base md:text-lg font-bold text-white tracking-wide">{leader.name}</h2>
-              <p className="text-[10px] md:text-xs font-medium text-purple-300 uppercase tracking-wider">{leader.title}</p>
-            </div>
-          </motion.div>
+        <div className="flex flex-col items-center gap-1 w-full">
+          <h2 className="text-base md:text-lg font-bold text-white tracking-wide">
+            {leader.name}
+          </h2>
+          <p className="text-[10px] md:text-xs font-medium text-purple-300 uppercase tracking-wider">
+            {leader.title}
+          </p>
+        </div>
+      </motion.div>
 
-          <motion.div
-            className="overflow-hidden w-full"
-            animate={{
-              opacity: showExpanded ? 1 : 0,
-              height: showExpanded ? 'auto' : 0,
-            }}
-            transition={{ duration: 0.3, ease: easeSoft, delay: showExpanded ? 0.1 : 0 }}
-          >
-            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-purple-500/30 to-transparent mb-3" />
-            <p className="text-xs md:text-sm leading-relaxed font-light text-center text-gray-200">
-              {leader.description}
-            </p>
-          </motion.div>
-        </motion.div>
-      </motion.article>
-    </HolographicCard>
+      <motion.div
+        className="overflow-hidden w-full"
+        animate={{
+          opacity: showExpanded ? 1 : 0,
+          height: showExpanded ? "auto" : 0,
+        }}
+        transition={{
+          duration: 0.3,
+          ease: easeSoft,
+          delay: showExpanded ? 0.1 : 0,
+        }}
+      >
+        <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-purple-500/30 to-transparent mb-3" />
+        <p className="text-xs md:text-sm leading-relaxed font-light text-center text-gray-200">
+          {leader.description}
+        </p>
+      </motion.div>
+    </motion.div>
+  </motion.article>
+</HolographicCard>
+</div>
   )
 }
 
