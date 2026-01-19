@@ -1,18 +1,20 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-// Supabase client remains for storage (avatars). Data CRUD now goes through secured API.
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import { CancerDocsPanel } from "@/components/admin/cancer-docs-panel";
+// Supabase client remains for storage (avatars). Data CRUD now goes through secured API.
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY!
 );
 
 export default function AdminPage() {
+  const router = useRouter();
   const [unlocked, setUnlocked] = useState(false);
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
   type UserRow = {
     id: string;
     username: string | null;
@@ -20,7 +22,9 @@ export default function AdminPage() {
     name: string | null;
     admin_access?: boolean | null;
     position?: string | null;
+    profilePicture?: string | null;
   };
+
   type CancerDoc = {
     id: string;
     slug: string;
@@ -33,6 +37,7 @@ export default function AdminPage() {
     author_position?: string | null;
     profilePicture?: string | null; // public URL
   };
+
   const [docs, setDocs] = useState<CancerDoc[]>([]);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
@@ -80,26 +85,6 @@ export default function AdminPage() {
     };
   }, []);
 
-  function formatSbError(err: unknown) {
-    if (err === null || err === undefined) return null;
-    try {
-      // Supabase errors often include message, details, hint, code
-      if (err instanceof Error) {
-        const { name, message, stack } = err;
-        return JSON.stringify({ name, message, stack }, null, 2);
-      }
-      const useful: Record<string, unknown> = {};
-      const eObj = err as Record<string, unknown>;
-      ['message','details','hint','code','status','statusText'].forEach(k => {
-        if (Object.prototype.hasOwnProperty.call(eObj, k) && eObj[k] !== undefined) useful[k] = eObj[k];
-      });
-      // include whole object fallback
-      return JSON.stringify(useful, null, 2) || JSON.stringify(eObj, null, 2);
-    } catch (e) {
-      console.warn("Error formatting Supabase error:", e);
-      return String(err);
-    }
-  }
   // Check existing session on load
   useEffect(() => {
     const checkSession = async () => {
@@ -119,62 +104,26 @@ export default function AdminPage() {
               password: "",
             });
           }
+          const tasks: Array<Promise<unknown>> = [fetchSelfProfilePicture(), fetchDocsWithPictures({ silent: true })];
           if (data.user?.admin_access) {
-            await fetchUsers();
+            tasks.push(fetchUsers());
           }
-          await fetchDocsWithPictures();
+          await Promise.all(tasks);
+          setLoading(false);
+        } else {
+          setUnlocked(false);
+          router.replace("/admin/login");
         }
       } catch (err) {
         console.error("checkSession error", err);
+        setUnlocked(false);
+        router.replace("/admin/login");
       } finally {
         setVerifying(false);
       }
     };
     checkSession();
-  }, []);
-
-  // Login via API (sets JWT cookie server-side)
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "login", identifier, password }),
-      });
-      const data = await res.json().catch(() => ({}));
-      setLastResponseDebug((prev) => `${prev || ''}\nLOGIN_RES:\n${JSON.stringify(data, null, 2)}`);
-
-      if (!res.ok) {
-        setError(data?.error || "Login failed");
-        setLoading(false);
-        return;
-      }
-
-      setUnlocked(true);
-      if (data.user) {
-        setCurrentUser(data.user);
-        setSelfForm({
-          username: data.user.username ?? "",
-          email: data.user.email ?? "",
-          name: data.user.name ?? "",
-          password: "",
-        });
-      }
-      if (data.user?.admin_access) {
-        await fetchUsers();
-      }
-      await fetchDocsWithPictures();
-    } catch (err) {
-      console.error("Login error", err);
-      setError("Login failed");
-    } finally {
-      setLoading(false);
-      setVerifying(false);
-    }
-  }
+  }, [router]);
 
   // async function fetchDocs() {
   //   setLoading(true);
@@ -194,8 +143,8 @@ export default function AdminPage() {
   // }
 
   // Fetch docs via secured API (per-user filtering on server)
-  async function fetchDocsWithPictures() {
-    setLoading(true);
+  async function fetchDocsWithPictures(opts?: { silent?: boolean }) {
+    if (!opts?.silent) setLoading(true);
     try {
       const res = await fetch("/api/admin", {
         method: "POST",
@@ -218,7 +167,23 @@ export default function AdminPage() {
       console.error("fetchDocs error", err);
       setError("Failed to load docs");
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
+    }
+  }
+
+  async function fetchSelfProfilePicture() {
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "get_profile_picture" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setCurrentUser((prev) => (prev ? { ...prev, profilePicture: data.url ?? null } : prev));
+      }
+    } catch (err) {
+      console.error("fetchSelfProfilePicture error", err);
     }
   }
 
@@ -276,45 +241,46 @@ export default function AdminPage() {
     }
   }
 
-  async function handleUpload(file: File, docId: string) {
+  async function handleUpload(file: File, userId: string | null | undefined) {
+    if (!userId) {
+      setError("Select a user before uploading a photo.");
+      return;
+    }
     try {
-      setUploading((s) => ({ ...s, [docId]: true }));
+      setUploading((s) => ({ ...s, [userId]: true }));
 
-      const ext = file.name.split('.').pop();
-      const path = `authors/${docId}/avatar.${ext}`;
-      await supabase.auth.getUser(); 
-      // upload to storage (upsert)
-      const upRes = await supabase.storage
-        .from('profile-picture')
-        .upload(path, file, { upsert: true });
-      setLastResponseDebug((p) => `${p || ''}\nUPLOAD_RES:\n${JSON.stringify(upRes, null, 2)}`);
+      const ext = file.name.split(".").pop();
+      const path = `authors/${userId}/avatar.${ext}`;
+      await supabase.auth.getUser();
+
+      const upRes = await supabase.storage.from("profile-picture").upload(path, file, { upsert: true });
+      setLastResponseDebug((p) => `${p || ""}\nUPLOAD_RES:\n${JSON.stringify(upRes, null, 2)}`);
       if (upRes.error) throw upRes.error;
-      
-      // upsert metadata into profile_pictures table
-      const metaRes = await supabase
-        .from('profile_pictures')
-        .upsert({
-          author_id: docId,
+
+      const metaRes = await supabase.from("profile_pictures").upsert(
+        {
+          user_id: userId,
           object_key: path,
           content_type: file.type,
-          size: file.size
-        }, { onConflict: 'author_id' });
+          size: file.size,
+        },
+        { onConflict: "user_id" },
+      );
       setLastResponseDebug((p) => `${p}\nMETA_RES:\n${JSON.stringify(metaRes, null, 2)}`);
       if (metaRes.error) throw metaRes.error;
 
-      // get a signed url so it loads reliably if bucket is private
-      const signed = await supabase.storage
-        .from('profile-picture')
-        .createSignedUrl(path, 60 * 60 * 24 * 7); // 7 days
+      const signed = await supabase.storage.from("profile-picture").createSignedUrl(path, 60 * 60 * 24 * 7);
       setLastResponseDebug((p) => `${p}\nSIGNED_URL_AFTER_UPLOAD:\n${JSON.stringify(signed, null, 2)}`);
       const url = signed.data?.signedUrl || null;
 
-      setDocs((prev) => prev.map(d => d.id === docId ? { ...d, profilePicture: url || d.profilePicture || null } : d));
+      setDocs((prev) => prev.map((d) => (d.author_user_id === userId ? { ...d, profilePicture: url || d.profilePicture || null } : d)));
+      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, profilePicture: url || u.profilePicture || null } : u)));
+      setCurrentUser((prev) => (prev && prev.id === userId ? { ...prev, profilePicture: url || prev.profilePicture || null } : prev));
     } catch (err) {
-      console.error('Upload error', err);
-      setError('Failed to upload image');
+      console.error("Upload error", err);
+      setError("Failed to upload image");
     } finally {
-      setUploading((s) => ({ ...s, [docId]: false }));
+      setUploading((s) => ({ ...s, [userId]: false }));
     }
   }
   async function handleDelete(id: string) {
@@ -358,10 +324,9 @@ export default function AdminPage() {
       setCurrentUser(null);
       setUsers([]);
       setDocs([]);
-      setIdentifier("");
-      setPassword("");
       setSelfEditing(false);
       setLoggingOut(false);
+      router.replace("/admin/login");
     }
   }
 
@@ -396,7 +361,7 @@ export default function AdminPage() {
     }
   }
 
-  async function handleUpdateSelf(e: React.FormEvent) {
+  async function handleUpdateSelf(e: FormEvent) {
     e.preventDefault();
     setSavingSelf(true);
     setError("");
@@ -552,36 +517,10 @@ export default function AdminPage() {
   if (!unlocked) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-        <form
-          onSubmit={handleLogin}
-          className="flex flex-col gap-4 p-8 rounded-xl bg-card border w-full max-w-sm"
-        >
-          <h1 className="text-xl font-bold mb-2">Admin Portal</h1>
-          <input
-            type="text"
-            className="border rounded px-3 py-2 bg-background"
-            placeholder="Username or email"
-            value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            className="border rounded px-3 py-2 bg-background"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button
-            type="submit"
-            className="bg-primary text-white rounded px-4 py-2 font-semibold"
-            disabled={loading}
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-          {error && <div className="text-red-500 text-sm">{error}</div>}
-        </form>
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          Redirecting to admin login...
+        </div>
       </div>
     );
   }
@@ -605,11 +544,49 @@ export default function AdminPage() {
           </div>
         </div>
 
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
         <section className="mb-8 gap-4 flex flex-col">
           <div className="p-4 rounded-xl border bg-card">
             <h2 className="font-semibold mb-3">Your Account</h2>
             {!selfEditing ? (
               <div className="flex flex-col gap-2 text-sm">
+                <div className="flex items-center gap-3">
+                  {currentUser?.profilePicture ? (
+                    <Image
+                      src={currentUser.profilePicture}
+                      alt="Your avatar"
+                      width={64}
+                      height={64}
+                      className="h-16 w-16 rounded-full object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="h-16 w-16 rounded-full bg-muted" />
+                  )}
+                  {currentUser && (
+                    <div className="flex flex-col text-xs">
+                      <label htmlFor="self-avatar" className="underline cursor-pointer hover:cursor-pointer">Change photo</label>
+                      <input
+                        id="self-avatar"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleUpload(f, currentUser.id);
+                        }}
+                      />
+                      {uploading[currentUser.id] && (
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-label="Uploading" />
+                      )}
+                    </div>
+                  )}
+                </div>
                 <div>
                   <div className="text-muted-foreground">Username</div>
                   <div className="font-medium break-words">{currentUser?.username || "—"}</div>
@@ -729,6 +706,7 @@ export default function AdminPage() {
                     <table className="w-full text-sm border rounded-lg overflow-hidden">
                       <thead className="bg-muted">
                         <tr>
+                          <th className="p-2 text-left">Avatar</th>
                           <th className="p-2 text-left">Name</th>
                           <th className="p-2 text-left">Username</th>
                           <th className="p-2 text-left">Email</th>
@@ -739,6 +717,9 @@ export default function AdminPage() {
                       </thead>
                       <tbody>
                         <tr className="border-t bg-muted/30">
+                          <td className="p-2 align-top">
+                            <div className="h-12 w-12 rounded-full bg-muted" />
+                          </td>
                           <td className="p-2 align-top">
                             <input
                               className="border rounded px-2 py-1 w-full"
@@ -792,16 +773,41 @@ export default function AdminPage() {
                           </td>
                         </tr>
                         {filteredUsers.map((u) => {
-                      const edit = userEdits[u.id] ?? {
-                        username: u.username ?? "",
-                        email: u.email ?? "",
-                        name: u.name ?? "",
-                        password: "",
+                          const edit = userEdits[u.id] ?? {
+                            username: u.username ?? "",
+                            email: u.email ?? "",
+                            name: u.name ?? "",
+                            password: "",
                             admin_access: Boolean(u.admin_access),
                             position: u.position ?? "",
-                      };
+                          };
                           return (
                             <tr key={u.id} className="border-t">
+                              <td className="p-2 align-top">
+                                <div className="flex items-center gap-3">
+                                  {u.profilePicture ? (
+                                    <Image src={u.profilePicture} alt="avatar" width={48} height={48} className="h-12 w-12 rounded-full object-cover" unoptimized />
+                                  ) : (
+                                    <div className="h-12 w-12 rounded-full bg-muted" />
+                                  )}
+                                  <div className="flex flex-col gap-1 text-xs">
+                                    <label htmlFor={`upload-${u.id}`} className="underline cursor-pointer hover:cursor-pointer">Change photo</label>
+                                    <input
+                                      id={`upload-${u.id}`}
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={(e) => {
+                                        const f = e.target.files?.[0];
+                                        if (f) handleUpload(f, u.id);
+                                      }}
+                                    />
+                                    {uploading[u.id] && (
+                                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-label="Uploading" />
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
                               <td className="p-2 align-top">
                                 <input
                                   className="border rounded px-2 py-1 w-full"
@@ -881,7 +887,7 @@ export default function AdminPage() {
                         })}
                         {filteredUsers.length === 0 && (
                           <tr>
-                            <td className="p-3 text-sm text-muted-foreground" colSpan={6}>No users found.</td>
+                            <td className="p-3 text-sm text-muted-foreground" colSpan={7}>No users found.</td>
                           </tr>
                         )}
                       </tbody>
@@ -893,272 +899,29 @@ export default function AdminPage() {
           )}
         </section>
 
-              <h2 className="text-xl font-bold mb-3">Cancer Docs Table</h2>
-        {currentUser?.admin_access && (
-          <button
-            className="mb-4 bg-primary text-white px-4 py-2 rounded font-semibold"
-            onClick={() => setAdding(true)}
-          >
-            + Add New Article
-          </button>
-        )}
-        <table className="w-full border rounded-xl overflow-hidden">
-          <thead className="bg-muted">
-            <tr>
-              <th className="p-2">Slug</th>
-              <th className="p-2">Profile</th>
-              <th className="p-2">Title</th>
-              <th className="p-2">Content</th>
-              <th className="p-2">Author</th>
-              <th className="p-2">Position</th>
-              <th className="p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {docs.map((doc) => (
-              <tr key={doc.id} className="border-t">
-                <td className="p-2 align-top">
-                  {editing === doc.id ? (
-                    <input
-                      className="border rounded px-2 py-1 w-full"
-                      value={editData.slug}
-                      onChange={(e) =>
-                        setEditData({ ...editData, slug: e.target.value })
-                      }
-                    />
-                  ) : (
-                    doc.slug
-                  )}
-                </td>
-                <td className="p-2 align-top">
-                  <div className="flex items-center gap-3">
-                    {doc.profilePicture ? (
-                      <Image
-                        src={doc.profilePicture}
-                        width={48}
-                        height={48}
-                        alt="avatar"
-                        className="w-12 h-12 rounded-full object-cover"
-                        onError={() => {
-                          console.warn('Avatar failed to load', doc.id, doc.profilePicture);
-                        }}
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-muted/40" />
-                    )}
-                    <label className="text-xs text-muted-foreground">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const f = e.target.files?.[0];
-                          if (f) handleUpload(f, doc.id);
-                        }}
-                        className="hidden"
-                      />
-                      <span className="ml-2 cursor-pointer text-primary underline">Upload</span>
-                    </label>
-                    {uploading[doc.id] && <div className="animate-spin h-4 w-4 border-b-2 border-primary" />}
-                  </div>
-                </td>
-                <td className="p-2 align-top">
-                  {editing === doc.id ? (
-                    <input
-                      className="border rounded px-2 py-1 w-full"
-                      value={editData.title}
-                      onChange={(e) =>
-                        setEditData({ ...editData, title: e.target.value })
-                      }
-                    />
-                  ) : (
-                    doc.title
-                  )}
-                </td>
-                <td className="p-2 align-top max-w-xs">
-                  {editing === doc.id ? (
-                    <textarea
-                      className="border rounded px-2 py-1 w-full min-h-[80px]"
-                      value={editData.content}
-                      onChange={(e) =>
-                        setEditData({ ...editData, content: e.target.value })
-                      }
-                    />
-                  ) : (
-                    <div className="whitespace-pre-line line-clamp-4 max-h-32 overflow-auto">
-                      {doc.content}
-                    </div>
-                  )}
-                </td>
-                <td className="p-2 align-top">
-                  {editing === doc.id && currentUser?.admin_access ? (
-                    <div className="space-y-2">
-                      <div className="text-xs text-muted-foreground">Current: {doc.author_name || doc.author_username || "—"}</div>
-                      <div className="relative">
-                        <input
-                          className="border rounded px-2 py-1 w-full"
-                          placeholder="Search authors..."
-                          value={authorSearch[doc.id] ?? ""}
-                          onChange={(e) => setAuthorSearch((s) => ({ ...s, [doc.id]: e.target.value }))}
-                        />
-                        <div className="absolute z-10 bg-popover border rounded shadow max-h-48 overflow-auto w-full mt-1">
-                          {(users || [])
-                            .filter((u) => {
-                              const term = (authorSearch[doc.id] ?? "").toLowerCase();
-                              if (!term) return true;
-                              return [u.name, u.username, u.email, u.position]
-                                .filter(Boolean)
-                                .some((v) => String(v).toLowerCase().includes(term));
-                            })
-                            .slice(0, 15)
-                            .map((u) => (
-                              <button
-                                key={u.id}
-                                type="button"
-                                className={`w-full text-left px-3 py-1 text-sm hover:bg-muted ${editData.authorId === u.id ? "bg-muted" : ""}`}
-                                onClick={() => setEditData((s) => ({ ...s, authorId: u.id }))}
-                              >
-                                <div className="font-medium">{u.name || u.username || u.email || "(no name)"}</div>
-                                <div className="text-xs text-muted-foreground">{u.position || ""}</div>
-                              </button>
-                            ))}
-                          <button
-                            type="button"
-                            className="w-full text-left px-3 py-1 text-sm text-red-600 hover:bg-muted"
-                            onClick={() => setEditData((s) => ({ ...s, authorId: "" }))}
-                          >
-                            Clear author
-                          </button>
-                        </div>
-                      </div>
-                      <div className="text-xs text-muted-foreground">Selected: {(() => {
-                        const u = users.find((usr) => usr.id === (editData.authorId || doc.author_user_id));
-                        return u?.name || u?.username || u?.email || (editData.authorId || doc.author_user_id ? "Unknown" : "—");
-                      })()}</div>
-                    </div>
-                  ) : (
-                    <div className="text-sm font-medium">
-                      {doc.author_user_id ? (doc.author_name || doc.author_username || "") : ""}
-                    </div>
-                  )}
-                </td>
-                <td className="p-2 align-top">
-                  <div className="text-sm">
-                    {doc.author_user_id ? (doc.author_position ?? "") : ""}
-                  </div>
-                </td>
-                <td className="p-2 align-top">
-                  {editing === doc.id ? (
-                    <>
-                      <button
-                        className="bg-green-600 text-white px-2 py-1 rounded mr-2"
-                        onClick={() => handleEditSave(doc.id)}
-                        disabled={loading}
-                      >
-                        Save
-                      </button>
-                      <button
-                        className="bg-gray-400 text-white px-2 py-1 rounded"
-                        onClick={() => setEditing(null)}
-                        disabled={loading}
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      {(currentUser?.admin_access || doc.author_user_id === currentUser?.id) && (
-                        <button
-                          className="bg-blue-600 text-white px-2 py-1 rounded mr-2"
-                          onClick={() => {
-                            setEditing(doc.id);
-                            setEditData({
-                              slug: doc.slug,
-                              title: doc.title,
-                              content: doc.content,
-                              authorId: doc.author_user_id || "",
-                            });
-                          }}
-                        >
-                          Edit
-                        </button>
-                      )}
-
-                      {currentUser?.admin_access && (
-                        <button
-                          className="bg-red-600 text-white mt-1.5 px-2 py-1 rounded"
-                          onClick={() => handleDelete(doc.id)}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                        </button>
-                      )}
-                    </>
-                  )}
-
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {adding && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-background p-6 rounded-xl shadow-xl w-full max-w-lg flex flex-col gap-4">
-              <h2 className="text-lg font-bold mb-2">Add New Article</h2>
-              <input
-                className="border rounded px-2 py-1"
-                placeholder="Slug"
-                value={addData.slug}
-                onChange={(e) =>
-                  setAddData({ ...addData, slug: e.target.value })
-                }
-              />
-              <input
-                className="border rounded px-2 py-1"
-                placeholder="Title"
-                value={addData.title}
-                onChange={(e) =>
-                  setAddData({ ...addData, title: e.target.value })
-                }
-              />
-              <textarea
-                className="border rounded px-2 py-1 min-h-[80px]"
-                placeholder="Content (Markdown supported)"
-                value={addData.content}
-                onChange={(e) =>
-                  setAddData({ ...addData, content: e.target.value })
-                }
-              />
-              <div className="flex gap-2 mt-2">
-                <button
-                  className="bg-green-600 text-white px-4 py-2 rounded"
-                  onClick={handleAddSave}
-                  disabled={loading}
-                >
-                  Add
-                </button>
-                <button
-                  className="bg-gray-400 text-white px-4 py-2 rounded"
-                  onClick={() => setAdding(false)}
-                  disabled={loading}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <CancerDocsPanel
+          docs={docs}
+          currentUser={currentUser}
+          editingId={editing}
+          editData={editData}
+          setEditData={setEditData}
+          setEditing={setEditing}
+          onSave={handleEditSave}
+          onDelete={handleDelete}
+          users={users}
+          authorSearch={authorSearch}
+          setAuthorSearch={setAuthorSearch}
+          loading={loading}
+          adding={adding}
+          onAddOpen={() => setAdding(true)}
+          onAddClose={() => {
+            setAdding(false);
+            setAddData({ slug: "", title: "", content: "" });
+          }}
+          addData={addData}
+          setAddData={setAddData}
+          onAddSubmit={handleAddSave}
+        />
       </div>
     </div>
   );
