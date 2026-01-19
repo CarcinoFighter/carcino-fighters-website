@@ -9,6 +9,7 @@ type AuthBody = {
 		| "register"
 		| "login"
 		| "upsert"
+		| "get_profile_picture"
 		| "list_users"
 		| "update_user"
 		| "update_self"
@@ -157,7 +158,10 @@ export async function GET() {
 		}
 
 		vlog("get.ok", { userId: session.user.id });
-		return NextResponse.json({ authenticated: true, user: session.user });
+		return NextResponse.json(
+			{ authenticated: true, user: session.user },
+			{ headers: { "Cache-Control": "private, max-age=300" } },
+		);
 	} catch (e: unknown) {
 		const message = e instanceof Error ? e.message : typeof e === "string" ? e : "Unknown error";
 		return NextResponse.json({ error: message }, { status: 500 });
@@ -316,19 +320,70 @@ export async function POST(req: Request) {
 		}
 
 
+		if (action === "get_profile_picture") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+			const bucket = "profile-picture";
+			const { data: pic, error: picErr } = await client
+				.from("profile_pictures")
+				.select("object_key")
+				.eq("user_id", session.user.id)
+				.limit(1)
+				.maybeSingle();
+
+			if (picErr) return NextResponse.json({ error: picErr.message }, { status: 500 });
+			if (!pic?.object_key) return NextResponse.json({ url: null });
+
+			try {
+				const signed = await client.storage.from(bucket).createSignedUrl(pic.object_key, 60 * 60 * 24 * 7);
+				return NextResponse.json({ url: signed.data?.signedUrl ?? null }, { headers: { "Cache-Control": "private, max-age=300" } });
+			} catch (e) {
+				return NextResponse.json({ url: null }, { headers: { "Cache-Control": "private, max-age=60" } });
+			}
+		}
+
+
 		if (action === "list_users") {
 			const session = await getAuthenticatedUser();
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-			const { data, error } = await client
+			const { data: usersData, error } = await client
 				.from("users")
 				.select("id, username, email, name, admin_access, position")
 				.order("created_at", { ascending: true });
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-			return NextResponse.json({ users: data ?? [] });
+			const bucket = "profile-picture";
+			const userIds = (usersData ?? []).map((u) => u.id);
+			const profileMap: Record<string, string | null> = {};
+			if (userIds.length) {
+				const { data: pics, error: picErr } = await client
+					.from("profile_pictures")
+					.select("user_id, object_key")
+					.in("user_id", userIds);
+				if (!picErr && pics) {
+					const signedResults = await Promise.all(
+						pics.map(async (p) => {
+							if (!p.object_key) return { id: p.user_id, url: null };
+							try {
+								const signed = await client.storage.from(bucket).createSignedUrl(p.object_key, 60 * 60 * 24 * 7);
+								return { id: p.user_id, url: signed.data?.signedUrl ?? null };
+							} catch (e) {
+								return { id: p.user_id, url: null };
+							}
+						})
+					);
+					signedResults.forEach((r) => {
+						if (r?.id) profileMap[r.id] = r.url;
+					});
+				}
+			}
+
+			const usersWithPictures = (usersData ?? []).map((u) => ({ ...u, profilePicture: profileMap[u.id] ?? null }));
+			return NextResponse.json({ users: usersWithPictures });
 		}
 
 		if (action === "update_user") {
@@ -429,6 +484,34 @@ export async function POST(req: Request) {
 				});
 			}
 
+
+			// pull profile pictures (stored by doc id) and generate signed URLs
+			const bucket = "profile-picture";
+			const authorIdsForPics = Array.from(new Set(data.map((d) => d.author_user_id).filter(Boolean))) as string[];
+			const profileMap: Record<string, string | null> = {};
+			if (authorIdsForPics.length) {
+				const { data: pics, error: picErr } = await client
+					.from("profile_pictures")
+					.select("user_id, object_key")
+					.in("user_id", authorIdsForPics);
+				if (!picErr && pics) {
+					const signedResults = await Promise.all(
+						pics.map(async (p) => {
+							if (!p.object_key) return { id: p.user_id, url: null };
+							try {
+								const signed = await client.storage.from(bucket).createSignedUrl(p.object_key, 60 * 60 * 24 * 7);
+								return { id: p.user_id, url: signed.data?.signedUrl ?? null };
+							} catch (e) {
+								return { id: p.user_id, url: null };
+							}
+						})
+					);
+					signedResults.forEach((r) => {
+						if (r?.id) profileMap[r.id] = r.url;
+					});
+				}
+			}
+
 			const filtered = data
 				.filter((d) => !d.author_user_id || validAuthors.has(d.author_user_id))
 				.map((d) => ({
@@ -436,9 +519,11 @@ export async function POST(req: Request) {
 					author_name: d.author_user_id ? authorMeta[d.author_user_id]?.name ?? authorMeta[d.author_user_id]?.username ?? authorMeta[d.author_user_id]?.email ?? null : null,
 					author_username: d.author_user_id ? authorMeta[d.author_user_id]?.username ?? null : null,
 					author_position: d.author_user_id ? authorMeta[d.author_user_id]?.position ?? null : null,
+					profilePicture: d.author_user_id ? profileMap[d.author_user_id] ?? null : null,
 				}));
 			return NextResponse.json({ docs: filtered });
 		}
+
 
 		if (action === "create_doc") {
 			const session = await getAuthenticatedUser();
