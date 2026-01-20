@@ -17,7 +17,6 @@ import { Label } from "@/components/ui/label";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import { Footer } from "@/components/footer";
 import { motion, MotionConfig, useScroll, useTransform } from "framer-motion";
-import { getAllDocs } from "@/lib/docsRepository";
 // import { useState } from "react";
 import ShinyText from "@/components/ShinyText";
 
@@ -91,9 +90,17 @@ export default function Home() {
 
   React.useEffect(() => {
     (async () => {
-      const docs = await getAllDocs();
-      setArticles(docs);
-      setLoading(false);
+      try {
+        const res = await fetch("/api/articles");
+        if (res.ok) {
+          const docs = await res.json();
+          setArticles(docs);
+        }
+      } catch (error) {
+        console.error("Failed to load articles", error);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

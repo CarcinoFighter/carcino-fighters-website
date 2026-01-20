@@ -18,7 +18,7 @@ async function hasValidAdminToken(token: string | undefined) {
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
   if (!pathname.startsWith(ADMIN_ROOT)) return NextResponse.next();
