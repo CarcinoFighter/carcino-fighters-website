@@ -1,7 +1,6 @@
 // lib/docsRepository.ts
 import { unstable_cache } from 'next/cache';
 import { supabase } from '@/lib/initSupabase';
-import { getNotionArticles, getNotionArticleBySlug } from './notion';
 
 function resolveApiUrl(path: string) {
   if (typeof window !== 'undefined') {
@@ -47,13 +46,9 @@ async function getDocBySlugUncached(slug: string): Promise<Article | null> {
       .eq('slug', slug)
       .maybeSingle();
 
-    if (error) {
-      console.error('Error fetching document from Supabase:', error);
-      return await getNotionArticleBySlug(slug);
-    }
-
-    if (!data) {
-      return await getNotionArticleBySlug(slug);
+    if (error || !data) {
+      if (error) console.error('Error fetching document from Supabase:', error);
+      return null;
     }
 
     const doc = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null };
@@ -79,23 +74,6 @@ async function getDocBySlugUncached(slug: string): Promise<Article | null> {
     console.error('Error in getDocBySlug:', error);
   }
 
-
-  const notionArticle = await getNotionArticleBySlug(slug);
-  if (notionArticle) {
-
-    if (notionArticle.author) {
-      const { data: user } = await supabase
-        .from('users')
-        .select('position')
-        .eq('name', notionArticle.author)
-        .maybeSingle();
-
-      if (user?.position) {
-        notionArticle.position = user.position;
-      }
-    }
-    return notionArticle;
-  }
   return null;
 }
 
@@ -119,22 +97,6 @@ async function getDocBySlugWithAvatarUncached(slug: string): Promise<ArticleWith
 
     if (error || !data) {
       if (error) console.error('Error fetching document from Supabase:', error);
-
-      const notionArticle = await getNotionArticleBySlug(slug);
-      if (notionArticle) {
-
-        if (notionArticle.author) {
-          const { data: user } = await supabase
-            .from('users')
-            .select('position')
-            .eq('name', notionArticle.author)
-            .maybeSingle();
-          if (user?.position) {
-            notionArticle.position = user.position;
-          }
-        }
-        return { ...notionArticle, profilePicture: null } as ArticleWithAvatar;
-      }
       return null;
     }
 
@@ -176,22 +138,6 @@ async function getDocBySlugWithAvatarUncached(slug: string): Promise<ArticleWith
     return { ...doc, author, position, profilePicture } as ArticleWithAvatar;
   } catch (error) {
     console.error('Error in getDocBySlugWithAvatar:', error);
-
-    const notionArticle = await getNotionArticleBySlug(slug);
-    if (notionArticle) {
-
-      if (notionArticle.author) {
-        const { data: user } = await supabase
-          .from('users')
-          .select('position')
-          .eq('name', notionArticle.author)
-          .maybeSingle();
-        if (user?.position) {
-          notionArticle.position = user.position;
-        }
-      }
-      return { ...notionArticle, profilePicture: null } as ArticleWithAvatar;
-    }
     return null;
   }
 }
@@ -213,62 +159,35 @@ async function getAllDocsUncached(): Promise<Article[]> {
       .select('id, slug, title, content, author_user_id')
       .order('title');
 
-    let supabaseDocs: Article[] = [];
-    if (data) {
-      const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null }[];
-      const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
+    if (!data) return [];
 
-      let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null }> = {};
-      if (authorIds.length) {
-        const { data: authors, error: authorErr } = await supabase
-          .from('users')
-          .select('id, name, username, email, position')
-          .in('id', authorIds);
-        if (authorErr) {
-          console.error('Error fetching authors:', authorErr);
-        } else {
-          authorMap = Object.fromEntries(
-            (authors ?? []).map(a => [a.id, { name: a.name ?? null, username: a.username ?? null, email: a.email ?? null, position: a.position ?? null }])
-          );
-        }
+    const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null }[];
+    const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
+
+    let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null }> = {};
+    if (authorIds.length) {
+      const { data: authors, error: authorErr } = await supabase
+        .from('users')
+        .select('id, name, username, email, position')
+        .in('id', authorIds);
+      if (authorErr) {
+        console.error('Error fetching authors:', authorErr);
+      } else {
+        authorMap = Object.fromEntries(
+          (authors ?? []).map(a => [a.id, { name: a.name ?? null, username: a.username ?? null, email: a.email ?? null, position: a.position ?? null }])
+        );
       }
-
-      supabaseDocs = docs
-        .filter((d) => d.author_user_id)
-        .map((d) => {
-          const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
-          const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
-          const position = meta?.position ?? null;
-          return { ...d, author, position } as Article;
-        });
     }
 
-    // Fetch metadata only (no content conversion) - FAST!
-    const notionDocs = await getNotionArticles(false);
-
-    const supabaseSlugs = new Set(supabaseDocs.map(d => d.slug));
-    const uniqueNotionDocs = notionDocs.filter(d => !supabaseSlugs.has(d.slug));
-
-    const enrichedNotionDocs = await Promise.all(uniqueNotionDocs.map(async (doc) => {
-      if (doc.author) {
-        const { data: user } = await supabase
-          .from('users')
-          .select('position')
-          .eq('name', doc.author)
-          .maybeSingle();
-        if (user?.position) {
-          return { ...doc, position: user.position };
-        }
-      }
-      return doc;
-    }));
-
-    console.log(`Fetched ${supabaseDocs.length} Supabase docs and ${enrichedNotionDocs.length} Notion docs (after deduplication)`);
-    return [...supabaseDocs, ...enrichedNotionDocs];
+    return docs.map((d) => {
+      const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
+      const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
+      const position = meta?.position ?? null;
+      return { ...d, author, position } as Article;
+    });
   } catch (error) {
     console.error('Error in getAllDocs:', error);
-    const notionDocs = await getNotionArticles(false);
-    return notionDocs;
+    return [];
   }
 }
 
@@ -287,80 +206,52 @@ async function getAllDocsWithAvatarsUncached(): Promise<ArticleWithAvatar[]> {
 
     if (error) console.error('Error fetching documents from Supabase:', error);
 
-    let supabaseDocs: ArticleWithAvatar[] = [];
-    if (data) {
-      const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null }[];
-      const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
+    if (!data) return [];
 
-      let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null }> = {};
-      if (authorIds.length) {
-        const { data: authors, error: authorErr } = await supabase
-          .from('users')
-          .select('id, name, username, email, position')
-          .in('id', authorIds);
-        if (authorErr) {
-          console.error('Error fetching authors:', authorErr);
-        } else {
-          authorMap = Object.fromEntries(
-            (authors ?? []).map(a => [a.id, { name: a.name ?? null, username: a.username ?? null, email: a.email ?? null, position: a.position ?? null }])
-          );
-        }
+    const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null }[];
+    const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
+
+    let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null }> = {};
+    if (authorIds.length) {
+      const { data: authors, error: authorErr } = await supabase
+        .from('users')
+        .select('id, name, username, email, position')
+        .in('id', authorIds);
+      if (authorErr) {
+        console.error('Error fetching authors:', authorErr);
+      } else {
+        authorMap = Object.fromEntries(
+          (authors ?? []).map(a => [a.id, { name: a.name ?? null, username: a.username ?? null, email: a.email ?? null, position: a.position ?? null }])
+        );
       }
-
-
-      let picMap: Record<string, string | null> = {};
-      const ids = docs.map(d => d.id);
-      try {
-        const res = await fetch(resolveApiUrl('/api/avatars'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids })
-        });
-        if (res.ok) {
-          const json = await res.json();
-          picMap = json?.map || {};
-        }
-      } catch (e) {
-        console.warn('Avatars API error', e);
-      }
-
-      supabaseDocs = docs
-        .filter((d) => d.author_user_id)
-        .map(d => {
-          const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
-          const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
-          const position = meta?.position ?? null;
-          return { ...d, author, position, profilePicture: picMap[d.id] ?? null } as ArticleWithAvatar;
-        });
     }
 
-    // Fetch metadata only (no content conversion) - FAST!
-    const notionDocs = await getNotionArticles(false);
 
-    const supabaseSlugs = new Set(supabaseDocs.map(d => d.slug));
-    const uniqueNotionDocs = notionDocs.filter(d => !supabaseSlugs.has(d.slug));
-
-    const enrichedNotionDocs = await Promise.all(uniqueNotionDocs.map(async (doc) => {
-      if (doc.author) {
-        const { data: user } = await supabase
-          .from('users')
-          .select('position')
-          .eq('name', doc.author)
-          .maybeSingle();
-        if (user?.position) {
-          return { ...doc, position: user.position };
-        }
+    let picMap: Record<string, string | null> = {};
+    const ids = docs.map(d => d.id);
+    try {
+      const res = await fetch(resolveApiUrl('/api/avatars'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids })
+      });
+      if (res.ok) {
+        const json = await res.json();
+        picMap = json?.map || {};
       }
-      return doc;
-    }));
+    } catch (e) {
+      console.warn('Avatars API error', e);
+    }
 
-    const mappedNotionDocs: ArticleWithAvatar[] = enrichedNotionDocs.map(d => ({ ...d, profilePicture: null }));
-
-    return [...supabaseDocs, ...mappedNotionDocs];
+    return docs.map(d => {
+      const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
+      const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
+      const position = meta?.position ?? null;
+      return { ...d, author, position, profilePicture: picMap[d.id] ?? null } as ArticleWithAvatar;
+    });
   } catch (error) {
     console.error('Error in getAllDocsWithAvatars:', error);
-    const notionDocs = await getNotionArticles(false);
-    return notionDocs.map(d => ({ ...d, profilePicture: null }));
+    return [];
   }
 }
 
@@ -401,7 +292,7 @@ async function getRandomArticleSummariesUncached(limit = 3, excludeSlug?: string
 
     const docsRaw = data as { id: string; slug: string; title: string; author_user_id: string | null }[];
 
-    let docs = excludeSlug ? docsRaw.filter(d => d.slug !== excludeSlug) : docsRaw;
+    const docs = excludeSlug ? docsRaw.filter(d => d.slug !== excludeSlug) : docsRaw;
 
     const shuffled = docs.sort(() => 0.5 - Math.random()).slice(0, limit);
 
@@ -429,38 +320,7 @@ async function getRandomArticleSummariesUncached(limit = 3, excludeSlug?: string
       title: d.title,
       author: (d.author_user_id ? authorMap[d.author_user_id] : null) ?? "Unknown Author"
     }));
-
-    // Fetch metadata only (no content conversion) - FAST! This is critical for performance.
-    const notionDocs = await getNotionArticles(false);
-
-    const supabaseSlugs = new Set(supabaseSummaries.map(d => d.slug));
-    const uniqueNotionDocs = notionDocs.filter(d => !supabaseSlugs.has(d.slug));
-
-    const enrichedNotionDocs = await Promise.all(uniqueNotionDocs.map(async (doc) => {
-      if (doc.author) {
-        const { data: user } = await supabase
-          .from('users')
-          .select('position')
-          .eq('name', doc.author)
-          .maybeSingle();
-        if (user?.position) {
-          return { ...doc, position: user.position };
-        }
-      }
-      return doc;
-    }));
-
-    const notionSummaries = enrichedNotionDocs
-      .filter(d => d.slug !== excludeSlug)
-      .map(d => ({
-        id: d.id,
-        slug: d.slug,
-        title: d.title,
-        author: d.author ?? "Notion Author"
-      }));
-
-    const allSummaries = [...supabaseSummaries, ...notionSummaries];
-    return allSummaries.sort(() => 0.5 - Math.random()).slice(0, limit);
+    return supabaseSummaries.sort(() => 0.5 - Math.random()).slice(0, limit);
 
   } catch (error) {
     console.error('Error in getRandomArticleSummaries:', error);

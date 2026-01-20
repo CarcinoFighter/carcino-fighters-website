@@ -4,7 +4,7 @@ import { Footer } from "@/components/footer";
 import { ArticlePageClient } from "./ArticlePageClient";
 import { getDocBySlugWithAvatar, getRandomArticleSummaries } from "@/lib/docsRepository";
 
-export const revalidate = 600;
+export const revalidate = 300;
 
 interface ArticlePageParams {
   params: Promise<{ cancerType: string }>;
