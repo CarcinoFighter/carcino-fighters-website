@@ -1,4 +1,5 @@
 // lib/docsRepository.ts
+import { unstable_cache } from 'next/cache';
 import { supabase } from '@/lib/initSupabase';
 import { getNotionArticles, getNotionArticleBySlug } from './notion';
 
@@ -38,7 +39,7 @@ export interface ArticleSummary {
   author: string | null;
 }
 
-export async function getDocBySlug(slug: string): Promise<Article | null> {
+async function getDocBySlugUncached(slug: string): Promise<Article | null> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
@@ -98,7 +99,17 @@ export async function getDocBySlug(slug: string): Promise<Article | null> {
   return null;
 }
 
-export async function getDocBySlugWithAvatar(slug: string): Promise<ArticleWithAvatar | null> {
+const getDocBySlugCached = unstable_cache(
+  async (slug: string) => getDocBySlugUncached(slug),
+  ['getDocBySlug'],
+  { revalidate: 600, tags: ['articles'] }
+);
+
+export async function getDocBySlug(slug: string): Promise<Article | null> {
+  return getDocBySlugCached(slug);
+}
+
+async function getDocBySlugWithAvatarUncached(slug: string): Promise<ArticleWithAvatar | null> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
@@ -185,7 +196,17 @@ export async function getDocBySlugWithAvatar(slug: string): Promise<ArticleWithA
   }
 }
 
-export async function getAllDocs(): Promise<Article[]> {
+const getDocBySlugWithAvatarCached = unstable_cache(
+  async (slug: string) => getDocBySlugWithAvatarUncached(slug),
+  ['getDocBySlugWithAvatar'],
+  { revalidate: 600, tags: ['articles'] }
+);
+
+export async function getDocBySlugWithAvatar(slug: string): Promise<ArticleWithAvatar | null> {
+  return getDocBySlugWithAvatarCached(slug);
+}
+
+async function getAllDocsUncached(): Promise<Article[]> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
@@ -251,7 +272,13 @@ export async function getAllDocs(): Promise<Article[]> {
   }
 }
 
-export async function getAllDocsWithAvatars(): Promise<ArticleWithAvatar[]> {
+export const getAllDocs = unstable_cache(
+  async () => getAllDocsUncached(),
+  ['getAllDocs'],
+  { revalidate: 600, tags: ['articles', 'article-list'] }
+);
+
+async function getAllDocsWithAvatarsUncached(): Promise<ArticleWithAvatar[]> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
@@ -337,6 +364,12 @@ export async function getAllDocsWithAvatars(): Promise<ArticleWithAvatar[]> {
   }
 }
 
+export const getAllDocsWithAvatars = unstable_cache(
+  async () => getAllDocsWithAvatarsUncached(),
+  ['getAllDocsWithAvatars'],
+  { revalidate: 600, tags: ['articles', 'article-list'] }
+);
+
 export async function deleteDoc(id: string): Promise<boolean> {
   try {
     const { error } = await supabase
@@ -352,7 +385,7 @@ export async function deleteDoc(id: string): Promise<boolean> {
   }
 }
 
-export async function getRandomArticleSummaries(limit = 3, excludeSlug?: string): Promise<ArticleSummary[]> {
+async function getRandomArticleSummariesUncached(limit = 3, excludeSlug?: string): Promise<ArticleSummary[]> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
@@ -433,4 +466,14 @@ export async function getRandomArticleSummaries(limit = 3, excludeSlug?: string)
     console.error('Error in getRandomArticleSummaries:', error);
     return [];
   }
+}
+
+const getRandomArticleSummariesCached = unstable_cache(
+  async (limit = 3, excludeSlug?: string) => getRandomArticleSummariesUncached(limit, excludeSlug),
+  ['getRandomArticleSummaries'],
+  { revalidate: 300, tags: ['articles', 'article-list'] }
+);
+
+export async function getRandomArticleSummaries(limit = 3, excludeSlug?: string): Promise<ArticleSummary[]> {
+  return getRandomArticleSummariesCached(limit, excludeSlug);
 }

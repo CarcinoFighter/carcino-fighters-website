@@ -52,3 +52,5 @@ next-env.d.ts
 # database manager
 /app/db-manager/
 /app/api/db-manager/
+
+/.idea/
