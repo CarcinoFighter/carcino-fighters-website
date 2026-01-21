@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+
 import {
   Card,
   CardContent,
@@ -45,19 +46,13 @@ export default function SignInPage() {
               <CardTitle className="text-3xl">
                 Sign in to your account
               </CardTitle>
-              <CardDescription>
-                Don&apos;t have an account?
-                <Button type="button" variant="link">
-                  <Link href="/sign-up">Create one</Link>
-                </Button>
-              </CardDescription>
             </CardHeader>
             <CardContent className="flex-col space-y-7 items-center">
               <Input
                 type="email"
                 className="bg-[#3C364C]"
                 value={signInFormData.email}
-                placeholder="Email"
+                placeholder="Username"
                 onChange={(e) =>
                   setSignInFormData((prev) => ({ ...prev, email: e.target.value }))
                 }
