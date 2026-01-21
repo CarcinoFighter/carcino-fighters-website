@@ -2,6 +2,17 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Eye, EyeOff, Icon } from "lucide-react";
 
 function AdminLoginInner() {
   const router = useRouter();
@@ -14,6 +25,10 @@ function AdminLoginInner() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const type = showPassword ? "text" : "password";
+  const Icon = showPassword ? EyeOff : Eye;
 
   // Ensure native cursor is visible on admin pages
   useEffect(() => {
@@ -90,36 +105,96 @@ function AdminLoginInner() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+    <div className="h-screen w-screen relative">
+      <Image
+        src={`/leadership-bg-new-2.jpg`}
+        width={1920}
+        height={1080}
+        alt="Background Image"
+        className="absolute top-0 left-0 w-full h-full object-cover brightness-50"
+      />
+
+    
       <form
         onSubmit={handleLogin}
-        className="flex flex-col gap-4 p-8 rounded-xl bg-card border w-full max-w-sm"
       >
-        <h1 className="text-xl font-bold mb-2">Admin Portal</h1>
-        <input
-          type="text"
-          className="border rounded px-3 py-2 bg-background"
-          placeholder="Username or email"
-          value={identifier}
-          onChange={(e) => setIdentifier(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          className="border rounded px-3 py-2 bg-background"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button
-          type="submit"
-          className="bg-primary text-white rounded px-4 py-2 font-semibold"
-          disabled={loading}
-        >
-          {loading ? "Signing in..." : "Sign In"}
-        </button>
-        {error && <div className="text-red-500 text-sm">{error}</div>}
+        
+        <div className="min-h-screen flex items-center justify-center bg-[#686279]">
+          <div className="p-3 mt-7 rounded-xl h-3/4 bg-[#2C2638]/50 backdrop-blur-sm md:flex md:gap-2 drop-shadow-2xl drop-shadow-black/50">
+            <Image
+              src="/dummy_image4.png"
+              width={400}
+              height={500}
+              alt="Auth Image"
+              className="md:block hidden scale-95"
+            />
+            <Card className="bg-transparent border-0 shadow-none">
+              <CardHeader className="flex items-center">
+                <CardTitle className="text-3xl">
+                  Sign in to your account
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex-col space-y-7 items-center">
+                <Input
+                  type="text"
+                  className="bg-[#3C364C]"
+                  placeholder="Username or email"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  required
+                />
+                <div className="relative flex gap-2 items-center">
+                  <Input
+                    type={type}
+                    className="bg-[#3C364C]"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 text-white/70 hover:text-white hover:cursor-pointer z-10"
+                  >
+                    <Icon />
+                  </button>
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full hover:cursor-pointer bg-[#6D54B5]"
+                  disabled={loading}
+                >
+                  {loading ? "Signing in..." : "Sign In"}
+                </Button>
+                {error && <div className="text-red-500 text-sm">{error}</div>}
+              </CardContent>
+              <CardFooter className="flex-col space-y-3 justify-center items-center">
+                <div className="flex items-center justify-center gap-1 w-full">
+                  <div className="bg-slate-700 h-[1px] w-full"></div>
+                  <p className="text-slate-500 text-sm text-nowrap font-medium px-1">
+                    Or continue with
+                  </p>
+                  <div className="bg-slate-700 h-[1px] w-full"></div>
+                </div>
+                <Button
+                  variant="ghost"
+                  disabled
+                  className="mt-2 flex items-center justify-center w-full border-[0.5px] px-5 py-7 hover:cursor-pointer border-white"
+                >
+                  <Image
+                    src="/google-logo.png"
+                    alt="Google"
+                    width={32}
+                    height={32}
+                  />
+                  Continue with Google <br />
+                  (Work in Progress)
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+        </div>
       </form>
     </div>
   );
