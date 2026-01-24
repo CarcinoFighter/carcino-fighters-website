@@ -23,7 +23,7 @@ const ListItem = React.forwardRef<
   React.ComponentPropsWithoutRef<"a">
 >(({ className, title, children, ...props }, ref) => {
 
-  
+
   return (
     <li>
       <NavigationMenuLink asChild>
@@ -63,27 +63,26 @@ export function Navbar() {
     <div className="">
       {/* Navbar */}
       <div className="flex-row py-4 fixed w-full justify-center lg:px-14 md:px-10 px-6 top-0 z-30 hidden items-center sm:flex">
-<NavigationMenu
-  className={cn(
-    "w-full flex flex-row px-2 py-1 rounded-full items-center justify-between relative z-10",
-    "overflow-hidden isolation-isolate liquid-glass !shadow-none",
-    "[&_a]:cursor-none [&_button]:cursor-none [&_img]:cursor-none [&_*]:cursor-none"
-  )}
-><div className="liquidGlass-effect "></div>
-        {/* <div className="liquidGlass-tint"></div> */}
-        <div className="liquidGlass-shine"></div>
-        <div className="liquidGlass-text"></div>
+        <NavigationMenu
+          className={cn(
+            "w-full flex flex-row px-2 py-1 rounded-full items-center justify-between relative z-10",
+            "overflow-hidden isolation-isolate liquid-glass !shadow-none"
+          )}
+        ><div className="liquidGlass-effect "></div>
+          {/* <div className="liquidGlass-tint"></div> */}
+          <div className="liquidGlass-shine"></div>
+          <div className="liquidGlass-text"></div>
 
-          <NavigationMenuList className="gap-[50px] relative cursor-none">
+          <NavigationMenuList className="gap-[50px] relative">
             <NavigationMenuItem>
               <div className="pl-4">
-              <Image src={"/logo-w.svg"} alt={"logo"} width={25} height={25} className=" object-cover" />
+                <Image src={"/logo-w.svg"} alt={"logo"} width={25} height={25} className=" object-cover" />
               </div>
             </NavigationMenuItem>
             {/* Tab links with animated pill indicator */}
             {tabs.map(tab => (
               <NavigationMenuItem key={tab.label} className="relative">
-                
+
                 <NavigationMenuLink
                   onClick={() => router.push(tab.href)}
                   className={navigationMenuTriggerStyle() + (selectedTab === tab.label ? "transition-colors z-10 text-white font-dmsans font-bold" : "")}
@@ -94,11 +93,11 @@ export function Navbar() {
                     <motion.span
                       layoutId="pill-tab"
                       transition={{ type: "spring", duration: 0.5 }}
-  className="absolute isolation-isolate inset-0 z-0 rounded-full
+                      className="absolute isolation-isolate inset-0 z-0 rounded-full
              bg-[#B372FF]"
                     > <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
-        <div className="liquidGlass-tint"></div>
-        <div className="liquidGlass-shine  relative w-[105.8%] h-[102%] !top-[-0.2px] !left-[-2.3px]"></div></div></motion.span>
+                        <div className="liquidGlass-tint"></div>
+                        <div className="liquidGlass-shine  relative w-[105.8%] h-[102%] !top-[-0.2px] !left-[-2.3px]"></div></div></motion.span>
                   )}
                 </NavigationMenuLink>
               </NavigationMenuItem>
@@ -110,7 +109,7 @@ export function Navbar() {
       {/* Mobile NavMenu */}
       <div className="sm:hidden fixed top-5 left-5 z-20 ">
         <Menu
-          className="text-foreground cursor-none p-1 backdrop-blur-xs border-accent-forground border rounded-sm"
+          className="text-foreground p-1 backdrop-blur-xs border-accent-forground border rounded-sm"
           size={28}
           onClick={() => setMobileMenuOpen(true)}
         />

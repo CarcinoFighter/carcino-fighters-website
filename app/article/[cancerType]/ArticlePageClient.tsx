@@ -84,7 +84,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   relative
   max-w-full sm:max-w-4xl
   dark:prose-invert
-  ${readmore ? "" : "max-h-[50vh] cursor-none sm:max-h-[60vh] overflow-hidden"}
+  ${readmore ? "" : "max-h-[50vh] sm:max-h-[60vh] overflow-hidden"}
 `}
 
               >
@@ -138,7 +138,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                 variant="secondary"
                 aria-expanded={readmore}
                 onClick={() => setReadmore((s) => !s)}
-                className="mx-auto w-fit my-10 cursor-none rounded-full bg-primary/44 backdrop-blur-xs flex justify-center"
+                className="mx-auto w-fit my-10 rounded-full bg-primary/44 backdrop-blur-xs flex justify-center"
               >
                 {readmore ? "Show less" : "Read more"}
                 <ArrowDown className={`transition-transform ${readmore ? "rotate-180" : ""}`} />
@@ -195,7 +195,7 @@ w-full max-w-screen-sm sm:max-w-none mx-auto px-4
                   <Link
                     key={a.id}
                     href={a.slug ? `/article/${a.slug}` : `/article/${a.id}`}
-                    className="w-full max-w-lg sm:w-auto cursor-none h-full block"
+                    className="w-full max-w-lg sm:w-auto h-full block"
                   >
                     <motion.div
                       className="h-full"
@@ -227,7 +227,6 @@ w-full max-w-screen-sm sm:max-w-none mx-auto px-4
                             border border-accent shadow-xl
                             overflow-hidden
                             select-none
-                            cursor-none
                           "
                         >
                           <CardItem
