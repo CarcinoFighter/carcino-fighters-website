@@ -4,7 +4,7 @@ import { Footer } from "@/components/footer";
 import { ArticlePageClient } from "./ArticlePageClient";
 import { getDocBySlugWithAvatar, getRandomArticleSummaries } from "@/lib/docsRepository";
 
-export const revalidate = 300;
+export const revalidate = 60;
 
 interface ArticlePageParams {
   params: Promise<{ cancerType: string }>;
@@ -32,83 +32,83 @@ export default async function ArticlePage({ params }: ArticlePageParams) {
   }
   const cancerName = slug.replace(/-/g, " ");
 
-const articleSchema = {
-  "@context": "https://schema.org",
-  "@type": "MedicalScholarlyArticle",
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "MedicalScholarlyArticle",
 
-  headline: article.title,
+    headline: article.title,
 
-  description: article.content
-    .replace(/[#*_`>\-\[\]!\(\)]/g, "")
-    .slice(0, 160),
+    description: article.content
+      .replace(/[#*_`>\-\[\]!\(\)]/g, "")
+      .slice(0, 160),
 
-  url: `https://thecarcinofoundation.org/article/${slug}`,
+    url: `https://thecarcinofoundation.org/article/${slug}`,
 
-  author: {
-    "@type": "Person",
-    name: article.author || "Carcino Research Team",
-  },
-
-  publisher: {
-    "@type": "NGO",
-    name: "The Carcino Foundation",
-    url: "https://thecarcinofoundation.org",
-  },
-
-  mainEntityOfPage: {
-    "@type": "MedicalWebPage",
-    about: {
-      "@type": "MedicalCondition",
-      name: cancerName,
+    author: {
+      "@type": "Person",
+      name: article.author || "Carcino Research Team",
     },
-  },
-};
 
-const breadcrumbSchema = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position": 1,
-      "name": "Home",
-      "item": "https://thecarcinofoundation.org"
+    publisher: {
+      "@type": "NGO",
+      name: "The Carcino Foundation",
+      url: "https://thecarcinofoundation.org",
     },
-    {
-      "@type": "ListItem",
-      "position": 2,
-      "name": "Articles",
-      "item": "https://thecarcinofoundation.org/article"
+
+    mainEntityOfPage: {
+      "@type": "MedicalWebPage",
+      about: {
+        "@type": "MedicalCondition",
+        name: cancerName,
+      },
     },
-    {
-      "@type": "ListItem",
-      "position": 3,
-      "name": article.title,
-      "item": `https://thecarcinofoundation.org/article/${slug}`
-    }
-  ]
-};
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://thecarcinofoundation.org"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Articles",
+        "item": "https://thecarcinofoundation.org/article"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": article.title,
+        "item": `https://thecarcinofoundation.org/article/${slug}`
+      }
+    ]
+  };
 
   return (
-  <>
-    <Script
-      id="article-schema"
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify(articleSchema),
-      }}
-    />
+    <>
+      <Script
+        id="article-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleSchema),
+        }}
+      />
 
-    <Script
-      id="breadcrumb-schema"
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify(breadcrumbSchema),
-      }}
-    />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
 
-    <ArticlePageClient article={article} moreArticles={moreArticles} />
-  </>
-);
+      <ArticlePageClient article={article} moreArticles={moreArticles} />
+    </>
+  );
 
 }
