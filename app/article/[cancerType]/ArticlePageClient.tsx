@@ -162,8 +162,8 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
 
 
                 <Avatar className="w-20 h-20 relative z-10 mx-auto sm:mx-0">
-                  <AvatarImage src={article.profilePicture || "/dummy_image1.png"} />
-                  <AvatarFallback>NC</AvatarFallback>
+                  <AvatarImage src={article.profilePicture || "/logo.png"} />
+                  <AvatarFallback>{authorLabel.slice(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
 
                 <div className="max-w-[500px] flex flex-col gap-1 p-2 relative z-10 items-center sm:items-start">
@@ -175,7 +175,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                 </div>
 
                 <p className="text-sm text-[#CDA8E8] leading-[15px] p-5 relative z-10 sm:pr-15 ">
-                  Ex sapien vitae pellentesque sem placerat in id. Bibendum egestas iaculis massa nisl malesuada lacinia integer. Natoque penatibus et magnis dis parturient montes nascetur. Mauris pharetra vestibulum fusce dictum risus blandit quis.
+                  {article.authorDescription || "Researcher at The Carcino Foundation."}
                 </p>
               </div>
 
