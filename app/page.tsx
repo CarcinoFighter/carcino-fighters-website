@@ -146,27 +146,27 @@ export default function Home() {
     },
     inLanguage: "en-IN",
   };
-React.useEffect(() => {
-  if (loading) return;
+  React.useEffect(() => {
+    if (loading) return;
 
-  const cards = document.querySelectorAll<HTMLElement>(".article-card");
-  let maxHeight = 0;
+    const cards = document.querySelectorAll<HTMLElement>(".article-card");
+    let maxHeight = 0;
 
-  // reset heights first
-  cards.forEach((card) => {
-    card.style.height = "auto";
-  });
+    // reset heights first
+    cards.forEach((card) => {
+      card.style.height = "auto";
+    });
 
-  // measure tallest
-  cards.forEach((card) => {
-    maxHeight = Math.max(maxHeight, card.offsetHeight);
-  });
+    // measure tallest
+    cards.forEach((card) => {
+      maxHeight = Math.max(maxHeight, card.offsetHeight);
+    });
 
-  // apply height
-  cards.forEach((card) => {
-    card.style.height = `${maxHeight}px`;
-  });
-}, [loading, featuredArticles]);
+    // apply height
+    cards.forEach((card) => {
+      card.style.height = `${maxHeight}px`;
+    });
+  }, [loading, featuredArticles]);
 
   return (
     <>
@@ -305,11 +305,11 @@ React.useEffect(() => {
               >
                 <Button
                   variant="ghost"
-                  className="relative px-6 py-5 cursor-none rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-giest font-medium transition-all duration-300"
+                  className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-giest font-medium transition-all duration-300"
                 >
                   <Link
                     href="/article"
-                    className="relative z-10 flex items-center gap-2 cursor-none"
+                    className="relative z-10 flex items-center gap-2"
                   >
                     Read Our Documents{" "}
                     <ArrowUpRight className="transition-transform" />
@@ -356,8 +356,8 @@ React.useEffect(() => {
             </motion.p>
             {/* subtle parallax blobs behind the grid */}
 
-           <motion.div
-  className="
+            <motion.div
+              className="
     relative z-10
     grid
     lg:grid-flow-col lg:grid-rows-2
@@ -369,12 +369,12 @@ React.useEffect(() => {
     w-full
     justify-center
   "
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true, amount: 0.2 }}
-  key={loading ? 'skeleton' : 'cards'}
-  variants={staggerContainer}
->
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              key={loading ? 'skeleton' : 'cards'}
+              variants={staggerContainer}
+            >
 
               {/* <div className="pointer-events-none absolute z-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <motion.div
@@ -408,27 +408,27 @@ React.useEffect(() => {
                 </div>
               ) : (
                 featuredArticles.map((article) => (
-        <Link
-  key={article.id}
-  href={article.slug ? `/article/${article.slug}` : `/article/${article.id}`}
-  className="cursor-none h-full block"
->
-  <motion.div
-  className="h-full"
-    layout
-    whileHover={{ y: -4, scale: 1.015 }}
-    variants={{
-      hidden: { opacity: 0, y: 12 },
-      visible: {
-        opacity: 1,
-        y: 0,
-        transition: { duration: 0.55, ease: easeSoft },
-      },
-    }}
-  >
-    <CardContainer className="w-full h-full px-4 rounded-[55px]">
-      <CardBody
-        className="
+                  <Link
+                    key={article.id}
+                    href={article.slug ? `/article/${article.slug}` : `/article/${article.id}`}
+                    className="h-full block"
+                  >
+                    <motion.div
+                      className="h-full"
+                      layout
+                      whileHover={{ y: -4, scale: 1.015 }}
+                      variants={{
+                        hidden: { opacity: 0, y: 12 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          transition: { duration: 0.55, ease: easeSoft },
+                        },
+                      }}
+                    >
+                      <CardContainer className="w-full h-full px-4 rounded-[55px]">
+                        <CardBody
+                          className="
         article-card
           relative z-20
           group/card
@@ -443,37 +443,36 @@ React.useEffect(() => {
           border border-accent shadow-xl
           overflow-hidden
           select-none
-          cursor-none
         "
-      >
-        <CardItem
-          translateZ="20"
-          className="
+                        >
+                          <CardItem
+                            translateZ="20"
+                            className="
             relative z-10
             flex flex-col items-center gap-2
             rounded-[55px]
             pointer-events-none
           "
-        >
-          <div className="lowercase text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8]">
-            Research Article
-          </div>
+                          >
+                            <div className="lowercase text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8]">
+                              Research Article
+                            </div>
 
-          <h3 className="text-[25px] sm:text-[35px] leading-[20px] sm:leading-[30px] p-2 text-center uppercase font-tttravelsnext font-bold line-clamp-7">
-            {article.title}
-          </h3>
+                            <h3 className="text-[25px] sm:text-[35px] leading-[20px] sm:leading-[30px] p-2 text-center uppercase font-tttravelsnext font-bold line-clamp-7">
+                              {article.title}
+                            </h3>
 
-          <p className="text-[15px] sm:text-[20px] text-center text-[#CDA8E8]">
-            by {article.author ?? "Unknown Author"}
-          </p>
-        </CardItem>
+                            <p className="text-[15px] sm:text-[20px] text-center text-[#CDA8E8]">
+                              by {article.author ?? "Unknown Author"}
+                            </p>
+                          </CardItem>
 
-        <div className="divGlass-effect pointer-events-none z-0" />
-        {/* <div className="cardGlass-shine pointer-events-none z-0 overflow-hidden" /> */}
-      </CardBody>
-    </CardContainer>
-  </motion.div>
-</Link>
+                          <div className="divGlass-effect pointer-events-none z-0" />
+                          {/* <div className="cardGlass-shine pointer-events-none z-0 overflow-hidden" /> */}
+                        </CardBody>
+                      </CardContainer>
+                    </motion.div>
+                  </Link>
 
                 ))
               )}
@@ -486,11 +485,11 @@ React.useEffect(() => {
             >
               <Button
                 variant="ghost"
-                className="relative cursor-none px-7 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+                className="relative px-7 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
               >
                 <Link
                   href="/article"
-                  className="relative z-10 flex items-center cursor-none gap-2"
+                  className="relative z-10 flex items-center gap-2"
                 >
                   Visit the Articles Tab{" "}
                   <ArrowUpRight className="transition-transform border-none" />
@@ -659,11 +658,11 @@ React.useEffect(() => {
 
                 <Button
                   variant="ghost"
-                  className="relative cursor-none px-5 py-3 mt-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+                  className="relative px-5 py-3 mt-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
                 >
                   <Link
                     href="/leadership"
-                    className="relative z-10 flex items-center cursor-none gap-2"
+                    className="relative z-10 flex items-center gap-2"
                   >
                     Meet the team{" "}
                     <ArrowUpRight className="transition-transform border-none" />
@@ -722,11 +721,11 @@ React.useEffect(() => {
                   {/* Writing Team Button */}
                   <Button
                     variant="ghost"
-                    className="flex flex-col sm:flex-row relative px-6 py-5 cursor-none rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+                    className="flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
                   >
                     <Link
                       href="/internship/writer"
-                      className="relative z-10 cursor-none flex items-center gap-2"
+                      className="relative z-10 flex items-center gap-2"
                     >
                       Writing Team{" "}
                       <ArrowUpRight className="transition-transform" />
@@ -740,11 +739,11 @@ React.useEffect(() => {
                   {/* Dev / Design Button */}
                   <Button
                     variant="ghost"
-                    className="relative cursor-none px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+                    className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
                   >
                     <Link
                       href="/internship/tech"
-                      className="relative z-10 cursor-none flex items-center gap-2"
+                      className="relative z-10 flex items-center gap-2"
                     >
                       Dev / Design{" "}
                       <ArrowUpRight className="transition-transform" />
