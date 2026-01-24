@@ -6,19 +6,20 @@ import jwt from "jsonwebtoken";
 
 type AuthBody = {
 	action:
-		| "register"
-		| "login"
-		| "upsert"
-		| "get_profile_picture"
-		| "list_users"
-		| "update_user"
-		| "update_self"
-		| "list_docs"
-		| "update_doc"
-		| "create_doc"
-		| "delete_doc"
-		| "delete_user"
-		| "logout";
+	| "register"
+	| "login"
+	| "upsert"
+	| "get_profile_picture"
+	| "list_users"
+	| "update_user"
+	| "update_self"
+	| "list_docs"
+	| "update_doc"
+	| "create_doc"
+	| "delete_doc"
+	| "delete_user"
+	| "get_leadership"
+	| "logout";
 	username?: string;
 	email?: string;
 	password?: string;
@@ -33,6 +34,7 @@ type AuthBody = {
 	title?: string;
 	content?: string;
 	authorId?: string;
+	description?: string;
 };
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -113,7 +115,7 @@ async function validateSessionFromToken(token: string) {
 
 	const { data: userRow, error: userError } = await client
 		.from("users")
-		.select("id, username, email, name, admin_access")
+		.select("id, username, email, name, admin_access, description")
 		.eq("id", payload.sub)
 		.limit(1)
 		.maybeSingle();
@@ -129,6 +131,7 @@ async function validateSessionFromToken(token: string) {
 			email: userRow.email,
 			name: userRow.name,
 			admin_access: Boolean(userRow.admin_access),
+			description: userRow.description,
 		},
 	};
 }
@@ -188,7 +191,7 @@ export async function POST(req: Request) {
 		}
 
 		if (action === "register") {
-			const { username, email, password, name, avatar_url, position } = body ?? {};
+			const { username, email, password, name, avatar_url, position, description } = body ?? {};
 			if (!email || !password) {
 				return NextResponse.json({ error: "email and password are required" }, { status: 400 });
 			}
@@ -205,8 +208,9 @@ export async function POST(req: Request) {
 					name: name ?? null,
 					avatar_url: avatar_url ?? null,
 					position: position ?? null,
+					description: description ?? null,
 				})
-				.select("id, username, email, name, position")
+				.select("id, username, email, name, position, description, avatar_url")
 				.maybeSingle();
 
 			if (error) {
@@ -229,7 +233,7 @@ export async function POST(req: Request) {
 
 			const { data: user, error } = await client
 				.from("users")
-				.select("id, username, email, name, password, admin_access")
+				.select("id, username, email, name, password, admin_access, description")
 				.or(`username.eq.${loginId},email.eq.${loginId}`)
 				.limit(1)
 				.maybeSingle();
@@ -274,7 +278,7 @@ export async function POST(req: Request) {
 
 			const response = NextResponse.json({
 				token,
-				user: { id: user.id, username: user.username, email: user.email, name: user.name, admin_access: Boolean(user.admin_access) },
+				user: { id: user.id, username: user.username, email: user.email, name: user.name, admin_access: Boolean(user.admin_access), description: user.description },
 			});
 
 			response.cookies.set({
@@ -351,7 +355,7 @@ export async function POST(req: Request) {
 
 			const { data: usersData, error } = await client
 				.from("users")
-				.select("id, username, email, name, admin_access, position")
+				.select("id, username, email, name, admin_access, position, description, avatar_url")
 				.order("created_at", { ascending: true });
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -382,7 +386,10 @@ export async function POST(req: Request) {
 				}
 			}
 
-			const usersWithPictures = (usersData ?? []).map((u) => ({ ...u, profilePicture: profileMap[u.id] ?? null }));
+			const usersWithPictures = (usersData ?? []).map((u) => ({
+				...u,
+				profilePicture: profileMap[u.id] || u.avatar_url || null
+			}));
 			return NextResponse.json({ users: usersWithPictures });
 		}
 
@@ -391,7 +398,7 @@ export async function POST(req: Request) {
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-			const { targetUserId, username, email, name, password, admin_access, position } = body ?? {};
+			const { targetUserId, username, email, name, password, admin_access, position, description } = body ?? {};
 			if (!targetUserId) return NextResponse.json({ error: "targetUserId is required" }, { status: 400 });
 
 			const updates: Record<string, unknown> = {};
@@ -400,6 +407,7 @@ export async function POST(req: Request) {
 			if (name !== undefined) updates.name = name || null;
 			if (admin_access !== undefined) updates.admin_access = Boolean(admin_access);
 			if (position !== undefined) updates.position = position || null;
+			if (description !== undefined) updates.description = description || null;
 			if (password) updates.password = await bcrypt.hash(password, 10);
 
 			if (Object.keys(updates).length === 0) {
@@ -410,7 +418,7 @@ export async function POST(req: Request) {
 				.from("users")
 				.update(updates)
 				.eq("id", targetUserId)
-				.select("id, username, email, name, admin_access, position")
+				.select("id, username, email, name, admin_access, position, description, avatar_url")
 				.maybeSingle();
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -422,12 +430,13 @@ export async function POST(req: Request) {
 			const session = await getAuthenticatedUser();
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-			const { username, email, name, password, position } = body ?? {};
+			const { username, email, name, password, position, description } = body ?? {};
 			const updates: Record<string, unknown> = {};
 			if (username !== undefined) updates.username = username || null;
 			if (email !== undefined) updates.email = email ? email.toLowerCase() : null;
 			if (name !== undefined) updates.name = name || null;
 			if (position !== undefined) updates.position = position || null;
+			if (description !== undefined) updates.description = description || null;
 			if (password) updates.password = await bcrypt.hash(password, 10);
 
 			if (Object.keys(updates).length === 0) {
@@ -438,7 +447,7 @@ export async function POST(req: Request) {
 				.from("users")
 				.update(updates)
 				.eq("id", session.user.id)
-				.select("id, username, email, name, admin_access, position")
+				.select("id, username, email, name, admin_access, position, description, avatar_url")
 				.maybeSingle();
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -669,6 +678,47 @@ export async function POST(req: Request) {
 				maxAge: 0,
 			});
 			return resp;
+		}
+
+		if (action === "get_leadership") {
+			const { data: usersData, error } = await client
+				.from("users")
+				.select("id, username, name, position, description, avatar_url")
+				.order("created_at", { ascending: true });
+
+			if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+			const bucket = "profile-picture";
+			const profileMap: Record<string, string | null> = {};
+			if (usersData?.length) {
+				const userIds = usersData.map((u) => u.id);
+				const { data: pics, error: picErr } = await client
+					.from("profile_pictures")
+					.select("user_id, object_key")
+					.in("user_id", userIds);
+				if (!picErr && pics) {
+					const signedResults = await Promise.all(
+						pics.map(async (p) => {
+							if (!p.object_key) return { id: p.user_id, url: null };
+							try {
+								const signed = await client.storage.from(bucket).createSignedUrl(p.object_key, 60 * 60 * 24 * 7);
+								return { id: p.user_id, url: signed.data?.signedUrl ?? null };
+							} catch (e) {
+								return { id: p.user_id, url: null };
+							}
+						})
+					);
+					signedResults.forEach((r) => {
+						if (r?.id) profileMap[r.id] = r.url;
+					});
+				}
+			}
+
+			const usersWithPictures = (usersData ?? []).map((u) => ({
+				...u,
+				profilePicture: profileMap[u.id] || u.avatar_url || null
+			}));
+			return NextResponse.json({ users: usersWithPictures });
 		}
 
 		return NextResponse.json({ error: "unknown action" }, { status: 400 });

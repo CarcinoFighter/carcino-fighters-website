@@ -12,6 +12,7 @@ export type AdminUser = {
   name: string | null;
   admin_access?: boolean | null;
   position?: string | null;
+  description?: string | null;
 };
 
 export type CancerDoc = {
