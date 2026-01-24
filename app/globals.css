@@ -252,7 +252,6 @@
   body {
     @apply bg-white dark:bg-black max-h-dvh max-w-dvw text-foreground;
     overflow: auto;
-    cursor: none !important;
     scrollbar-width: none;
     /* For Firefox */
     -ms-overflow-style: none;
@@ -567,7 +566,4 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
 
   /* clip to prevent bleed */
   clip-path: inset(0 0 0 5px round 0 0 55px 0);
-}
-.custom-cursor-area {
-  cursor: none;
 }
