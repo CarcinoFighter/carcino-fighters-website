@@ -22,6 +22,7 @@ export default function AdminPage() {
     name: string | null;
     admin_access?: boolean | null;
     position?: string | null;
+    description?: string | null;
     profilePicture?: string | null;
   };
 
@@ -57,15 +58,15 @@ export default function AdminPage() {
   const [lastResponseDebug, setLastResponseDebug] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<UserRow | null>(null);
   const [users, setUsers] = useState<UserRow[]>([]);
-  const [selfForm, setSelfForm] = useState({ username: "", email: "", name: "", password: "" });
-  const [userEdits, setUserEdits] = useState<Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string }>>({});
+  const [selfForm, setSelfForm] = useState({ username: "", email: "", name: "", password: "", description: "" });
+  const [userEdits, setUserEdits] = useState<Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string }>>({});
   const [savingSelf, setSavingSelf] = useState(false);
   const [savingUser, setSavingUser] = useState<Record<string, boolean>>({});
   const [selfEditing, setSelfEditing] = useState(false);
   const [verifying, setVerifying] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
   const [userSearch, setUserSearch] = useState("");
-  const [newUser, setNewUser] = useState({ username: "", email: "", name: "", password: "", position: "" });
+  const [newUser, setNewUser] = useState({ username: "", email: "", name: "", password: "", position: "", description: "" });
   const [authorSearch, setAuthorSearch] = useState<Record<string, string>>({});
   const [usersOpen, setUsersOpen] = useState(false);
 
@@ -102,6 +103,7 @@ export default function AdminPage() {
               email: data.user.email ?? "",
               name: data.user.name ?? "",
               password: "",
+              description: data.user.description ?? "",
             });
           }
           const tasks: Array<Promise<unknown>> = [fetchSelfProfilePicture(), fetchDocsWithPictures({ silent: true })];
@@ -340,7 +342,7 @@ export default function AdminPage() {
       const data = await res.json().catch(() => ({}));
       if (res.ok && Array.isArray(data.users)) {
         setUsers(data.users);
-        const initialEdits: Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string }> = {};
+        const initialEdits: Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string }> = {};
         data.users.forEach((u: UserRow) => {
           initialEdits[u.id] = {
             username: u.username ?? "",
@@ -349,6 +351,7 @@ export default function AdminPage() {
             password: "",
             admin_access: Boolean(u.admin_access),
             position: u.position ?? "",
+            description: u.description ?? "",
           };
         });
         setUserEdits(initialEdits);
@@ -371,6 +374,7 @@ export default function AdminPage() {
         username: selfForm.username,
         email: selfForm.email,
         name: selfForm.name,
+        description: selfForm.description,
       };
       if (selfForm.password) body.password = selfForm.password;
 
@@ -390,6 +394,7 @@ export default function AdminPage() {
           email: data.user?.email ?? "",
           name: data.user?.name ?? "",
           password: "",
+          description: data.user?.description ?? "",
         });
         setSelfEditing(false);
       }
@@ -418,6 +423,7 @@ export default function AdminPage() {
         name: edit.name,
         admin_access: edit.admin_access,
         position: edit.position,
+        description: edit.description,
       };
       if (edit.password) body.password = edit.password;
 
@@ -458,13 +464,14 @@ export default function AdminPage() {
           name: newUser.name || undefined,
           password: newUser.password,
           position: newUser.position || undefined,
+          description: newUser.description || undefined,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(data?.error || "Create user failed");
       } else {
-        setNewUser({ username: "", email: "", name: "", password: "", position: "" });
+        setNewUser({ username: "", email: "", name: "", password: "", position: "", description: "" });
         await fetchUsers();
       }
     } catch (err) {
@@ -599,6 +606,10 @@ export default function AdminPage() {
                   <div className="text-muted-foreground">Name</div>
                   <div className="font-medium break-words">{currentUser?.name || "—"}</div>
                 </div>
+                <div>
+                  <div className="text-muted-foreground">Author Description</div>
+                  <div className="font-medium break-words whitespace-pre-wrap">{currentUser?.description || "—"}</div>
+                </div>
                 <button
                   className="mt-3 bg-primary text-white rounded px-4 py-2 font-semibold w-full sm:w-auto"
                   onClick={() => setSelfEditing(true)}
@@ -633,6 +644,12 @@ export default function AdminPage() {
                   value={selfForm.password}
                   onChange={(e) => setSelfForm((s) => ({ ...s, password: e.target.value }))}
                 />
+                <textarea
+                  className="border rounded px-3 py-2 bg-background min-h-[100px]"
+                  placeholder="Author Description"
+                  value={selfForm.description}
+                  onChange={(e) => setSelfForm((s) => ({ ...s, description: e.target.value }))}
+                />
                 <div className="flex gap-2 flex-wrap">
                   <button
                     type="submit"
@@ -651,6 +668,7 @@ export default function AdminPage() {
                           email: currentUser.email ?? "",
                           name: currentUser.name ?? "",
                           password: "",
+                          description: currentUser.description ?? "",
                         });
                       }
                       setSelfEditing(false);
@@ -711,6 +729,7 @@ export default function AdminPage() {
                           <th className="p-2 text-left">Username</th>
                           <th className="p-2 text-left">Email</th>
                           <th className="p-2 text-left">Position</th>
+                          <th className="p-2 text-left">Description</th>
                           <th className="p-2 text-left">Admin</th>
                           <th className="p-2 text-left">Actions</th>
                         </tr>
@@ -750,6 +769,14 @@ export default function AdminPage() {
                               placeholder="Position"
                               value={newUser.position}
                               onChange={(e) => setNewUser((s) => ({ ...s, position: e.target.value }))}
+                            />
+                          </td>
+                          <td className="p-2 align-top">
+                            <textarea
+                              className="border rounded px-2 py-1 w-full text-xs min-h-[60px]"
+                              placeholder="Description"
+                              value={newUser.description}
+                              onChange={(e) => setNewUser((s) => ({ ...s, description: e.target.value }))}
                             />
                           </td>
                           <td className="p-2 align-top text-sm text-muted-foreground">—</td>
@@ -841,6 +868,14 @@ export default function AdminPage() {
                                 />
                               </td>
                               <td className="p-2 align-top">
+                                <textarea
+                                  className="border rounded px-2 py-1 w-full text-xs min-h-[60px]"
+                                  placeholder="Description"
+                                  value={edit.description}
+                                  onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, description: e.target.value } }))}
+                                />
+                              </td>
+                              <td className="p-2 align-top">
                                 <label className="flex items-center gap-2 text-sm">
                                   <input
                                     type="checkbox"
@@ -887,7 +922,7 @@ export default function AdminPage() {
                         })}
                         {filteredUsers.length === 0 && (
                           <tr>
-                            <td className="p-3 text-sm text-muted-foreground" colSpan={7}>No users found.</td>
+                            <td className="p-3 text-sm text-muted-foreground" colSpan={8}>No users found.</td>
                           </tr>
                         )}
                       </tbody>

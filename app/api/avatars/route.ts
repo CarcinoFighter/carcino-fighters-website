@@ -21,8 +21,8 @@ export async function POST(req: Request) {
 
     const picsRes = await sb
       .from('profile_pictures')
-      .select('author_id, object_key')
-      .in('author_id', ids);
+      .select('user_id, object_key')
+      .in('user_id', ids);
 
     if (picsRes.error) {
       return NextResponse.json({ error: picsRes.error.message }, { status: 500 });
@@ -37,14 +37,14 @@ export async function POST(req: Request) {
             .from('profile-picture')
             .createSignedUrl(row.object_key, 60 * 60 * 24 * 7); // 7 days
           if (signed?.data?.signedUrl) {
-            map[row.author_id] = signed.data.signedUrl;
+            map[row.user_id] = signed.data.signedUrl;
           } else {
             const pub = sb.storage.from('profile-picture').getPublicUrl(row.object_key);
-            map[row.author_id] = pub?.data?.publicUrl ?? null;
+            map[row.user_id] = pub?.data?.publicUrl ?? null;
           }
         } catch (e) {
-          map[row.author_id] = null;
-          console.warn('Error generating signed URL for', row.author_id, e);
+          map[row.user_id] = null;
+          console.warn('Error generating signed URL for', row.user_id, e);
         }
       }
     }
