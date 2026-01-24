@@ -12,6 +12,15 @@ import { useState, useRef, useEffect } from "react"
 
 /* ---------- TYPES ---------- */
 
+type DBUser = {
+  id: string
+  username: string | null
+  name: string | null
+  position: string | null
+  description: string | null
+  profilePicture: string | null
+}
+
 type Leader = {
   name: string
   title: string
@@ -233,9 +242,43 @@ function HolographicCard({
   )
 }
 
+/* ---------- SKELETON COMPONENT ---------- */
+
+function LeaderCardSkeleton({ isMobile }: { isMobile: boolean }) {
+  const cardWidth = isMobile ? 180 : 200
+  const cardHeight = isMobile ? 260 : 280
+  const currentRadius = "24px"
+
+  return (
+    <div
+      style={{
+        background: "rgba(255,255,255,0.03)",
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
+        borderRadius: currentRadius,
+        width: cardWidth,
+        height: cardHeight,
+      }}
+      className="animate-pulse relative overflow-hidden flex flex-col items-center gap-4 p-5 border border-white/5"
+    >
+      <div
+        className="rounded-full bg-white/10"
+        style={{ width: isMobile ? "100px" : "120px", height: isMobile ? "100px" : "120px" }}
+      />
+      <div className="h-4 w-3/4 bg-white/10 rounded-full" />
+      <div className="h-3 w-1/2 bg-white/5 rounded-full" />
+      <div className="mt-4 flex flex-col gap-2 w-full">
+        <div className="h-2 w-full bg-white/5 rounded-full" />
+        <div className="h-2 w-5/6 bg-white/5 rounded-full" />
+        <div className="h-2 w-4/6 bg-white/5 rounded-full mx-auto" />
+      </div>
+    </div>
+  )
+}
+
 /* ---------- LEADER CARD COMPONENT ---------- */
 
-function LeaderCard({ leader }: { leader: Leader }) {
+function LeaderCard({ leader, isLoading }: { leader: Leader; isLoading?: boolean }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -260,101 +303,108 @@ function LeaderCard({ leader }: { leader: Leader }) {
   const cardWidth = isMobile ? (showExpanded ? 280 : 180) : (showExpanded ? 320 : 200)
   const cardHeight = isMobile ? (showExpanded ? 380 : 260) : (showExpanded ? 420 : 280)
 
+  if (isLoading) {
+    return <LeaderCardSkeleton isMobile={isMobile} />
+  }
+
   return (
     <div
-  style={{
-    background: "rgba(0,0,0,0.20)",
-    backdropFilter: "blur(14px)",
-    WebkitBackdropFilter: "blur(14px)",
-    borderRadius: currentRadius,
-  }}
->
-<HolographicCard
-  onClick={handleClick}
-  onMouseEnter={handleMouseEnter}
-  onMouseLeave={handleMouseLeave}
-  className="group cursor-pointer"
-  borderRadius={currentRadius}
->
-  <motion.article
-    variants={itemFade}
-    className="relative overflow-hidden"
-    animate={{
-      width: cardWidth,
-      height: cardHeight,
-      borderRadius: currentRadius,
-    }}
-    transition={{ duration: 0.4, ease: easeSoft }}
-  >
-
-    {/* CONTENT */}
-    <motion.div
-      className="relative z-10 flex flex-col items-center h-full"
-      animate={{
-        gap: showExpanded ? "12px" : "16px",
-        padding: isMobile
-          ? "16px"
-          : showExpanded
-          ? "20px"
-          : "20px",
+      style={{
+        background: "rgba(0,0,0,0.20)",
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
+        borderRadius: currentRadius,
       }}
-      transition={{ duration: 0.4, ease: easeSoft }}
     >
-      <motion.div
-        className="relative z-20 flex flex-col items-center text-center w-full"
-        animate={{ gap: "12px" }}
+      <HolographicCard
+        onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className="group cursor-pointer"
+        borderRadius={currentRadius}
       >
-        <div
-          className="border border-white/20 shadow-inner flex-shrink-0 rounded-full overflow-hidden flex items-center justify-center bg-white/5"
-          style={{
-            width: isMobile ? "100px" : "120px",
-            height: isMobile ? "100px" : "120px",
+        <motion.article
+          variants={itemFade}
+          initial="hidden"
+          animate={{
+            opacity: 1,
+            scale: 1,
+            width: cardWidth,
+            height: cardHeight,
+            borderRadius: currentRadius,
           }}
+          className="relative overflow-hidden"
+          transition={{ duration: 0.4, ease: easeSoft }}
         >
-          <img
-            src={leader.avatar}
-            alt={leader.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
 
-        <div className="flex flex-col items-center gap-1 w-full">
-          <h2 className="text-base md:text-lg font-bold text-white tracking-wide">
-            {leader.name}
-          </h2>
-          <p className="text-[10px] md:text-xs font-medium text-purple-300 uppercase tracking-wider">
-            {leader.title}
-          </p>
-        </div>
-      </motion.div>
+          {/* CONTENT */}
+          <motion.div
+            className="relative z-10 flex flex-col items-center h-full"
+            animate={{
+              gap: showExpanded ? "12px" : "16px",
+              padding: isMobile
+                ? "16px"
+                : showExpanded
+                  ? "20px"
+                  : "20px",
+            }}
+            transition={{ duration: 0.4, ease: easeSoft }}
+          >
+            <motion.div
+              className="relative z-20 flex flex-col items-center text-center w-full"
+              animate={{ gap: "12px" }}
+            >
+              <div
+                className="border border-white/20 shadow-inner flex-shrink-0 rounded-full overflow-hidden flex items-center justify-center bg-white/5"
+                style={{
+                  width: isMobile ? "100px" : "120px",
+                  height: isMobile ? "100px" : "120px",
+                }}
+              >
+                <img
+                  src={leader.avatar}
+                  alt={leader.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
 
-      <motion.div
-        className="overflow-hidden w-full"
-        animate={{
-          opacity: showExpanded ? 1 : 0,
-          height: showExpanded ? "auto" : 0,
-        }}
-        transition={{
-          duration: 0.3,
-          ease: easeSoft,
-          delay: showExpanded ? 0.1 : 0,
-        }}
-      >
-        <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-purple-500/30 to-transparent mb-3" />
-        <p className="text-xs md:text-sm leading-relaxed font-light text-center text-gray-200">
-          {leader.description}
-        </p>
-      </motion.div>
-    </motion.div>
-  </motion.article>
-</HolographicCard>
-</div>
+              <div className="flex flex-col items-center gap-1 w-full">
+                <h2 className="text-base md:text-lg font-bold text-white tracking-wide">
+                  {leader.name}
+                </h2>
+                <p className="text-[10px] md:text-xs font-medium text-purple-300 uppercase tracking-wider">
+                  {leader.title}
+                </p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="overflow-hidden w-full"
+              animate={{
+                opacity: showExpanded ? 1 : 0,
+                height: showExpanded ? "auto" : 0,
+              }}
+              transition={{
+                duration: 0.3,
+                ease: easeSoft,
+                delay: showExpanded ? 0.1 : 0,
+              }}
+            >
+              <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-purple-500/30 to-transparent mb-3" />
+              <p className="text-xs md:text-sm leading-relaxed font-light text-center text-gray-200">
+                {leader.description}
+              </p>
+            </motion.div>
+          </motion.div>
+        </motion.article>
+      </HolographicCard>
+    </div>
   )
 }
 
 /* ---------- HIERARCHY LEVEL (Recursive) ---------- */
 
-function HierarchyLevel({ leader }: { leader: Leader }) {
+function HierarchyLevel({ leader, isLoading }: { leader: Leader; isLoading?: boolean }) {
   const hasChildren = leader.children && leader.children.length > 0
   const childCount = leader.children?.length || 0
 
@@ -366,7 +416,7 @@ function HierarchyLevel({ leader }: { leader: Leader }) {
       whileInView="show"
       viewport={{ once: true, amount: 0.2 }}
     >
-      <LeaderCard leader={leader} />
+      <LeaderCard leader={leader} isLoading={isLoading} />
 
       {hasChildren && (
         <>
@@ -409,7 +459,7 @@ function HierarchyLevel({ leader }: { leader: Leader }) {
                     className="w-0.5 bg-gradient-to-b from-white/40 to-white/70 origin-top"
                   />
 
-                  <HierarchyLevel leader={child} />
+                  <HierarchyLevel leader={child} isLoading={isLoading} />
                 </div>
               )
             })}
@@ -423,6 +473,51 @@ function HierarchyLevel({ leader }: { leader: Leader }) {
 /* ---------- MAIN COMPONENT ---------- */
 
 export default function Leadership() {
+  const [hierarchy, setHierarchy] = useState<Leader>(organizationHierarchy)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchLeadership() {
+      try {
+        const response = await fetch("/api/admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "get_leadership" }),
+        })
+        const data = await response.json()
+
+        if (response.ok && data.users) {
+          const users: DBUser[] = data.users
+
+          const mergeData = (leader: Leader): Leader => {
+            const dbUser = users.find(u =>
+              u.name?.toLowerCase() === leader.name.toLowerCase() ||
+              u.username?.toLowerCase() === leader.name.toLowerCase()
+            )
+
+            return {
+              ...leader,
+              title: dbUser?.position || leader.title,
+              description: dbUser?.description || leader.description,
+              avatar: dbUser?.profilePicture || leader.avatar,
+              children: leader.children && leader.children.length > 0
+                ? leader.children.map(mergeData)
+                : leader.children
+            }
+          }
+
+          setHierarchy(mergeData(organizationHierarchy))
+        }
+      } catch (error) {
+        console.error("Failed to fetch leadership data:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchLeadership()
+  }, [])
+
   return (
     <div className="relative min-h-screen w-full overflow-hidden text-white">
       <div className="fixed inset-0 pointer-events-none -z-10">
@@ -453,7 +548,11 @@ export default function Leadership() {
         </motion.div>
 
         <div className="w-full max-w-7xl mx-auto pb-10 md:pb-20">
-          <HierarchyLevel leader={organizationHierarchy} />
+          <HierarchyLevel
+            key={isLoading ? 'loading' : 'loaded'}
+            leader={hierarchy}
+            isLoading={isLoading}
+          />
         </div>
       </div>
     </div>
