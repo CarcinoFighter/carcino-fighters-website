@@ -35,6 +35,7 @@ type AuthBody = {
 	content?: string;
 	authorId?: string;
 	description?: string;
+	forceOwn?: boolean;
 };
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -463,7 +464,8 @@ export async function POST(req: Request) {
 				.from("cancer_docs")
 				.select("id, slug, title, content, position, author_user_id, created_at, updated_at");
 
-			const query = session.user.admin_access
+			const { forceOwn } = body ?? {};
+			const query = (session.user.admin_access && !forceOwn)
 				? baseQuery
 				: baseQuery.eq("author_user_id", session.user.id);
 
