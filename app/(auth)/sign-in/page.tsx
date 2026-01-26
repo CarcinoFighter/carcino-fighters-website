@@ -92,7 +92,7 @@ function SignInInner() {
     }
 
     return (
-        <div className="h-screen w-screen relative overflow-hidden">
+        <div className="h-screen w-screen relative overflow-hidden font-dmsans">
             <Image
                 src={`/leadership-bg-new-2.jpg`}
                 width={1920}

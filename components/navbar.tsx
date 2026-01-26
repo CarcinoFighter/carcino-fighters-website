@@ -66,7 +66,9 @@ export function Navbar() {
   ];
   const selectedTab = tabs.find(tab =>
     tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href)
-  )?.label ?? "Home";
+  )?.label;
+
+  const isAuthPage = pathname.startsWith("/sign") || pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
 
   return (
     <div className="">
@@ -95,7 +97,7 @@ export function Navbar() {
 
                   <NavigationMenuLink
                     onClick={() => router.push(tab.href)}
-                    className={navigationMenuTriggerStyle() + (selectedTab === tab.label ? "transition-colors z-10 text-white font-dmsans font-bold" : "")}
+                    className={navigationMenuTriggerStyle() + " font-dmsans font-bold transition-colors " + (selectedTab === tab.label ? "z-10 text-white" : "")}
                   >
                     <span className="relative z-10 vision-pro-ui-hoverable
     ">{tab.label}</span>
@@ -121,11 +123,21 @@ export function Navbar() {
           <Link href={isAuthenticated ? "/dashboard" : "/sign-up"}>
             <div className={cn(
               "p-3 rounded-full flex items-center justify-center text-white relative z-10",
-              "overflow-hidden isolation-isolate liquid-glass !shadow-none"
+              isAuthPage ? "bg-[#B372FF]" : "overflow-hidden isolation-isolate liquid-glass !shadow-none"
             )}>
-              <div className="liquidGlass-effect"></div>
-              <div className="liquidGlass-shine"></div>
-              <div className="liquidGlass-text"></div>
+              {!isAuthPage && (
+                <>
+                  <div className="liquidGlass-effect"></div>
+                  <div className="liquidGlass-shine"></div>
+                  <div className="liquidGlass-text"></div>
+                </>
+              )}
+              {isAuthPage && (
+                <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+                  <div className="liquidGlass-tint"></div>
+                  <div className="liquidGlass-shine relative w-[105.8%] h-[102%] !top-[-0.2px] !left-[-2.3px]"></div>
+                </div>
+              )}
               <div className="relative z-10">
                 {isAuthenticated ? <User size={20} /> : <UserPlus size={20} />}
               </div>
