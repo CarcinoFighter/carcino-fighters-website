@@ -30,6 +30,61 @@ const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY!
 );
 
+function DashboardSkeleton() {
+    return (
+        <div className="min-h-screen bg-black text-white px-6 md:px-12 pb-12 pt-20 md:pt-32 font-dmsans overflow-x-hidden relative">
+            {/* Background Gradients */}
+            <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-900/10 blur-[120px] rounded-full" />
+                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-900/5 blur-[120px] rounded-full" />
+            </div>
+
+            <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* LEFT COLUMN: Profile Card Skeleton */}
+                <div className="lg:col-span-4 xl:col-span-3">
+                    <div className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8 flex flex-col items-center animate-pulse">
+                        <div className="w-32 h-32 rounded-full bg-white/10 mb-6" />
+                        <div className="h-8 w-3/4 bg-white/10 rounded-full mb-2" />
+                        <div className="h-4 w-1/2 bg-white/5 rounded-full mb-6" />
+                        <div className="w-full h-[1px] bg-white/5 mb-6" />
+                        <div className="space-y-3 w-full">
+                            <div className="h-3 w-full bg-white/5 rounded-full" />
+                            <div className="h-3 w-5/6 bg-white/5 rounded-full" />
+                            <div className="h-3 w-4/6 bg-white/5 rounded-full" />
+                        </div>
+                        <div className="mt-8 w-full h-10 bg-white/5 rounded-lg" />
+                    </div>
+                </div>
+
+                {/* RIGHT COLUMN: Articles List Skeleton */}
+                <div className="lg:col-span-8 xl:col-span-9 space-y-6">
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="h-8 w-40 bg-white/10 rounded-full" />
+                    </div>
+
+                    {[...Array(3)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="bg-[#0a0a0a] border border-white/5 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row gap-8 animate-pulse"
+                        >
+                            <div className="w-full md:w-48 h-48 md:h-auto shrink-0 rounded-2xl bg-white/5" />
+                            <div className="flex-1 flex flex-col justify-center space-y-4">
+                                <div className="h-6 w-24 bg-white/5 rounded-full" />
+                                <div className="h-8 w-3/4 bg-white/10 rounded-full" />
+                                <div className="space-y-2">
+                                    <div className="h-4 w-full bg-white/5 rounded-full" />
+                                    <div className="h-4 w-5/6 bg-white/5 rounded-full" />
+                                </div>
+                                <div className="h-4 w-24 bg-white/5 rounded-full" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function DashboardPage() {
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
@@ -175,11 +230,7 @@ export default function DashboardPage() {
     }
 
     if (loading) {
-        return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
-                <div className="animate-pulse text-purple-400">Loading dashboard...</div>
-            </div>
-        );
+        return <DashboardSkeleton />;
     }
 
     return (
