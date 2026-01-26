@@ -15,6 +15,43 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
 
+function AuthSkeleton() {
+    return (
+        <div className="h-screen w-screen relative overflow-hidden font-dmsans">
+            <Image
+                src="/leadership-bg-new-2.jpg"
+                width={1920}
+                height={1080}
+                alt="Background Image"
+                className="absolute top-0 left-0 w-full h-full object-cover brightness-50"
+            />
+            <div className="min-h-screen flex items-center justify-center relative z-10">
+                <div className="p-3 my-auto rounded-xl bg-[#2C2638]/50 backdrop-blur-sm md:flex md:gap-2 drop-shadow-2xl drop-shadow-black/50 max-w-4xl w-full mx-4 animate-pulse">
+                    <div className="hidden md:flex items-center justify-center p-4 w-1/2">
+                        <div className="w-[400px] h-[500px] bg-white/5 rounded-xl" />
+                    </div>
+
+                    <div className="flex-1 p-8 space-y-6">
+                        <div className="flex flex-col items-center space-y-4">
+                            <div className="h-10 w-48 bg-white/10 rounded-full" />
+                        </div>
+                        <div className="space-y-4">
+                            <div className="h-12 w-full bg-white/5 rounded-lg" />
+                            <div className="h-12 w-full bg-white/5 rounded-lg" />
+                            <div className="h-12 w-full bg-white/5 rounded-lg" />
+                            <div className="h-12 w-full bg-white/5 rounded-lg" />
+                            <div className="h-14 w-full bg-white/10 rounded-lg mt-6" />
+                        </div>
+                        <div className="flex flex-col items-center space-y-4 pt-4">
+                            <div className="h-4 w-40 bg-white/5 rounded-full" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function SignUpInner() {
     const router = useRouter();
 
@@ -164,7 +201,7 @@ function SignUpInner() {
 
 export default function SignUpPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen bg-black" />}>
+        <Suspense fallback={<AuthSkeleton />}>
             <SignUpInner />
         </Suspense>
     );
