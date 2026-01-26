@@ -533,7 +533,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-10 pt-[68px] min-w-screen">
+    <div className="min-h-screen bg-background px-4 pb-10 pt-20 md:pt-32 min-w-screen">
       <div className="max-w-[85%] mx-auto">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
           <h1 className="text-2xl font-bold">Admin Dashboard</h1>

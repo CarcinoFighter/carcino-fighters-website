@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
+import { createClient } from "@supabase/supabase-js";
 
 type User = {
     id: string;
@@ -23,6 +24,12 @@ type Doc = {
     created_at: string;
 };
 
+// Supabase client for storage
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY!
+);
+
 export default function DashboardPage() {
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
@@ -32,6 +39,45 @@ export default function DashboardPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [updating, setUpdating] = useState(false);
     const [editForm, setEditForm] = useState({ description: "", password: "" });
+    const [uploading, setUploading] = useState(false);
+
+    async function handleUpload(file: File) {
+        if (!user || !user.id) return;
+        try {
+            setUploading(true);
+            const ext = file.name.split(".").pop();
+            const path = `authors/${user.id}/avatar.${ext}`;
+
+            // 1. Upload
+            const { error: upErr } = await supabase.storage.from("profile-picture").upload(path, file, { upsert: true });
+            if (upErr) throw upErr;
+
+            // 2. Update Metadata
+            const { error: metaErr } = await supabase.from("profile_pictures").upsert(
+                {
+                    user_id: user.id,
+                    object_key: path,
+                    content_type: file.type,
+                    size: file.size,
+                },
+                { onConflict: "user_id" }
+            );
+            if (metaErr) throw metaErr;
+
+            // 3. Get Signed URL
+            const { data: signed } = await supabase.storage.from("profile-picture").createSignedUrl(path, 60 * 60 * 24 * 7);
+            const url = signed?.signedUrl || null;
+
+            if (url) {
+                setUser((prev) => (prev ? { ...prev, profilePicture: url } : prev));
+            }
+        } catch (err) {
+            console.error("Upload error", err);
+            alert("Failed to upload image");
+        } finally {
+            setUploading(false);
+        }
+    }
 
     async function handleUpdateProfile(e: React.FormEvent) {
         e.preventDefault();
@@ -53,7 +99,13 @@ export default function DashboardPage() {
             const data = await res.json().catch(() => ({}));
 
             if (res.ok && data.user) {
-                setUser(data.user);
+                // Keep the profile picture if we just uploaded one, as the API might not return it immediately if we didn't update it there? 
+                // Actually the API returns the user object, let's make sure we preserve the pfp if the API doesn't send it (though it should).
+                // Safest is to merge carefully or rely on API. 
+                // The API 'update_self' returns 'user' but DOES NOT return 'profilePicture' (signed url) usually, it returns 'avatar_url' (public).
+                // But our 'user' state uses 'profilePicture' which is the signed URL.
+                // So we should preserve the current profilePicture unless the API gives us a new one (unlikely for update_self unless we added logic).
+                setUser((prev) => ({ ...data.user, profilePicture: prev?.profilePicture }));
                 setIsEditing(false);
                 setEditForm({ description: "", password: "" });
             } else {
@@ -137,7 +189,7 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white p-6 md:p-12 font-sans overflow-x-hidden">
+        <div className="min-h-screen bg-black text-white px-6 md:px-12 pb-12 pt-20 md:pt-32 font-dmsans overflow-x-hidden">
             {/* Background Gradients */}
             <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
                 <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-900/20 blur-[120px] rounded-full" />
@@ -152,7 +204,7 @@ export default function DashboardPage() {
                             {/* Card Glow Effect */}
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                            <div className="relative w-32 h-32 mb-6">
+                            <div className="relative w-32 h-32 mb-6 group-hover:scale-105 transition-transform duration-500">
                                 <div className="absolute inset-0 rounded-full border-2 border-white/10" />
                                 {user?.profilePicture ? (
                                     <Image
@@ -165,6 +217,28 @@ export default function DashboardPage() {
                                 ) : (
                                     <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-3xl font-bold">
                                         {user?.name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || "?"}
+                                    </div>
+                                )}
+                                {isEditing && (
+                                    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 rounded-full opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+                                        <label htmlFor="pfp-upload" className="text-xs font-medium text-white cursor-pointer p-2">
+                                            Change
+                                            <input
+                                                id="pfp-upload"
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    const f = e.target.files?.[0];
+                                                    if (f) handleUpload(f);
+                                                }}
+                                            />
+                                        </label>
+                                    </div>
+                                )}
+                                {uploading && (
+                                    <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 rounded-full">
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     </div>
                                 )}
                             </div>
