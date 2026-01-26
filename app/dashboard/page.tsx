@@ -295,7 +295,7 @@ export default function DashboardPage() {
 
                             {!isEditing ? (
                                 <>
-                                    <p className="text-gray-300 text-sm leading-[115%] mb-8 whitespace-pre-wrap ">
+                                    <p className="text-gray-300 text-sm leading-[120%] mb-8 whitespace-pre-wrap ">
                                         {user?.description || "No bio description yet."}
                                     </p>
                                     <button
