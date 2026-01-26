@@ -99,12 +99,6 @@ export default function DashboardPage() {
             const data = await res.json().catch(() => ({}));
 
             if (res.ok && data.user) {
-                // Keep the profile picture if we just uploaded one, as the API might not return it immediately if we didn't update it there? 
-                // Actually the API returns the user object, let's make sure we preserve the pfp if the API doesn't send it (though it should).
-                // Safest is to merge carefully or rely on API. 
-                // The API 'update_self' returns 'user' but DOES NOT return 'profilePicture' (signed url) usually, it returns 'avatar_url' (public).
-                // But our 'user' state uses 'profilePicture' which is the signed URL.
-                // So we should preserve the current profilePicture unless the API gives us a new one (unlikely for update_self unless we added logic).
                 setUser((prev) => ({ ...data.user, profilePicture: prev?.profilePicture }));
                 setIsEditing(false);
                 setEditForm({ description: "", password: "" });
@@ -250,7 +244,7 @@ export default function DashboardPage() {
 
                             {!isEditing ? (
                                 <>
-                                    <p className="text-gray-300 text-sm leading-relaxed mb-8 whitespace-pre-wrap">
+                                    <p className="text-gray-300 text-sm leading-[115%] mb-8 whitespace-pre-wrap ">
                                         {user?.description || "No bio description yet."}
                                     </p>
                                     <button
