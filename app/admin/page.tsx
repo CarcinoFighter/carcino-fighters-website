@@ -39,15 +39,28 @@ export default function AdminPage() {
     profilePicture?: string | null; // public URL
   };
 
+  type SubmissionRow = {
+    id: string;
+    doc_id: string | null;
+    slug: string;
+    title: string;
+    content: string;
+    author_user_id: string;
+    status: "pending" | "approved" | "rejected";
+    reviewer_user_id?: string | null;
+    reviewer_note?: string | null;
+    created_at?: string;
+    updated_at?: string;
+    author?: {
+      name: string | null;
+      username: string | null;
+      email: string | null;
+      position: string | null;
+    } | null;
+  };
+
   const [docs, setDocs] = useState<CancerDoc[]>([]);
   const [loading, setLoading] = useState(false);
-  const [editing, setEditing] = useState<string | null>(null);
-  const [editData, setEditData] = useState({
-    slug: "",
-    title: "",
-    content: "",
-    authorId: "",
-  });
   const [adding, setAdding] = useState(false);
   const [addData, setAddData] = useState({
     slug: "",
@@ -67,8 +80,17 @@ export default function AdminPage() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [userSearch, setUserSearch] = useState("");
   const [newUser, setNewUser] = useState({ username: "", email: "", name: "", password: "", position: "", description: "" });
-  const [authorSearch, setAuthorSearch] = useState<Record<string, string>>({});
   const [usersOpen, setUsersOpen] = useState(false);
+  const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
+  const [submissionsLoading, setSubmissionsLoading] = useState(false);
+  const [reviewing, setReviewing] = useState<Record<string, boolean>>({});
+
+  const cardClass = "rounded-2xl border border-white/10 bg-white/5 backdrop-blur shadow-2xl";
+  const inputClass = "bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-[#6D54B5]";
+  const textareaClass = `${inputClass} min-h-[100px]`;
+  const primaryButton = "bg-[#6D54B5] hover:bg-[#5a45a0] text-white px-4 py-2 rounded-lg font-semibold shadow-lg shadow-[#6D54B5]/30 transition hover:cursor-pointer disabled:opacity-60";
+  const subtleButton = "border border-white/15 bg-white/5 text-white px-4 py-2 rounded-lg hover:bg-white/10 transition hover:cursor-pointer disabled:opacity-60";
+  const ghostButton = "text-sm text-white/80 hover:text-white underline underline-offset-4 hover:cursor-pointer disabled:opacity-60";
 
   // Force default cursor on admin page (global CSS hides it for the fancy cursor elsewhere)
   useEffect(() => {
@@ -107,6 +129,8 @@ export default function AdminPage() {
             });
           }
           const tasks: Array<Promise<unknown>> = [fetchSelfProfilePicture(), fetchDocsWithPictures({ silent: true })];
+          const submissionsStatus = data.user?.admin_access ? "pending" : "all";
+          tasks.push(fetchSubmissions(submissionsStatus));
           if (data.user?.admin_access) {
             tasks.push(fetchUsers());
           }
@@ -189,33 +213,22 @@ export default function AdminPage() {
     }
   }
 
-  async function handleEditSave(id: string) {
-    setLoading(true);
+  async function fetchSubmissions(status?: "pending" | "approved" | "rejected" | "all") {
+    setSubmissionsLoading(true);
     try {
       const res = await fetch("/api/admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "update_doc",
-          docId: id,
-          slug: editData.slug,
-          title: editData.title,
-          content: editData.content,
-          authorId: editData.authorId || null,
-        }),
+        body: JSON.stringify({ action: "list_doc_submissions", status }),
       });
       const data = await res.json().catch(() => ({}));
-      setLastResponseDebug((prev) => `${prev || ''}\nUPDATE_DOC:\n${JSON.stringify(data, null, 2)}`);
-      if (!res.ok) {
-        setError(data?.error || "Update failed");
+      if (res.ok && Array.isArray(data.submissions)) {
+        setSubmissions(data.submissions);
       }
     } catch (err) {
-      console.error("update doc error", err);
-      setError("Update failed");
+      console.error("fetchSubmissions error", err);
     } finally {
-      setEditing(null);
-      await fetchDocsWithPictures();
-      setLoading(false);
+      setSubmissionsLoading(false);
     }
   }
 
@@ -225,12 +238,15 @@ export default function AdminPage() {
       const res = await fetch("/api/admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "create_doc", ...addData }),
+        body: JSON.stringify({ action: "submit_doc_change", ...addData }),
       });
       const data = await res.json().catch(() => ({}));
       setLastResponseDebug((prev) => `${prev || ''}\nCREATE_DOC:\n${JSON.stringify(data, null, 2)}`);
       if (!res.ok) {
         setError(data?.error || "Insert failed");
+      } else if (!data?.autoApproved) {
+        setError("");
+        setLastResponseDebug((prev) => `${prev || ''}\nSUBMISSION_PENDING`);
       }
     } catch (err) {
       console.error("create doc error", err);
@@ -305,6 +321,29 @@ export default function AdminPage() {
     } finally {
       await fetchDocsWithPictures();
       setLoading(false);
+    }
+  }
+
+  async function handleReviewSubmission(submissionId: string, decision: "approve" | "reject") {
+    setReviewing((s) => ({ ...s, [submissionId]: true }));
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "review_doc_submission", submissionId, decision }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error || "Review failed");
+      } else {
+        setSubmissions((subs) => subs.filter((s) => s.id !== submissionId));
+        await fetchDocsWithPictures({ silent: true });
+      }
+    } catch (err) {
+      console.error("review submission error", err);
+      setError("Review failed");
+    } finally {
+      setReviewing((s) => ({ ...s, [submissionId]: false }));
     }
   }
 
@@ -512,9 +551,9 @@ export default function AdminPage() {
 
   if (verifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="min-h-screen flex items-center justify-center bg-[#0b0816] text-white">
+        <div className="flex items-center gap-3 text-sm text-white/70">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-transparent" />
           Verifying session...
         </div>
       </div>
@@ -523,9 +562,9 @@ export default function AdminPage() {
 
   if (!unlocked) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0b0816] text-white">
+        <div className="flex items-center gap-3 text-sm text-white/70">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-transparent" />
           Redirecting to admin login...
         </div>
       </div>
@@ -533,156 +572,230 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-10 pt-[68px] min-w-screen">
-      <div className="max-w-[85%] mx-auto">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-          <div className="flex gap-2 flex-wrap">
-            {currentUser && (
-              <div className="text-sm my-auto text-muted-foreground">Signed in as {currentUser.email || currentUser.username || "user"}</div>
-            )}
-            <button
-              className="bg-gray-200 dark:bg-gray-800 text-sm px-3 py-2 rounded border"
-              onClick={handleLogout}
-              disabled={loggingOut}
-            >
-              {loggingOut ? "Logging out..." : "Logout"}
-            </button>
-          </div>
-        </div>
+    <div className="relative min-h-screen min-w-screen overflow-hidden bg-[#0b0816] text-white">
+    
+      <Image
+        src="/leadership-bg-new-2.jpg"
+        alt="Admin background"
+        fill
+        className="absolute inset-0 object-cover opacity-30"
+        priority
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0b0816]/95 via-[#120d23]/90 to-[#0b0816]/96" />
 
-        {error && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
+      <div className="relative z-10 px-4 py-10 pt-[72px]">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-white/60">Carcino Fighters • Admin</p>
+              <h1 className="text-3xl font-bold leading-tight">Command Center</h1>
+              <p className="text-sm text-white/70">Manage articles, submissions, and your author profile in one glassy workspace.</p>
+            </div>
+            <div className="flex gap-3 flex-wrap items-center">
+              {currentUser && (
+                <div className="text-sm text-white/80 px-3 py-2 rounded-full border border-white/10 bg-white/5">{currentUser.email || currentUser.username || "user"}</div>
+              )}
+              <button
+                className={subtleButton}
+                onClick={handleLogout}
+                disabled={loggingOut}
+              >
+                {loggingOut ? "Logging out..." : "Logout"}
+              </button>
+            </div>
           </div>
-        )}
 
-        <section className="mb-8 gap-4 flex flex-col">
-          <div className="p-4 rounded-xl border bg-card">
-            <h2 className="font-semibold mb-3">Your Account</h2>
-            {!selfEditing ? (
-              <div className="flex flex-col gap-2 text-sm">
-                <div className="flex items-center gap-3">
-                  {currentUser?.profilePicture ? (
-                    <Image
-                      src={currentUser.profilePicture}
-                      alt="Your avatar"
-                      width={64}
-                      height={64}
-                      className="h-16 w-16 rounded-full object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="h-16 w-16 rounded-full bg-muted" />
-                  )}
-                  {currentUser && (
-                    <div className="flex flex-col text-xs">
-                      <label htmlFor="self-avatar" className="underline cursor-pointer hover:cursor-pointer">Change photo</label>
-                      <input
-                        id="self-avatar"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const f = e.target.files?.[0];
-                          if (f) handleUpload(f, currentUser.id);
-                        }}
+          {error && (
+            <div className="mb-2 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-100 shadow-lg shadow-red-900/30">
+              {error}
+            </div>
+          )}
+
+          <section className="mb-8 gap-4 flex flex-col">
+            <div className={`${cardClass} p-6`}>
+              <h2 className="font-semibold mb-3 text-lg">Your Account</h2>
+              {!selfEditing ? (
+                <div className="flex flex-col gap-3 text-sm text-white/80">
+                  <div className="flex items-center gap-3">
+                    {currentUser?.profilePicture ? (
+                      <Image
+                        src={currentUser.profilePicture}
+                        alt="Your avatar"
+                        width={64}
+                        height={64}
+                        className="h-16 w-16 rounded-full object-cover ring-2 ring-white/20"
+                        unoptimized
                       />
-                      {uploading[currentUser.id] && (
-                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-label="Uploading" />
-                      )}
-                    </div>
-                  )}
+                    ) : (
+                      <div className="h-16 w-16 rounded-full bg-white/10" />
+                    )}
+                    {currentUser && (
+                      <div className="flex flex-col text-xs text-white/70">
+                        <label htmlFor="self-avatar" className="underline underline-offset-4 hover:text-white hover:cursor-pointer">Change photo</label>
+                        <input
+                          id="self-avatar"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            if (f) handleUpload(f, currentUser.id);
+                          }}
+                        />
+                        {uploading[currentUser.id] && (
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/50 border-t-transparent" aria-label="Uploading" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <div className="text-white/50">Username</div>
+                    <div className="font-medium break-words">{currentUser?.username || "—"}</div>
+                  </div>
+                  <div>
+                    <div className="text-white/50">Email</div>
+                    <div className="font-medium break-words">{currentUser?.email || "—"}</div>
+                  </div>
+                  <div>
+                    <div className="text-white/50">Name</div>
+                    <div className="font-medium break-words">{currentUser?.name || "—"}</div>
+                  </div>
+                  <div>
+                    <div className="text-white/50">Author Description</div>
+                    <div className="font-medium break-words whitespace-pre-wrap">{currentUser?.description || "—"}</div>
+                  </div>
+                  <button
+                    className={`${primaryButton} mt-2 w-full sm:w-auto`}
+                    onClick={() => setSelfEditing(true)}
+                  >
+                    Edit profile
+                  </button>
                 </div>
+              ) : (
+                <form className="flex flex-col gap-3" onSubmit={handleUpdateSelf}>
+                  <input
+                    className={inputClass}
+                    placeholder="Username"
+                    value={selfForm.username}
+                    onChange={(e) => setSelfForm((s) => ({ ...s, username: e.target.value }))}
+                  />
+                  <input
+                    className={inputClass}
+                    placeholder="Email"
+                    value={selfForm.email}
+                    onChange={(e) => setSelfForm((s) => ({ ...s, email: e.target.value }))}
+                  />
+                  <input
+                    className={inputClass}
+                    placeholder="Name"
+                    value={selfForm.name}
+                    onChange={(e) => setSelfForm((s) => ({ ...s, name: e.target.value }))}
+                  />
+                  <input
+                    type="password"
+                    className={inputClass}
+                    placeholder="New password (optional)"
+                    value={selfForm.password}
+                    onChange={(e) => setSelfForm((s) => ({ ...s, password: e.target.value }))}
+                  />
+                  <textarea
+                    className={textareaClass}
+                    placeholder="Author Description"
+                    value={selfForm.description}
+                    onChange={(e) => setSelfForm((s) => ({ ...s, description: e.target.value }))}
+                  />
+                  <div className="flex gap-2 flex-wrap">
+                    <button
+                      type="submit"
+                      className={primaryButton}
+                      disabled={savingSelf}
+                    >
+                      {savingSelf ? "Saving..." : "Save changes"}
+                    </button>
+                    <button
+                      type="button"
+                      className={subtleButton}
+                      onClick={() => {
+                        if (currentUser) {
+                          setSelfForm({
+                            username: currentUser.username ?? "",
+                            email: currentUser.email ?? "",
+                            name: currentUser.name ?? "",
+                            password: "",
+                            description: currentUser.description ?? "",
+                          });
+                        }
+                        setSelfEditing(false);
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+
+          {currentUser && (
+            <div className={`${cardClass} p-6`}>
+              <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-muted-foreground">Username</div>
-                  <div className="font-medium break-words">{currentUser?.username || "—"}</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">Email</div>
-                  <div className="font-medium break-words">{currentUser?.email || "—"}</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">Name</div>
-                  <div className="font-medium break-words">{currentUser?.name || "—"}</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">Author Description</div>
-                  <div className="font-medium break-words whitespace-pre-wrap">{currentUser?.description || "—"}</div>
+                  <h2 className="font-semibold text-lg">Your submissions</h2>
+                  <p className="text-sm text-white/70">Track article drafts and edits awaiting review.</p>
                 </div>
                 <button
-                  className="mt-3 bg-primary text-white rounded px-4 py-2 font-semibold w-full sm:w-auto"
-                  onClick={() => setSelfEditing(true)}
+                  className={ghostButton}
+                  onClick={() => fetchSubmissions(currentUser.admin_access ? "pending" : "all")}
+                  disabled={submissionsLoading}
                 >
-                  Edit profile
+                  {submissionsLoading ? "Refreshing..." : "Refresh"}
                 </button>
               </div>
-            ) : (
-              <form className="flex flex-col gap-3" onSubmit={handleUpdateSelf}>
-                <input
-                  className="border rounded px-3 py-2 bg-background"
-                  placeholder="Username"
-                  value={selfForm.username}
-                  onChange={(e) => setSelfForm((s) => ({ ...s, username: e.target.value }))}
-                />
-                <input
-                  className="border rounded px-3 py-2 bg-background"
-                  placeholder="Email"
-                  value={selfForm.email}
-                  onChange={(e) => setSelfForm((s) => ({ ...s, email: e.target.value }))}
-                />
-                <input
-                  className="border rounded px-3 py-2 bg-background"
-                  placeholder="Name"
-                  value={selfForm.name}
-                  onChange={(e) => setSelfForm((s) => ({ ...s, name: e.target.value }))}
-                />
-                <input
-                  type="password"
-                  className="border rounded px-3 py-2 bg-background"
-                  placeholder="New password (optional)"
-                  value={selfForm.password}
-                  onChange={(e) => setSelfForm((s) => ({ ...s, password: e.target.value }))}
-                />
-                <textarea
-                  className="border rounded px-3 py-2 bg-background min-h-[100px]"
-                  placeholder="Author Description"
-                  value={selfForm.description}
-                  onChange={(e) => setSelfForm((s) => ({ ...s, description: e.target.value }))}
-                />
-                <div className="flex gap-2 flex-wrap">
-                  <button
-                    type="submit"
-                    className="bg-primary text-white rounded px-4 py-2 font-semibold"
-                    disabled={savingSelf}
-                  >
-                    {savingSelf ? "Saving..." : "Save changes"}
-                  </button>
-                  <button
-                    type="button"
-                    className="border rounded px-4 py-2"
-                    onClick={() => {
-                      if (currentUser) {
-                        setSelfForm({
-                          username: currentUser.username ?? "",
-                          email: currentUser.email ?? "",
-                          name: currentUser.name ?? "",
-                          password: "",
-                          description: currentUser.description ?? "",
-                        });
-                      }
-                      setSelfEditing(false);
-                    }}
-                  >
-                    Cancel
-                  </button>
+
+              {submissionsLoading && submissions.length === 0 ? (
+                <div className="mt-3 flex items-center gap-2 text-sm text-white/70">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-transparent" />
+                  Loading submissions...
                 </div>
-              </form>
-            )}
-          </div>
+              ) : submissions.length === 0 ? (
+                <div className="mt-3 text-sm text-white/60">No submissions yet.</div>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {submissions.map((s) => {
+                    const statusColor = s.status === "approved" ? "bg-green-100 text-green-800" : s.status === "rejected" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-800";
+                    const kind = s.doc_id ? "Edit" : "New";
+                    const submittedAt = s.created_at ? new Date(s.created_at).toLocaleString() : "";
+                    return (
+                      <div key={s.id} className="rounded-xl border border-white/10 bg-white/5 p-4 shadow-sm">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColor}`}>{s.status}</span>
+                              <span className="text-xs uppercase tracking-[0.12em] text-muted-foreground">{kind}</span>
+                            </div>
+                            <div className="text-base font-semibold leading-snug">{s.title}</div>
+                            <div className="text-sm text-muted-foreground">Slug: {s.slug}</div>
+                            {submittedAt && <div className="text-xs text-muted-foreground">Submitted {submittedAt}</div>}
+                          </div>
+                          <div className="text-right text-sm text-white/70">
+                            {s.author?.name || s.author?.username || s.author?.email || "You"}
+                          </div>
+                        </div>
+                        <div className="mt-3 text-sm text-white/70 line-clamp-3 whitespace-pre-line">{s.content}</div>
+                        {s.status === "rejected" && s.reviewer_note && (
+                          <div className="mt-2 rounded border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-100">
+                            Rejected: {s.reviewer_note}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           {currentUser?.admin_access && (
-            <div className="p-4 rounded-xl border bg-card">
+            <div className={`${cardClass} p-6`}>
               <button
                 className="w-full flex items-center justify-between text-left"
                 onClick={() => setUsersOpen((s) => !s)}
@@ -695,23 +808,23 @@ export default function AdminPage() {
                   >
                     &gt;
                   </span>
-                  <h2 className="font-semibold">Users</h2>
+                  <h2 className="font-semibold text-lg">Users</h2>
                 </div>
-                <span className="text-sm text-muted-foreground">{usersOpen ? "Hide" : "Show"}</span>
+                <span className="text-sm text-white/70">{usersOpen ? "Hide" : "Show"}</span>
               </button>
 
               {usersOpen && (
                 <div className="mt-3 space-y-3">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <input
-                      className="border rounded px-3 py-2 text-sm bg-background"
+                      className={inputClass}
                       placeholder="Search users..."
                       value={userSearch}
                       onChange={(e) => setUserSearch(e.target.value)}
                     />
                     <div className="flex gap-2">
                       <button
-                        className="text-sm underline"
+                        className={ghostButton}
                         onClick={fetchUsers}
                         disabled={loading}
                       >
@@ -721,76 +834,76 @@ export default function AdminPage() {
                   </div>
 
                   <div className="w-full overflow-auto">
-                    <table className="w-full text-sm border rounded-lg overflow-hidden">
-                      <thead className="bg-muted">
+                    <table className="w-full text-sm border border-white/10 rounded-2xl overflow-hidden bg-white/5 text-white/80">
+                      <thead className="bg-white/10 text-white">
                         <tr>
-                          <th className="p-2 text-left">Avatar</th>
-                          <th className="p-2 text-left">Name</th>
-                          <th className="p-2 text-left">Username</th>
-                          <th className="p-2 text-left">Email</th>
-                          <th className="p-2 text-left">Position</th>
-                          <th className="p-2 text-left">Description</th>
-                          <th className="p-2 text-left">Admin</th>
-                          <th className="p-2 text-left">Actions</th>
+                          <th className="p-3 text-left">Avatar</th>
+                          <th className="p-3 text-left">Name</th>
+                          <th className="p-3 text-left">Username</th>
+                          <th className="p-3 text-left">Email</th>
+                          <th className="p-3 text-left">Position</th>
+                          <th className="p-3 text-left">Description</th>
+                          <th className="p-3 text-left">Admin</th>
+                          <th className="p-3 text-left">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr className="border-t bg-muted/30">
-                          <td className="p-2 align-top">
-                            <div className="h-12 w-12 rounded-full bg-muted" />
+                        <tr className="border-t border-white/10 bg-white/5">
+                          <td className="p-3 align-top">
+                            <div className="h-12 w-12 rounded-full bg-white/10" />
                           </td>
-                          <td className="p-2 align-top">
+                          <td className="p-3 align-top">
                             <input
-                              className="border rounded px-2 py-1 w-full"
+                              className={inputClass}
                               placeholder="Name"
                               value={newUser.name}
                               onChange={(e) => setNewUser((s) => ({ ...s, name: e.target.value }))}
                             />
                           </td>
-                          <td className="p-2 align-top">
+                          <td className="p-3 align-top">
                             <input
-                              className="border rounded px-2 py-1 w-full"
+                              className={inputClass}
                               placeholder="Username"
                               value={newUser.username}
                               onChange={(e) => setNewUser((s) => ({ ...s, username: e.target.value }))}
                             />
                           </td>
-                          <td className="p-2 align-top">
+                          <td className="p-3 align-top">
                             <input
-                              className="border rounded px-2 py-1 w-full"
+                              className={inputClass}
                               placeholder="Email"
                               value={newUser.email}
                               onChange={(e) => setNewUser((s) => ({ ...s, email: e.target.value }))}
                             />
                           </td>
-                          <td className="p-2 align-top">
+                          <td className="p-3 align-top">
                             <input
-                              className="border rounded px-2 py-1 w-full"
+                              className={inputClass}
                               placeholder="Position"
                               value={newUser.position}
                               onChange={(e) => setNewUser((s) => ({ ...s, position: e.target.value }))}
                             />
                           </td>
-                          <td className="p-2 align-top">
+                          <td className="p-3 align-top">
                             <textarea
-                              className="border rounded px-2 py-1 w-full text-xs min-h-[60px]"
+                              className={`${inputClass} min-h-[60px] text-xs`}
                               placeholder="Description"
                               value={newUser.description}
                               onChange={(e) => setNewUser((s) => ({ ...s, description: e.target.value }))}
                             />
                           </td>
-                          <td className="p-2 align-top text-sm text-muted-foreground">—</td>
-                          <td className="p-2 align-top">
+                          <td className="p-3 align-top text-sm text-white/60">—</td>
+                          <td className="p-3 align-top">
                             <div className="flex flex-col gap-2">
                               <input
                                 type="password"
-                                className="border rounded px-2 py-1 w-full"
+                                className={inputClass}
                                 placeholder="Password"
                                 value={newUser.password}
                                 onChange={(e) => setNewUser((s) => ({ ...s, password: e.target.value }))}
                               />
                               <button
-                                className="bg-green-600 text-white px-3 py-1 rounded"
+                                className={primaryButton}
                                 onClick={handleCreateUser}
                                 disabled={loading}
                               >
@@ -809,16 +922,16 @@ export default function AdminPage() {
                             position: u.position ?? "",
                           };
                           return (
-                            <tr key={u.id} className="border-t">
-                              <td className="p-2 align-top">
+                            <tr key={u.id} className="border-t border-white/10">
+                              <td className="p-3 align-top">
                                 <div className="flex items-center gap-3">
                                   {u.profilePicture ? (
-                                    <Image src={u.profilePicture} alt="avatar" width={48} height={48} className="h-12 w-12 rounded-full object-cover" unoptimized />
+                                    <Image src={u.profilePicture} alt="avatar" width={48} height={48} className="h-12 w-12 rounded-full object-cover ring-2 ring-white/15" unoptimized />
                                   ) : (
-                                    <div className="h-12 w-12 rounded-full bg-muted" />
+                                    <div className="h-12 w-12 rounded-full bg-white/10" />
                                   )}
-                                  <div className="flex flex-col gap-1 text-xs">
-                                    <label htmlFor={`upload-${u.id}`} className="underline cursor-pointer hover:cursor-pointer">Change photo</label>
+                                  <div className="flex flex-col gap-1 text-xs text-white/70">
+                                    <label htmlFor={`upload-${u.id}`} className="underline underline-offset-4 hover:text-white hover:cursor-pointer">Change photo</label>
                                     <input
                                       id={`upload-${u.id}`}
                                       type="file"
@@ -830,78 +943,79 @@ export default function AdminPage() {
                                       }}
                                     />
                                     {uploading[u.id] && (
-                                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-label="Uploading" />
+                                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/50 border-t-transparent" aria-label="Uploading" />
                                     )}
                                   </div>
                                 </div>
                               </td>
-                              <td className="p-2 align-top">
+                              <td className="p-3 align-top">
                                 <input
-                                  className="border rounded px-2 py-1 w-full"
+                                  className={inputClass}
                                   placeholder="Name"
                                   value={edit.name}
                                   onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, name: e.target.value } }))}
                                 />
                               </td>
-                              <td className="p-2 align-top">
+                              <td className="p-3 align-top">
                                 <input
-                                  className="border rounded px-2 py-1 w-full"
+                                  className={inputClass}
                                   placeholder="Username"
                                   value={edit.username}
                                   onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, username: e.target.value } }))}
                                 />
                               </td>
-                              <td className="p-2 align-top">
+                              <td className="p-3 align-top">
                                 <input
-                                  className="border rounded px-2 py-1 w-full"
+                                  className={inputClass}
                                   placeholder="Email"
                                   value={edit.email}
                                   onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, email: e.target.value } }))}
                                 />
                               </td>
-                              <td className="p-2 align-top">
+                              <td className="p-3 align-top">
                                 <input
-                                  className="border rounded px-2 py-1 w-full"
+                                  className={inputClass}
                                   placeholder="Position"
                                   value={edit.position}
                                   onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, position: e.target.value } }))}
                                 />
                               </td>
-                              <td className="p-2 align-top">
+                              <td className="p-3 align-top">
                                 <textarea
-                                  className="border rounded px-2 py-1 w-full text-xs min-h-[60px]"
+                                  className={`${inputClass} min-h-[60px] text-xs`}
                                   placeholder="Description"
                                   value={edit.description}
                                   onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, description: e.target.value } }))}
                                 />
                               </td>
-                              <td className="p-2 align-top">
-                                <label className="flex items-center gap-2 text-sm">
+                              <td className="p-3 align-top">
+                                <label className="flex items-center gap-2 text-sm text-white/80">
                                   <input
                                     type="checkbox"
+                                    className="h-4 w-4 accent-[#6D54B5]"
                                     checked={edit.admin_access}
                                     onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, admin_access: e.target.checked } }))}
                                   />
                                   Admin
                                 </label>
                               </td>
-                              <td className="p-2 align-top whitespace-nowrap">
+                              <td className="p-3 align-top whitespace-nowrap text-white/90">
                                 <div className="flex gap-2 flex-wrap">
                                   <button
-                                    className="bg-blue-600 text-white px-3 py-1 rounded"
+                                    className={primaryButton}
                                     onClick={() => handleUpdateUser(u.id)}
                                     disabled={savingUser[u.id]}
                                   >
                                     {savingUser[u.id] ? "Saving..." : "Save"}
                                   </button>
                                   <button
-                                    className="text-sm underline"
+                                    className={ghostButton}
                                     onClick={() => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, password: "" } }))}
                                   >
                                     Clear password
                                   </button>
                                   <button
-                                    className="text-sm text-red-600 underline"
+                                    className="text-sm text-red-300 underline underline-offset-4 hover:text-red-200"
                                     onClick={() => handleDeleteUser(u.id)}
                                   >
                                     Delete
@@ -910,7 +1024,7 @@ export default function AdminPage() {
                                 <div className="mt-2">
                                   <input
                                     type="password"
-                                    className="border rounded px-2 py-1 w-full"
+                                    className={inputClass}
                                     placeholder="New password"
                                     value={edit.password}
                                     onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, password: e.target.value } }))}
@@ -934,18 +1048,78 @@ export default function AdminPage() {
           )}
         </section>
 
+        {currentUser?.admin_access && (
+          <section className="mb-8 flex flex-col gap-3">
+            <div className={`${cardClass} p-6`}>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="font-semibold text-lg">Pending submissions</h2>
+                  <p className="text-sm text-white/70">Approve or reject article edits and new drafts.</p>
+                </div>
+                <button
+                  className={ghostButton}
+                  onClick={() => fetchSubmissions()}
+                  disabled={submissionsLoading}
+                >
+                  {submissionsLoading ? "Refreshing..." : "Refresh"}
+                </button>
+              </div>
+
+              {submissionsLoading && submissions.length === 0 ? (
+                <div className="mt-3 flex items-center gap-2 text-sm text-white/70">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-transparent" />
+                  Loading submissions...
+                </div>
+              ) : submissions.length === 0 ? (
+                <div className="mt-3 text-sm text-white/60">No pending submissions.</div>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {submissions.map((s) => {
+                    const authorLabel = s.author?.name || s.author?.username || s.author?.email || "Unknown";
+                    const submittedAt = s.created_at ? new Date(s.created_at).toLocaleString() : "";
+                    const kind = s.doc_id ? "Edit" : "New";
+                    return (
+                      <div key={s.id} className="rounded-xl border border-white/10 bg-white/5 p-4 shadow-sm">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="space-y-1">
+                            <div className="text-xs uppercase tracking-[0.12em] text-white/60">{kind} submission</div>
+                            <div className="text-base font-semibold leading-snug">{s.title}</div>
+                            <div className="text-sm text-white/70">Slug: {s.slug}</div>
+                            <div className="text-xs text-white/60">From: {authorLabel}</div>
+                            {submittedAt && <div className="text-xs text-white/60">Submitted {submittedAt}</div>}
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              className="bg-emerald-500 hover:bg-emerald-400 text-white px-3 py-2 rounded-lg shadow-md hover:cursor-pointer disabled:opacity-60"
+                              onClick={() => handleReviewSubmission(s.id, "approve")}
+                              disabled={Boolean(reviewing[s.id])}
+                            >
+                              {reviewing[s.id] ? "Approving..." : "Approve"}
+                            </button>
+                            <button
+                              className={subtleButton}
+                              onClick={() => handleReviewSubmission(s.id, "reject")}
+                              disabled={Boolean(reviewing[s.id])}
+                            >
+                              {reviewing[s.id] ? "Working..." : "Reject"}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="mt-3 text-sm text-white/70 line-clamp-3 whitespace-pre-line">{s.content}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
         <CancerDocsPanel
           docs={docs}
           currentUser={currentUser}
-          editingId={editing}
-          editData={editData}
-          setEditData={setEditData}
-          setEditing={setEditing}
-          onSave={handleEditSave}
           onDelete={handleDelete}
           users={users}
-          authorSearch={authorSearch}
-          setAuthorSearch={setAuthorSearch}
           loading={loading}
           adding={adding}
           onAddOpen={() => setAdding(true)}
@@ -958,6 +1132,7 @@ export default function AdminPage() {
           onAddSubmit={handleAddSave}
         />
       </div>
+    </div>
     </div>
   );
 }
