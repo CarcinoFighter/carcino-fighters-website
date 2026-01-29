@@ -1,6 +1,5 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -29,24 +28,12 @@ export type CancerDoc = {
   profilePicture?: string | null;
 };
 
-export type AddDocPayload = {
-  slug: string;
-  title: string;
-  content: string;
-};
-
 type Props = {
   docs: CancerDoc[];
   currentUser: AdminUser | null;
   onDelete: (id: string) => void | Promise<void>;
   users: AdminUser[];
   loading: boolean;
-  adding: boolean;
-  onAddOpen: () => void;
-  onAddClose: () => void;
-  addData: AddDocPayload;
-  setAddData: Dispatch<SetStateAction<AddDocPayload>>;
-  onAddSubmit: () => void | Promise<void>;
 };
 
 export function CancerDocsPanel(props: Props) {
@@ -56,15 +43,9 @@ export function CancerDocsPanel(props: Props) {
     onDelete,
     users,
     loading,
-    adding,
-    onAddOpen,
-    onAddClose,
-    addData,
-    setAddData,
-    onAddSubmit,
   } = props;
 
-  const canAdd = Boolean(currentUser?.admin_access);
+  const canAdd = Boolean(currentUser);
   const [docSearch, setDocSearch] = useState("");
   const router = useRouter();
 
@@ -179,7 +160,7 @@ export function CancerDocsPanel(props: Props) {
         {canAdd && (
           <button
             className={primaryButton}
-            onClick={onAddOpen}
+            onClick={() => router.push("/admin/docs/new")}
           >
             + Add New Article
           </button>
@@ -204,65 +185,6 @@ export function CancerDocsPanel(props: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {filteredDocs.map((doc) => renderCard(doc))}
       </div>
-
-      {adding && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center px-4">
-          <div className={`${cardClass} w-full max-w-lg p-6 space-y-4`}> 
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold">Add New Article</h3>
-                <p className="text-sm text-white/70">Provide the essentials; you can refine later.</p>
-              </div>
-              <button className={ghostButton} onClick={onAddClose} disabled={loading}>
-                Close
-              </button>
-            </div>
-            <div className="space-y-3">
-              <input
-                className={inputClass}
-                placeholder="Slug"
-                value={addData.slug}
-                onChange={(e) => setAddData((s) => ({ ...s, slug: e.target.value }))}
-              />
-              <input
-                className={inputClass}
-                placeholder="Title"
-                value={addData.title}
-                onChange={(e) => setAddData((s) => ({ ...s, title: e.target.value }))}
-              />
-              <textarea
-                className={textareaClass}
-                placeholder="Content (Markdown supported)"
-                value={addData.content}
-                onChange={(e) => setAddData((s) => ({ ...s, content: e.target.value }))}
-              />
-            </div>
-            <div className="flex flex-wrap gap-2 justify-end">
-              <button
-                className={subtleButton}
-                onClick={onAddClose}
-                disabled={loading}
-              >
-                Cancel
-              </button>
-              <button
-                className={primaryButton}
-                onClick={onAddSubmit}
-                disabled={loading}
-              >
-                {loading ? (
-                  <span className="inline-flex items-center gap-2">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
-                    Saving...
-                  </span>
-                ) : (
-                  "Add article"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 }

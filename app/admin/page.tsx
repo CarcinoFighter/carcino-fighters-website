@@ -61,12 +61,6 @@ export default function AdminPage() {
 
   const [docs, setDocs] = useState<CancerDoc[]>([]);
   const [loading, setLoading] = useState(false);
-  const [adding, setAdding] = useState(false);
-  const [addData, setAddData] = useState({
-    slug: "",
-    title: "",
-    content: "",
-  });
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [lastResponseDebug, setLastResponseDebug] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<UserRow | null>(null);
@@ -232,32 +226,7 @@ export default function AdminPage() {
     }
   }
 
-  async function handleAddSave() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "submit_doc_change", ...addData }),
-      });
-      const data = await res.json().catch(() => ({}));
-      setLastResponseDebug((prev) => `${prev || ''}\nCREATE_DOC:\n${JSON.stringify(data, null, 2)}`);
-      if (!res.ok) {
-        setError(data?.error || "Insert failed");
-      } else if (!data?.autoApproved) {
-        setError("");
-        setLastResponseDebug((prev) => `${prev || ''}\nSUBMISSION_PENDING`);
-      }
-    } catch (err) {
-      console.error("create doc error", err);
-      setError("Insert failed");
-    } finally {
-      setAdding(false);
-      setAddData({ slug: "", title: "", content: "" });
-      await fetchDocsWithPictures();
-      setLoading(false);
-    }
-  }
+  // Article creation now happens in the markdown editor screen (/admin/docs/new)
 
   async function handleUpload(file: File, userId: string | null | undefined) {
     if (!userId) {
@@ -1121,15 +1090,6 @@ export default function AdminPage() {
           onDelete={handleDelete}
           users={users}
           loading={loading}
-          adding={adding}
-          onAddOpen={() => setAdding(true)}
-          onAddClose={() => {
-            setAdding(false);
-            setAddData({ slug: "", title: "", content: "" });
-          }}
-          addData={addData}
-          setAddData={setAddData}
-          onAddSubmit={handleAddSave}
         />
       </div>
     </div>
