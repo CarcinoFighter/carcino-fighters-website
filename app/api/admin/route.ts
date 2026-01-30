@@ -139,7 +139,7 @@ async function validateSessionFromToken(token: string) {
 
 	const { data: userRow, error: userError } = await client
 		.from("users")
-		.select("id, username, email, name, admin_access, description")
+		.select("id, username, email, name, admin_access, description, position")
 		.eq("id", payload.sub)
 		.limit(1)
 		.maybeSingle();
@@ -156,6 +156,7 @@ async function validateSessionFromToken(token: string) {
 			name: userRow.name,
 			admin_access: Boolean(userRow.admin_access),
 			description: userRow.description,
+			position: userRow.position,
 		},
 	};
 }
@@ -297,7 +298,7 @@ export async function POST(req: Request) {
 
 			const { data: user, error } = await client
 				.from("users")
-				.select("id, username, email, name, password, admin_access, description")
+				.select("id, username, email, name, password, admin_access, description, position")
 				.or(`username.eq.${loginId},email.eq.${loginId}`)
 				.limit(1)
 				.maybeSingle();
@@ -342,7 +343,7 @@ export async function POST(req: Request) {
 
 			const response = NextResponse.json({
 				token,
-				user: { id: user.id, username: user.username, email: user.email, name: user.name, admin_access: Boolean(user.admin_access), description: user.description },
+				user: { id: user.id, username: user.username, email: user.email, name: user.name, admin_access: Boolean(user.admin_access), description: user.description, position: user.position },
 			});
 
 			response.cookies.set({

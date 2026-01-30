@@ -13,6 +13,7 @@ type User = {
     email: string | null;
     name: string | null;
     description: string | null;
+    position?: string | null;
     profilePicture?: string | null;
 };
 
@@ -242,7 +243,10 @@ export default function DashboardPage() {
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-4 xl:col-span-3">
                     <div className="sticky top-12">
-                        <div className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8 flex flex-col items-center text-center shadow-2xl relative overflow-hidden group">
+                        <div className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8 flex flex-col items-center text-center shadow-2xl relative overflow-hidden group hover:shadow-[0_0_30px_rgba(139,92,246,0.2)] transition-shadow duration-500">
+                            {/* Subtle violet hue internal glow */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent pointer-events-none" />
+                            <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-purple-500/20 transition-colors duration-700" />
 
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
@@ -257,7 +261,7 @@ export default function DashboardPage() {
                                         unoptimized
                                     />
                                 ) : (
-                                    <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-3xl font-bold">
+                                    <div className="w-full h-full rounded-full bg-purple-900/30 border border-purple-500/20 flex items-center justify-center text-3xl font-bold text-purple-300/80">
                                         {user?.name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || "?"}
                                     </div>
                                 )}
@@ -286,7 +290,14 @@ export default function DashboardPage() {
                             </div>
 
                             <h2 className="text-2xl font-bold mb-1">{user?.name || user?.username}</h2>
-                            <p className="text-gray-400 text-sm mb-6">{user?.email}</p>
+                            <p className="text-gray-400 text-sm mb-1">{user?.email}</p>
+                            {user?.email?.endsWith("@carcino.work") && user?.position ? (
+                                <p className="text-purple-400/80 text-xs font-medium uppercase tracking-widest mb-6">
+                                    {user.position}
+                                </p>
+                            ) : (
+                                <div className="mb-6" />
+                            )}
 
                             <div className="w-full h-[1px] bg-white/5 mb-6" />
 
@@ -348,11 +359,21 @@ export default function DashboardPage() {
                                 </form>
                             )}
 
+                            {user?.email?.endsWith("@carcino.work") && !isEditing && (
+                                <Link
+                                    href="/admin"
+                                    className="w-full bg-white/5 hover:bg-white/10 text-white text-sm font-medium py-3 rounded-xl mb-4 transition-all duration-300 flex items-center justify-center gap-2 border border-white/10 hover:border-purple-500/50 group/admin"
+                                >
+                                    Admin Panel
+                                    <ArrowUpRight className="w-4 h-4 text-gray-500 group-hover/admin:text-purple-400 transition-colors" />
+                                </Link>
+                            )}
+
                             {!isEditing && (
                                 <button
                                     onClick={handleLogout}
                                     disabled={loggingOut}
-                                    className="text-sm text-red-400 hover:text-red-300 transition-colors font-medium flex items-center gap-2"
+                                    className="text-sm text-red-400 hover:text-red-300 transition-colors font-medium flex items-center gap-2 mt-2"
                                 >
                                     {loggingOut ? "Signing out..." : "Sign Out"}
                                 </button>
@@ -416,6 +437,6 @@ export default function DashboardPage() {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
