@@ -12,10 +12,10 @@
   --font-michroma: var(--font-michroma), sans-serif;
   --font-panchang: var(--font-panchang), serif;
   --font-wintersolace: var(--font-wintersolace), serif;
-  --font-instrumentserifitalic : var(--font-InstrumentSerif-Italic), serif;
+  --font-instrumentserifitalic: var(--font-InstrumentSerif-Italic), serif;
   --font-tttravelsnext: var(--font-tttravelsnext), serif;
-    --font-dmsans: var(--font-dmsans), sans-serif;
---font-inter: var(--font-inter), serif;
+  --font-dmsans: var(--font-dmsans), sans-serif;
+  --font-inter: var(--font-inter), serif;
   --color-background: hsla(var(--background));
   --color-foreground: hsla(var(--foreground));
 
@@ -65,6 +65,7 @@
 */
 
 @layer base {
+
   *,
   ::after,
   ::before,
@@ -93,11 +94,9 @@
     }
 
     100% {
-      background-image: radial-gradient(
-        circle at 0% 100%,
-        #00000000,
-        #00000000
-      );
+      background-image: radial-gradient(circle at 0% 100%,
+          #00000000,
+          #00000000);
     }
   }
 
@@ -123,6 +122,7 @@
     0% {
       background-position: 100%;
     }
+
     100% {
       background-position: -100%;
     }
@@ -130,36 +130,50 @@
 
   /* Gentle float for icons */
   @keyframes floaty {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-4px);
+    }
   }
-  .animate-floaty { animation: floaty 3s ease-in-out infinite; }
+
+  .animate-floaty {
+    animation: floaty 3s ease-in-out infinite;
+  }
 
   /* Skeleton shimmer */
   @keyframes skeleton-shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    0% {
+      background-position: -200% 0;
+    }
+
+    100% {
+      background-position: 200% 0;
+    }
   }
+
   .skeleton {
     position: relative;
     overflow: hidden;
     background: linear-gradient(90deg,
-      rgba(255,255,255,0.06) 25%,
-      rgba(255,255,255,0.12) 37%,
-      rgba(255,255,255,0.06) 63%);
+        rgba(255, 255, 255, 0.06) 25%,
+        rgba(255, 255, 255, 0.12) 37%,
+        rgba(255, 255, 255, 0.06) 63%);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s infinite;
   }
 
   /* Gradient shine text helper */
   .shine-text {
-    background-image: linear-gradient(
-      110deg,
-      rgba(255,255,255,0.18) 0%,
-      rgba(255,255,255,0.85) 20%,
-      rgba(255,255,255,0.25) 40%,
-      rgba(255,255,255,0.18) 60%
-    );
+    background-image: linear-gradient(110deg,
+        rgba(255, 255, 255, 0.18) 0%,
+        rgba(255, 255, 255, 0.85) 20%,
+        rgba(255, 255, 255, 0.25) 40%,
+        rgba(255, 255, 255, 0.18) 60%);
     background-size: 200% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -175,13 +189,14 @@
       opacity: 0;
     }
   }
+
   @keyframes orbit {
     from {
       transform: rotate(0deg) translateX(100px) translateZ(30px) rotate(0deg);
     }
+
     to {
-      transform: rotate(360deg) translateX(100px) translateZ(30px)
-        rotate(-360deg);
+      transform: rotate(360deg) translateX(100px) translateZ(30px) rotate(-360deg);
     }
   }
 
@@ -249,6 +264,10 @@
     @apply border-border;
   }
 
+  html {
+    scrollbar-gutter: stable;
+  }
+
   body {
     @apply bg-white dark:bg-black max-h-dvh max-w-dvw text-foreground;
     overflow: auto;
@@ -268,7 +287,19 @@
     /* Hides scrollbar for Firefox */
   }
 
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
 }
+
 .liquid-glass {
   position: relative;
   display: flex;
@@ -280,6 +311,7 @@
 
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
 }
+
 .liquidGlass-effect {
   position: absolute;
   z-index: 0;
@@ -290,9 +322,10 @@
   overflow: hidden;
   isolation: isolate;
 }
+
 .liquidGlass-tint {
   z-index: 1;
-    border-radius: 55px;
+  border-radius: 55px;
   position: absolute;
   inset: 0;
   background: rgba(20, 1, 31, 0.308);
@@ -303,10 +336,11 @@
   inset: 0;
   border-radius: 55px;
   z-index: 2;
-box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
+  box-shadow: 0 -30px 40px -20px rgba(255, 255, 255, 0.15) inset;
 
 
-    border-top: 0.7px solid rgba(255, 255, 255, 0.356); /* very light top border */
+  border-top: 0.7px solid rgba(255, 255, 255, 0.356);
+  /* very light top border */
   border-bottom: 0.1px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -327,18 +361,14 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
   box-shadow: inset 0.1px 0.1px 2.5px rgba(255, 255, 255, 1);
 
   /* fade stops inward from top-left */
-  mask-image: radial-gradient(
-    farthest-corner at top left,
-    rgba(0,0,0,1) 0px,
-    rgba(0,0,0,1) 4px,
-    rgba(0,0,0,0) 20px
-  );
-  -webkit-mask-image: radial-gradient(
-    farthest-corner at top left,
-    rgba(0,0,0,1) 0px,
-    rgba(0,0,0,1) 4px,
-    rgba(0,0,0,0) 20px
-  );
+  mask-image: radial-gradient(farthest-corner at top left,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
+  -webkit-mask-image: radial-gradient(farthest-corner at top left,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
 
   /* clip so it doesn’t bleed beyond edge */
   clip-path: inset(0 5px 0 0 round 55px 0 0 0);
@@ -361,18 +391,14 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
   box-shadow: inset -0.1px -0.1px 2.5px rgba(255, 255, 255, 1);
 
   /* fade stops inward from bottom-right */
-  mask-image: radial-gradient(
-    farthest-corner at bottom right,
-    rgba(0,0,0,1) 0px,
-    rgba(0,0,0,1) 4px,
-    rgba(0,0,0,0) 20px
-  );
-  -webkit-mask-image: radial-gradient(
-    farthest-corner at bottom right,
-    rgba(0,0,0,1) 0px,
-    rgba(0,0,0,1) 4px,
-    rgba(0,0,0,0) 20px
-  );
+  mask-image: radial-gradient(farthest-corner at bottom right,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
+  -webkit-mask-image: radial-gradient(farthest-corner at bottom right,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
 
   /* clip to prevent bleed */
   clip-path: inset(0 0 0 5px round 0 0 55px 0);
@@ -400,9 +426,10 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
   overflow: hidden;
   isolation: isolate;
 }
+
 .divGlass-tint {
   z-index: 1;
-    border-radius: 55px;
+  border-radius: 55px;
   position: absolute;
   inset: 0;
   background: rgba(20, 1, 31, 0.308);
@@ -413,10 +440,10 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
   inset: 0;
   border-radius: 55px;
   z-index: 2;
-box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
+  box-shadow: 0 -30px 40px -20px rgba(255, 255, 255, 0.15) inset;
 
 
-    border-top: 0.7px solid rgba(255, 255, 255, 0.356);
+  border-top: 0.7px solid rgba(255, 255, 255, 0.356);
   border-bottom: 0.1px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -437,18 +464,14 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
   box-shadow: inset 0.1px 0.1px 2.5px rgba(255, 255, 255, 1);
 
   /* fade stops inward from top-left */
-  mask-image: radial-gradient(
-    farthest-corner at top left,
-    rgba(0,0,0,1) 5px,
-    rgba(0,0,0,1) 4px,
-    rgba(0,0,0,0) 20px
-  );
-  -webkit-mask-image: radial-gradient(
-    farthest-corner at top left,
-    rgba(0,0,0,1) 5px,
-    rgba(0,0,0,1) 4px,
-    rgba(0,0,0,0) 20px
-  );
+  mask-image: radial-gradient(farthest-corner at top left,
+      rgba(0, 0, 0, 1) 5px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
+  -webkit-mask-image: radial-gradient(farthest-corner at top left,
+      rgba(0, 0, 0, 1) 5px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
 
   /* clip so it doesn’t bleed beyond edge */
   clip-path: inset(0 5px 0 0 round 40px 0 0 0);
@@ -471,18 +494,14 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
   box-shadow: inset -0.1px -0.1px 2.5px rgba(255, 255, 255, 1);
 
   /* fade stops inward from bottom-right */
-  mask-image: radial-gradient(
-    farthest-corner at bottom right,
-    rgba(0,0,0,1) 0px,
-    rgba(0,0,0,1) 4px,
-    rgba(0,0,0,0) 20px
-  );
-  -webkit-mask-image: radial-gradient(
-    farthest-corner at bottom right,
-    rgba(0,0,0,1) 0px,
-    rgba(0,0,0,1) 4px,
-    rgba(0,0,0,0) 20px
-  );
+  mask-image: radial-gradient(farthest-corner at bottom right,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
+  -webkit-mask-image: radial-gradient(farthest-corner at bottom right,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
 
   /* clip to prevent bleed */
   clip-path: inset(0 0 0 5px round 0 0 55px 0);
@@ -493,10 +512,10 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
   inset: 0;
   border-radius: 55px;
   z-index: 2;
-box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
+  box-shadow: 0 -30px 40px -20px rgba(255, 255, 255, 0.15) inset;
 
 
-    border-top: 0.7px solid rgba(255, 255, 255, 0.356);
+  border-top: 0.7px solid rgba(255, 255, 255, 0.356);
   border-bottom: 0.1px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -517,18 +536,14 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
   box-shadow: inset 0.1px 0.1px 2.5px rgba(255, 255, 255, 1);
 
   /* fade stops inward from top-left */
-  mask-image: radial-gradient(
-    farthest-corner at top left,
-    rgba(0,0,0,1) 5px,
-    rgba(0,0,0,1) 4px,
-    rgba(0,0,0,0) 20px
-  );
-  -webkit-mask-image: radial-gradient(
-    farthest-corner at top left,
-    rgba(0,0,0,1) 5px,
-    rgba(0,0,0,1) 4px,
-    rgba(0,0,0,0) 20px
-  );
+  mask-image: radial-gradient(farthest-corner at top left,
+      rgba(0, 0, 0, 1) 5px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
+  -webkit-mask-image: radial-gradient(farthest-corner at top left,
+      rgba(0, 0, 0, 1) 5px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
 
   /* clip so it doesn’t bleed beyond edge */
   clip-path: inset(0 5px 0 0 round 40px 0 0 0);
@@ -551,18 +566,14 @@ box-shadow: 0 -30px 40px -20px rgba(255,255,255,0.15) inset;
   box-shadow: inset -0.1px -0.1px 2.5px rgba(255, 255, 255, 1);
 
   /* fade stops inward from bottom-right */
-  mask-image: radial-gradient(
-    farthest-corner at bottom right,
-    rgba(0,0,0,1) 0px,
-    rgba(0,0,0,1) 4px,
-    rgba(0,0,0,0) 20px
-  );
-  -webkit-mask-image: radial-gradient(
-    farthest-corner at bottom right,
-    rgba(0,0,0,1) 0px,
-    rgba(0,0,0,1) 4px,
-    rgba(0,0,0,0) 20px
-  );
+  mask-image: radial-gradient(farthest-corner at bottom right,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
+  -webkit-mask-image: radial-gradient(farthest-corner at bottom right,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
 
   /* clip to prevent bleed */
   clip-path: inset(0 0 0 5px round 0 0 55px 0);

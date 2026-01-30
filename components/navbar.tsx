@@ -73,7 +73,7 @@ export function Navbar() {
   return (
     <div className="">
       {/* Navbar */}
-      <div className="flex-row py-4 fixed w-full justify-center lg:px-14 md:px-10 px-6 top-0 z-30 hidden items-center sm:flex pointer-events-none gap-4">
+      <div className="flex-row py-4 fixed left-0 right-0 justify-center lg:px-14 md:px-10 px-6 top-0 z-30 hidden items-center sm:flex pointer-events-none gap-4">
         <div className="pointer-events-auto">
           <NavigationMenu
             className={cn(
