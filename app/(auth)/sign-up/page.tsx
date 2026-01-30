@@ -92,7 +92,6 @@ function SignUpInner() {
                 return;
             }
 
-            // Success
             router.push("/sign-in?registered=true");
         } catch (err) {
             console.error("Sign up error", err);

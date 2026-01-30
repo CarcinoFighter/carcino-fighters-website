@@ -56,7 +56,6 @@ function SignInInner() {
     const searchParams = useSearchParams();
     const registered = searchParams.get("registered");
     const rawRedirect = searchParams.get("redirectTo") || "/dashboard";
-    // Whitelist redirect to avoid open redirect vulnerabilities, though relative internal paths are generally safe
     const redirectTarget = useMemo(() => (rawRedirect.startsWith("/") ? rawRedirect : "/dashboard"), [rawRedirect]);
 
     const [identifier, setIdentifier] = useState("");
@@ -69,14 +68,12 @@ function SignInInner() {
     const type = showPassword ? "text" : "password";
     const Icon = showPassword ? EyeOff : Eye;
 
-    // Check if already authenticated
     useEffect(() => {
         const verifySession = async () => {
             setChecking(true);
             try {
                 const res = await fetch("/api/admin", { method: "GET" });
                 const data = await res.json().catch(() => ({}));
-                // If authenticated, redirect
                 if (res.ok && data?.authenticated) {
                     router.replace(redirectTarget);
                     return;

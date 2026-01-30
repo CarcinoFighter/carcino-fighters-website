@@ -24,7 +24,7 @@ type Doc = {
     created_at: string;
 };
 
-// Supabase client for storage
+
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY!
@@ -33,14 +33,14 @@ const supabase = createClient(
 function DashboardSkeleton() {
     return (
         <div className="min-h-screen bg-black text-white px-6 md:px-12 pb-12 pt-20 md:pt-32 font-dmsans overflow-x-hidden relative">
-            {/* Background Gradients */}
+
             <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
                 <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-900/10 blur-[120px] rounded-full" />
                 <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-900/5 blur-[120px] rounded-full" />
             </div>
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* LEFT COLUMN: Profile Card Skeleton */}
+
                 <div className="lg:col-span-4 xl:col-span-3">
                     <div className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8 flex flex-col items-center animate-pulse">
                         <div className="w-32 h-32 rounded-full bg-white/10 mb-6" />
@@ -56,7 +56,7 @@ function DashboardSkeleton() {
                     </div>
                 </div>
 
-                {/* RIGHT COLUMN: Articles List Skeleton */}
+
                 <div className="lg:col-span-8 xl:col-span-9 space-y-6">
                     <div className="flex items-center justify-between mb-2">
                         <div className="h-8 w-40 bg-white/10 rounded-full" />
@@ -103,11 +103,11 @@ export default function DashboardPage() {
             const ext = file.name.split(".").pop();
             const path = `authors/${user.id}/avatar.${ext}`;
 
-            // 1. Upload
+
             const { error: upErr } = await supabase.storage.from("profile-picture").upload(path, file, { upsert: true });
             if (upErr) throw upErr;
 
-            // 2. Update Metadata
+
             const { error: metaErr } = await supabase.from("profile_pictures").upsert(
                 {
                     user_id: user.id,
@@ -119,7 +119,7 @@ export default function DashboardPage() {
             );
             if (metaErr) throw metaErr;
 
-            // 3. Get Signed URL
+
             const { data: signed } = await supabase.storage.from("profile-picture").createSignedUrl(path, 60 * 60 * 24 * 7);
             const url = signed?.signedUrl || null;
 
@@ -171,7 +171,7 @@ export default function DashboardPage() {
     useEffect(() => {
         const init = async () => {
             try {
-                // 1. Check Session
+
                 const authRes = await fetch("/api/admin", { method: "GET" });
                 const authData = await authRes.json().catch(() => ({}));
 
@@ -182,7 +182,7 @@ export default function DashboardPage() {
 
                 setUser(authData.user);
 
-                // 2. Fetch Profile Picture
+
                 const picRes = await fetch("/api/admin", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -193,7 +193,6 @@ export default function DashboardPage() {
                     setUser((prev) => (prev ? { ...prev, profilePicture: picData.url } : prev));
                 }
 
-                // 3. Fetch Articles
                 const docsRes = await fetch("/api/admin", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -235,18 +234,16 @@ export default function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-black text-white px-6 md:px-12 pb-12 pt-20 md:pt-32 font-dmsans overflow-x-hidden">
-            {/* Background Gradients */}
             <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
                 <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-900/20 blur-[120px] rounded-full" />
                 <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-900/10 blur-[120px] rounded-full" />
             </div>
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* LEFT COLUMN: Profile Card */}
                 <div className="lg:col-span-4 xl:col-span-3">
                     <div className="sticky top-12">
                         <div className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8 flex flex-col items-center text-center shadow-2xl relative overflow-hidden group">
-                            {/* Card Glow Effect */}
+
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                             <div className="relative w-32 h-32 mb-6 group-hover:scale-105 transition-transform duration-500">
@@ -364,11 +361,10 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* RIGHT COLUMN: Articles List */}
                 <div className="lg:col-span-8 xl:col-span-9 space-y-6">
                     <div className="flex items-center justify-between mb-2">
                         <h3 className="text-xl font-semibold text-gray-200">Your Articles</h3>
-                        {/* Could add a 'New Article' button here if needed */}
+
                     </div>
 
                     {docs.length === 0 ? (
@@ -381,17 +377,15 @@ export default function DashboardPage() {
                                 key={doc.id}
                                 className="group relative bg-[#0a0a0a] border border-white/5 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row gap-8 hover:bg-[#111] transition-all duration-300 overflow-hidden"
                             >
-                                {/* Article Image Placeholder */}
                                 <div className="w-full md:w-48 h-48 md:h-auto shrink-0 relative rounded-2xl overflow-hidden bg-[#1A1A1A]">
                                     <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 to-indigo-900/40" />
-                                    {/* Abstract shapes mimicking the user provided image style */}
                                     <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-purple-500/20 blur-2xl rounded-full" />
                                     <div className="absolute top-4 left-4 w-full h-full opacity-50">
-                                        {/* Could put a generic icon or pattern here */}
+
                                     </div>
                                 </div>
 
-                                {/* Article Content */}
+
                                 <div className="flex-1 flex flex-col justify-center">
                                     <div className="flex items-center gap-3 mb-4">
                                         <span className="px-3 py-1 rounded-full bg-white/5 border border-white/5 text-xs font-medium text-gray-300">
@@ -416,7 +410,6 @@ export default function DashboardPage() {
                                     </Link>
                                 </div>
 
-                                {/* Hover Glow */}
                                 <div className="absolute inset-0 border border-white/0 group-hover:border-purple-500/20 rounded-3xl pointer-events-none transition-colors duration-500" />
                             </div>
                         ))
