@@ -77,7 +77,7 @@ export function Navbar() {
         <div className="pointer-events-auto">
           <NavigationMenu
             className={cn(
-              "w-full flex flex-row px-2 py-1 rounded-full items-center justify-between relative z-10",
+              "w-full flex flex-row px-1 py-1 rounded-full items-center justify-between relative z-10",
               "overflow-hidden isolation-isolate liquid-glass !shadow-none"
             )}
           ><div className="liquidGlass-effect "></div>
@@ -97,9 +97,13 @@ export function Navbar() {
 
                   <NavigationMenuLink
                     onClick={() => router.push(tab.href)}
-                    className={navigationMenuTriggerStyle() + " font-dmsans font-bold transition-colors " + (selectedTab === tab.label ? "z-10 text-white" : "")}
+                    className={cn(
+                      navigationMenuTriggerStyle(),
+                      "font-dmsans font-bold transition-colors hover:!bg-white/5",
+                      selectedTab === tab.label ? "z-10 text-white" : ""
+                    )}
                   >
-                    <span className="relative z-10 vision-pro-ui-hoverable
+                    <span className="relative z-10 
     ">{tab.label}</span>
                     {selectedTab === tab.label && (
                       <motion.span
@@ -122,7 +126,7 @@ export function Navbar() {
         <div className="pointer-events-auto">
           <Link href={isAuthenticated ? "/dashboard" : "/sign-up"}>
             <div className={cn(
-              "p-3 rounded-full flex items-center justify-center text-white relative z-10",
+              "p-3 rounded-full flex items-center justify-center text-white relative z-10 transition-colors hover:!bg-white/5",
               isAuthPage ? "bg-[#B372FF]" : "overflow-hidden isolation-isolate liquid-glass !shadow-none"
             )}>
               {!isAuthPage && (
