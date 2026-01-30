@@ -10,10 +10,18 @@ async function hasValidAdminToken(token: string | undefined) {
   if (!token || !secret) return false;
 
   try {
-    await jwtVerify(token, new TextEncoder().encode(secret));
+    const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
+
+    // Check if the user has a @carcino.work email
+    const email = payload.email as string | undefined;
+    if (!email || !email.endsWith("@carcino.work")) {
+      console.warn("admin proxy access denied: domain mismatch", { email });
+      return false;
+    }
+
     return true;
   } catch (err) {
-    console.warn("admin middleware token check failed", err);
+    console.warn("admin proxy token check failed", err);
     return false;
   }
 }
