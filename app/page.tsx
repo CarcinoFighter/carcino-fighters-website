@@ -653,7 +653,7 @@ export default function Home() {
                 </h2>
                 <p className="font-dmsans text-2xl text-center">
                   <span className="font-bold">Rajannya Das</span> <br /> Founder
-                  & Managing Director
+                  & CEO
                 </p>
 
                 <Button
