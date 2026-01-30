@@ -179,7 +179,7 @@ export default function Home() {
       />
       <div
         ref={containerRef}
-        className=" flex flex-col relative lg:block lg:h-screen w-screen overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background"
+        className=" flex flex-col relative lg:block lg:h-screen w-full overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background hide-scrollbar"
       >
         {/* <div
         className=" hidden sm:inline fixed inset-0 z-100 opacity-0 transition-opacity duration-500 ease-in-out pointer-events-none"
