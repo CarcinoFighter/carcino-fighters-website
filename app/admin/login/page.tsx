@@ -114,11 +114,11 @@ function AdminLoginInner() {
         className="absolute top-0 left-0 w-full h-full object-cover brightness-50"
       />
 
-    
+
       <form
         onSubmit={handleLogin}
       >
-        
+
         <div className="min-h-screen flex items-center justify-center bg-[#686279]">
           <div className="p-3 mt-7 rounded-xl h-3/4 bg-[#2C2638]/50 backdrop-blur-sm md:flex md:gap-2 drop-shadow-2xl drop-shadow-black/50">
             <Image
