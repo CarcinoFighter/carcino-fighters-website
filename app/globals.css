@@ -519,31 +519,31 @@
   border-left: 1px solid rgba(255, 255, 255, 0.2);
   border-right: 1px solid rgba(255, 255, 255, 0.3);
 
-  /* Vertical borders remain solid for most of length, dissolving to 0% opacity exactly at the 44px junction */
+  /* Vertical borders remain solid for most of length, dissolving to 0% opacity exactly at the 40px junction */
   mask-image: linear-gradient(to top,
       black 0%,
-      black calc(100% - 60px),
-      rgba(0, 0, 0, 0.1) calc(100% - 46px),
-      transparent calc(100% - 44px));
+      black calc(100% - 50px),
+      rgba(0, 0, 0, 0.1) calc(100% - 42px),
+      transparent calc(100% - 40px));
   -webkit-mask-image: linear-gradient(to top,
       black 0%,
-      black calc(100% - 60px),
-      rgba(0, 0, 0, 0.1) calc(100% - 46px),
-      transparent calc(100% - 44px));
+      black calc(100% - 50px),
+      rgba(0, 0, 0, 0.1) calc(100% - 42px),
+      transparent calc(100% - 40px));
 
   /* Precise corner gaps */
-  clip-path: polygon(44px 0,
-      calc(100% - 44px) 0,
-      calc(100% - 44px) 44px,
-      100% 44px,
-      100% calc(100% - 44px),
-      calc(100% - 44px) calc(100% - 44px),
-      calc(100% - 44px) 100%,
-      44px 100%,
-      44px calc(100% - 44px),
-      0 calc(100% - 44px),
-      0 44px,
-      44px 44px);
+  clip-path: polygon(40px 0,
+      calc(100% - 40px) 0,
+      calc(100% - 40px) 40px,
+      100% 40px,
+      100% calc(100% - 40px),
+      calc(100% - 40px) calc(100% - 40px),
+      calc(100% - 40px) 100%,
+      40px 100%,
+      40px calc(100% - 40px),
+      0 calc(100% - 40px),
+      0 40px,
+      40px 40px);
 }
 
 .cardGlass-shine {
@@ -573,24 +573,25 @@
   /* Zero offset for perfect alignment */
   pointer-events: none;
 
-  border-radius: 44px;
-  border-top: 1px solid rgba(255, 255, 255, 0.45);
-  border-left: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 40px;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.45);
+  border-left: 1.5px solid rgba(255, 255, 255, 0.45);
 
-  border-left: 1px solid rgba(255, 255, 255, 0.45);
+  /* shadow from top-left corner */
+  box-shadow: inset 0.1px 0.1px 2px rgba(255, 255, 255, 0.4);
 
-  /* Tighter circular mask to focus shine exactly on the corner */
-  mask-image: radial-gradient(circle 70px at 0% 0%,
+  /* Sharper circular mask to focus shine exactly on the corner without overlap */
+  mask-image: radial-gradient(circle 42px at 0% 0%,
       rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 44px,
-      rgba(0, 0, 0, 0) 70px);
-  -webkit-mask-image: radial-gradient(circle 70px at 0% 0%,
+      rgba(0, 0, 0, 1) 40px,
+      rgba(0, 0, 0, 0) 42px);
+  -webkit-mask-image: radial-gradient(circle 42px at 0% 0%,
       rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 44px,
-      rgba(0, 0, 0, 0) 70px);
+      rgba(0, 0, 0, 1) 40px,
+      rgba(0, 0, 0, 0) 42px);
 
-  /* Clip to strictly the 44x44 corner area to prevent overlap with side borders */
-  clip-path: inset(0 calc(100% - 44px) calc(100% - 44px) 0);
+  /* Strictly clip to 40x40 corner area to match border gaps */
+  clip-path: inset(0 calc(100% - 40px) calc(100% - 40px) 0);
 }
 
 
@@ -600,41 +601,38 @@
   inset: 0;
   pointer-events: none;
 
-  /* Dimmer bottom-right edges to complement the top-heavy lighting */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-  border-right: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 44px;
+  /* Boosted bottom-right edges for visibility */
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.45);
+  border-right: 1.5px solid rgba(255, 255, 255, 0.45);
+  border-radius: 40px;
 
-  border-right: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 44px;
+  /* shadow from bottom-right corner */
+  box-shadow: inset -0.1px -0.1px 2.5px rgba(255, 255, 255, 0.6);
 
-  /* Tighter circular mask to focus shine exactly on the corner */
-  mask-image: radial-gradient(circle 70px at 100% 100%,
+  /* Sharper circular mask to focus shine exactly on the corner without overlap */
+  mask-image: radial-gradient(circle 42px at 100% 100%,
       rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 44px,
-      rgba(0, 0, 0, 0) 70px);
-  -webkit-mask-image: radial-gradient(circle 70px at 100% 100%,
+      rgba(0, 0, 0, 1) 40px,
+      rgba(0, 0, 0, 0) 42px);
+  -webkit-mask-image: radial-gradient(circle 42px at 100% 100%,
       rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 44px,
-      rgba(0, 0, 0, 0) 70px);
+      rgba(0, 0, 0, 1) 40px,
+      rgba(0, 0, 0, 0) 42px);
 
-  /* Clip to strictly the 44x44 corner area */
-  clip-path: inset(calc(100% - 44px) 0 0 calc(100% - 44px));
+  clip-path: inset(calc(100% - 40px) 0 0 calc(100% - 40px));
 }
 
 .cardGlass-tint {
   z-index: 1;
-  border-radius: 44px;
+  border-radius: 40px;
   position: absolute;
   inset: 0;
   background: rgba(255, 255, 255, 0.02);
-  /* Continuous 3D bevel for the whole card */
   box-shadow: inset 0.6px 0.6px 0.4px rgba(255, 255, 255, 0.4);
   transition: background 0.4s ease, box-shadow 0.4s ease;
 }
 
-/* Hover background color matching navbar selected state */
 .group\/card:hover .cardGlass-tint {
-  background: #B372FF;
+  background: #8959bd;
   box-shadow: inset 0.6px 0.6px 0.4px rgba(255, 255, 255, 0.3);
 }
