@@ -471,7 +471,7 @@ export default function Home() {
                                 w-full
                               "
                             >
-                              <div className="lowercase text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 text-center w-full">
+                              <div className="lowercase text-[18px] sm:text-[22px] lg:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 text-center w-full">
                                 Research Article
                               </div>
 
