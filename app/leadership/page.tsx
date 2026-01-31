@@ -334,7 +334,7 @@ function LeaderCard({ leader, isLoading }: { leader: Leader; isLoading?: boolean
   }
 
   const showExpanded = isExpanded || isHovered
-  const currentRadius = showExpanded ? '55px' : '24px'
+  const currentRadius = showExpanded ? '44px' : '24px'
 
   // Refined fluid dimensions
   const getCardWidth = () => {
