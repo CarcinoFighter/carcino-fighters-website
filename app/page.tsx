@@ -407,74 +407,88 @@ export default function Home() {
                   No articles found.
                 </div>
               ) : (
-                featuredArticles.map((article) => (
-                  <Link
-                    key={article.id}
-                    href={article.slug ? `/article/${article.slug}` : `/article/${article.id}`}
-                    className="h-full block"
-                  >
-                    <motion.div
-                      className="h-full"
-                      layout
-                      whileHover={{ y: -4, scale: 1.015 }}
-                      variants={{
-                        hidden: { opacity: 0, y: 12 },
-                        visible: {
-                          opacity: 1,
-                          y: 0,
-                          transition: { duration: 0.55, ease: easeSoft },
-                        },
-                      }}
+                featuredArticles.map((article) => {
+                  const getTitleFontSize = (title: string) => {
+                    const words = title.split(/\s+/);
+                    const maxWordLength = Math.max(...words.map(w => w.length));
+
+                    if (maxWordLength > 12) return "text-[14px] sm:text-[18px]";
+                    if (maxWordLength >= 9) return "text-[18px] sm:text-[22px]";
+
+                    if (title.length > 35) return "text-[16px] sm:text-[20px]";
+                    if (title.length > 15) return "text-[20px] sm:text-[26px]";
+                    return "text-[25px] sm:text-[35px]";
+                  };
+
+                  return (
+                    <Link
+                      key={article.id}
+                      href={article.slug ? `/article/${article.slug}` : `/article/${article.id}`}
+                      className="h-full block"
                     >
-                      <CardContainer className="w-full h-full px-4 rounded-[55px]">
-                        <CardBody
-                          className="
-        article-card
-          relative z-20
-          group/card
-          vision-pro-ui-hoverable
-          w-full h-full min-h-[260px]
-          py-5
-          flex flex-col justify-center
-          rounded-[55px]
-          bg-background/30
-          bg-gradient-to-br from-[#9875c1]/25 via-[#9875c1]/5 to-transparent
-          backdrop-blur-xl backdrop-saturate-150
-          border border-accent shadow-xl
-          overflow-hidden
-          select-none
-        "
-                        >
-                          <CardItem
-                            translateZ="20"
+                      <motion.div
+                        className="h-full"
+                        layout
+                        whileHover={{ y: -4, scale: 1.015 }}
+                        variants={{
+                          hidden: { opacity: 0, y: 12 },
+                          visible: {
+                            opacity: 1,
+                            y: 0,
+                            transition: { duration: 0.55, ease: easeSoft },
+                          },
+                        }}
+                      >
+                        <CardContainer className="w-full h-full px-4 rounded-[44px]">
+                          <CardBody
                             className="
-            relative z-10
-            flex flex-col items-center gap-2
-            rounded-[55px]
-            pointer-events-none
-          "
+                              relative z-20
+                              group/card
+                              vision-pro-ui-hoverable
+                              w-full h-full min-h-[260px]
+                              py-5
+                              flex flex-col justify-center
+                              rounded-[44px]
+                              overflow-hidden isolation-isolate liquid-glass !shadow-none
+                              backdrop-blur-[30px]
+                              select-none
+                            "
                           >
-                            <div className="lowercase text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8]">
-                              Research Article
-                            </div>
+                            <div className="liquidGlass-effect pointer-events-none"></div>
+                            <div className="cardGlass-tint pointer-events-none"></div>
+                            <div className="glass-noise"></div>
+                            <div className="cardGlass-borders pointer-events-none"></div>
+                            <div className="cardGlass-shine pointer-events-none"></div>
+                            <div className="liquidGlass-text pointer-events-none"></div>
 
-                            <h3 className="text-[25px] sm:text-[35px] leading-[20px] sm:leading-[30px] p-2 text-center uppercase font-tttravelsnext font-bold line-clamp-7">
-                              {article.title}
-                            </h3>
+                            <CardItem
+                              translateZ="20"
+                              className="
+                                relative z-10
+                                flex flex-col items-center gap-2
+                                rounded-[44px]
+                                pointer-events-none
+                                w-full
+                              "
+                            >
+                              <div className="lowercase text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 text-center w-full">
+                                Research Article
+                              </div>
 
-                            <p className="text-[15px] sm:text-[20px] text-center text-[#CDA8E8]">
-                              by {article.author ?? "Unknown Author"}
-                            </p>
-                          </CardItem>
+                              <h3 className={`${getTitleFontSize(article.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}>
+                                {article.title}
+                              </h3>
 
-                          <div className="divGlass-effect pointer-events-none z-0" />
-                          {/* <div className="cardGlass-shine pointer-events-none z-0 overflow-hidden" /> */}
-                        </CardBody>
-                      </CardContainer>
-                    </motion.div>
-                  </Link>
-
-                ))
+                              <p className="text-[15px] sm:text-[20px] text-center text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 font-dmsans w-full font-light">
+                                by {article.author ?? "Unknown Author"}
+                              </p>
+                            </CardItem>
+                          </CardBody>
+                        </CardContainer>
+                      </motion.div>
+                    </Link>
+                  );
+                })
               )}
             </motion.div>
             <motion.div
