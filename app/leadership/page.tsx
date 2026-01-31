@@ -181,8 +181,8 @@ function HolographicCard({
   const x = useMotionValue(0)
   const y = useMotionValue(0)
 
-  const xSpring = useSpring(x, { stiffness: 300, damping: 30 })
-  const ySpring = useSpring(y, { stiffness: 300, damping: 30 })
+  const xSpring = useSpring(x, { stiffness: 150, damping: 30 })
+  const ySpring = useSpring(y, { stiffness: 150, damping: 30 })
 
   const rotateX = useTransform(ySpring, [-0.5, 0.5], ["7deg", "-7deg"])
   const rotateY = useTransform(xSpring, [-0.5, 0.5], ["-7deg", "7deg"])
@@ -198,10 +198,22 @@ function HolographicCard({
     const height = rect.height
     const mouseX = e.clientX - rect.left
     const mouseY = e.clientY - rect.top
-    const xPct = (mouseX / width) - 0.5
-    const yPct = (mouseY / height) - 0.5
-    x.set(xPct)
-    y.set(yPct)
+
+    // Only update if mouse is within bounds to prevent edge jitter
+    if (mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height) {
+      const xPct = (mouseX / width) - 0.5
+      const yPct = (mouseY / height) - 0.5
+
+      // Add threshold to prevent micro-movements
+      const threshold = 0.02
+      const currentX = x.get()
+      const currentY = y.get()
+
+      if (Math.abs(xPct - currentX) > threshold || Math.abs(yPct - currentY) > threshold) {
+        x.set(xPct)
+        y.set(yPct)
+      }
+    }
   }
 
   const handleMouseLeaveWrapper = () => {
@@ -220,8 +232,6 @@ function HolographicCard({
       className={`relative z-10 preserve-3d ${className}`}
       style={{
         transformStyle: "preserve-3d",
-        rotateX,
-        rotateY,
         perspective: 1000,
       }}
       initial={{ transform: "perspective(1000px) rotateX(0deg) rotateY(0deg)" }}
@@ -235,7 +245,8 @@ function HolographicCard({
             circle at ${sheenX} ${sheenY},
             rgba(255,255,255,0.2), 
             transparent 50%
-          )`
+          )`,
+          pointerEvents: 'none'
         }}
       />
       {children}
@@ -284,6 +295,7 @@ function LeaderCard({ leader, isLoading }: { leader: Leader; isLoading?: boolean
   const [isHovered, setIsHovered] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [windowWidth, setWindowWidth] = useState(0)
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     const handleResize = () => {
@@ -294,6 +306,32 @@ function LeaderCard({ leader, isLoading }: { leader: Leader; isLoading?: boolean
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+    }
+    setIsHovered(true)
+  }
+
+  const handleMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+    }
+    // Add delay before hiding to prevent jitter
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsHovered(false)
+    }, 100)
+  }
 
   const showExpanded = isExpanded || isHovered
   const currentRadius = showExpanded ? '55px' : '24px'
@@ -328,8 +366,8 @@ function LeaderCard({ leader, isLoading }: { leader: Leader; isLoading?: boolean
       >
         <HolographicCard
           onClick={() => setIsExpanded(!isExpanded)}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
           className="group cursor-pointer"
           borderRadius={currentRadius}
         >
