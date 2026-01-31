@@ -84,12 +84,12 @@ export function ArticleListClient({ articles }: ArticleListClientProps) {
             className="w-full from-primary/10 to-background pt-[80px]"
           >
             <div className="max-w-4xl flex flex-col gap-2 mx-auto px-6 text-center items-center py-10">
-              <h1 className="text-5xl leading-[0.9]
+              <h1 className="text-4xl leading-[0.9]
   sm:text-6xl sm:leading-[0.9]
   lg:text-7xl lg:leading-[0.9] whitespace-nowrap
   text-center font-wintersolace
-  text-white py-8 px-10">
-                Research Articles
+  text-white py-8 px-4 sm:px-10">
+                Research <br className="sm:hidden" /> Articles
               </h1>
               <p className="text-lg text-muted-foreground font-dmsans mb-8">
                 With extensive hard work and highly strenuous fact checking, by our Writing Team, and our panel of Esteemed Medical Professionals have led us to offer you a selection of curated articles.
@@ -178,7 +178,7 @@ export function ArticleListClient({ articles }: ArticleListClientProps) {
                             w-full
                           "
                           >
-                            <div className="lowercase text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 text-center w-full">
+                            <div className="lowercase text-[18px] sm:text-[22px] lg:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 text-center w-full">
                               Research Article
                             </div>
 
