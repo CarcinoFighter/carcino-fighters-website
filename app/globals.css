@@ -514,10 +514,22 @@
   border-radius: 0;
 
   /* Consistent 1px thickness to match corners */
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
   border-bottom: 1px solid rgba(255, 255, 255, 0.3);
   border-left: 1px solid rgba(255, 255, 255, 0.2);
   border-right: 1px solid rgba(255, 255, 255, 0.3);
+
+  /* Vertical borders remain solid for most of length, dissolving to 0% opacity exactly at the 44px junction */
+  mask-image: linear-gradient(to top,
+      black 0%,
+      black calc(100% - 60px),
+      rgba(0, 0, 0, 0.1) calc(100% - 46px),
+      transparent calc(100% - 44px));
+  -webkit-mask-image: linear-gradient(to top,
+      black 0%,
+      black calc(100% - 60px),
+      rgba(0, 0, 0, 0.1) calc(100% - 46px),
+      transparent calc(100% - 44px));
 
   /* Precise corner gaps */
   clip-path: polygon(44px 0,
@@ -588,11 +600,12 @@
   inset: 0;
   pointer-events: none;
 
-  border-bottom: 1px solid rgba(255, 255, 255, 0.45);
-  border-right: 1px solid rgba(255, 255, 255, 0.45);
+  /* Dimmer bottom-right edges to complement the top-heavy lighting */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  border-right: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 44px;
 
-  border-right: 1px solid rgba(255, 255, 255, 0.45);
+  border-right: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 44px;
 
   /* Tighter circular mask to focus shine exactly on the corner */
