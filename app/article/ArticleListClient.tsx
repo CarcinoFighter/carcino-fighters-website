@@ -88,7 +88,7 @@ export function ArticleListClient({ articles }: ArticleListClientProps) {
                 Our Research Articles
               </h1>
               <p className="text-lg text-muted-foreground font-space_grotesk mb-8">
-                Wtih extensive hard work and highly strenuous fact checking, by our Writing Team, and our panel of Esteemed Medical Professionals have led us to offer you a selection of curated articles.
+                With extensive hard work and highly strenuous fact checking, by our Writing Team, and our panel of Esteemed Medical Professionals have led us to offer you a selection of curated articles.
               </p>
             </div>
           </motion.div>
