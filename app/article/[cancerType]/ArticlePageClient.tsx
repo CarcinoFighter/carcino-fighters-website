@@ -153,7 +153,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   bg-clip-text text-transparent ">
                 About the Author
               </h2>
-              <div className="relative text-left flex flex-col sm:flex-row gap-6  p-5 rounded-[55px] overflow-hidden ">
+              <div className="relative text-left flex flex-col sm:flex-row gap-6  p-5 rounded-[44px] overflow-hidden ">
 
 
                 <div className=" divGlass-effect pointer-events-none z-0  "></div>
@@ -210,7 +210,7 @@ w-full max-w-screen-sm sm:max-w-none mx-auto px-4
                         },
                       }}
                     >
-                      <CardContainer className="w-full h-full px-4 rounded-[55px]">
+                      <CardContainer className="w-full h-full px-4 rounded-[44px]">
                         <CardBody
                           className="
                             article-card
@@ -220,7 +220,7 @@ w-full max-w-screen-sm sm:max-w-none mx-auto px-4
                             w-full h-full min-h-[260px]
                             py-5
                             flex flex-col justify-center
-                            rounded-[55px]
+                            rounded-[44px]
                             bg-background/30
                             bg-gradient-to-br from-[#9875c1]/25 via-[#9875c1]/5 to-transparent
                             backdrop-blur-xl backdrop-saturate-150
@@ -234,7 +234,7 @@ w-full max-w-screen-sm sm:max-w-none mx-auto px-4
                             className="
                               relative z-10
                               flex flex-col items-center gap-2
-                              rounded-[55px]
+                              rounded-[44px]
                               pointer-events-none
                             "
                           >

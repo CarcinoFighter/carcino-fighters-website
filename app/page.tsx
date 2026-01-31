@@ -426,7 +426,7 @@ export default function Home() {
                         },
                       }}
                     >
-                      <CardContainer className="w-full h-full px-4 rounded-[55px]">
+                      <CardContainer className="w-full h-full px-4 rounded-[44px]">
                         <CardBody
                           className="
         article-card
@@ -436,7 +436,7 @@ export default function Home() {
           w-full h-full min-h-[260px]
           py-5
           flex flex-col justify-center
-          rounded-[55px]
+          rounded-[44px]
           bg-background/30
           bg-gradient-to-br from-[#9875c1]/25 via-[#9875c1]/5 to-transparent
           backdrop-blur-xl backdrop-saturate-150
@@ -450,7 +450,7 @@ export default function Home() {
                             className="
             relative z-10
             flex flex-col items-center gap-2
-            rounded-[55px]
+            rounded-[44px]
             pointer-events-none
           "
                           >
