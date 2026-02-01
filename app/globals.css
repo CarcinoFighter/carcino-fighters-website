@@ -65,6 +65,15 @@
 */
 
 @layer base {
+  ::selection {
+    background-color: #9875c1;
+    color: white;
+  }
+
+  ::-moz-selection {
+    background-color: #9875c1;
+    color: white;
+  }
 
   *,
   ::after,
@@ -520,16 +529,27 @@
   border-right: 1px solid rgba(255, 255, 255, 0.3);
 
   /* Vertical borders remain solid for most of length, dissolving to 0% opacity exactly at the 40px junction */
-  mask-image: linear-gradient(to top,
-      black 0%,
-      black calc(100% - 50px),
-      rgba(0, 0, 0, 0.1) calc(100% - 42px),
-      transparent calc(100% - 40px));
-  -webkit-mask-image: linear-gradient(to top,
-      black 0%,
-      black calc(100% - 50px),
-      rgba(0, 0, 0, 0.1) calc(100% - 42px),
-      transparent calc(100% - 40px));
+  /* Each border segment has its own fade direction: Top-right, Bottom-left diagonal logic */
+  mask-image:
+    linear-gradient(to right, black calc(100% - 80px), transparent calc(100% - 40px)),
+    /* Top: fade right */
+    linear-gradient(to bottom, transparent 40px, black 80px),
+    /* Right: fade top */
+    linear-gradient(to left, black calc(100% - 80px), transparent calc(100% - 20px)),
+    /* Bottom: fade left */
+    linear-gradient(to top, transparent 40px, black 80px);
+  /* Left: fade bottom */
+  mask-size: 100% 80px, 80px 100%, 100% 80px, 80px 100%;
+  mask-position: top center, center right, bottom center, center left;
+  mask-repeat: no-repeat;
+  -webkit-mask-image:
+    linear-gradient(to right, black calc(100% - 80px), transparent calc(100% - 20px)),
+    linear-gradient(to bottom, transparent 40px, black 80px),
+    linear-gradient(to left, black calc(100% - 80px), transparent calc(100% - 20px)),
+    linear-gradient(to top, transparent 40px, black 80px);
+  -webkit-mask-size: 100% 80px, 80px 100%, 100% 80px, 80px 100%;
+  -webkit-mask-position: top center, center right, bottom center, center left;
+  -webkit-mask-repeat: no-repeat;
 
   /* Precise corner gaps */
   clip-path: polygon(40px 0,
@@ -580,15 +600,16 @@
   /* shadow from top-left corner */
   box-shadow: inset 0.1px 0.1px 2px rgba(255, 255, 255, 0.4);
 
-  /* Sharper circular mask to focus shine exactly on the corner without overlap */
-  mask-image: radial-gradient(circle 42px at 0% 0%,
-      rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 40px,
-      rgba(0, 0, 0, 0) 42px);
-  -webkit-mask-image: radial-gradient(circle 42px at 0% 0%,
-      rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 40px,
-      rgba(0, 0, 0, 0) 42px);
+  /* Sharper circular mask combined with angular fade for smooth blending */
+  mask-image:
+    radial-gradient(circle 42px at 0% 0%, rgba(0, 0, 0, 1) 0px, rgba(0, 0, 0, 1) 40px, rgba(0, 0, 0, 0) 42px),
+    conic-gradient(from 90deg at 0% 0%, transparent 0deg, black 10deg, black 80deg, transparent 90deg);
+  -webkit-mask-image:
+    radial-gradient(circle 42px at 0% 0%, rgba(0, 0, 0, 1) 0px, rgba(0, 0, 0, 1) 40px, rgba(0, 0, 0, 0) 42px),
+    conic-gradient(from 90deg at 0% 0%, transparent 0deg, black 10deg, black 80deg, transparent 90deg);
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
+  /* For Safari */
 
   /* Strictly clip to 40x40 corner area to match border gaps */
   clip-path: inset(0 calc(100% - 40px) calc(100% - 40px) 0);
@@ -609,15 +630,16 @@
   /* shadow from bottom-right corner */
   box-shadow: inset -0.1px -0.1px 2.5px rgba(255, 255, 255, 0.6);
 
-  /* Sharper circular mask to focus shine exactly on the corner without overlap */
-  mask-image: radial-gradient(circle 42px at 100% 100%,
-      rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 40px,
-      rgba(0, 0, 0, 0) 42px);
-  -webkit-mask-image: radial-gradient(circle 42px at 100% 100%,
-      rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 40px,
-      rgba(0, 0, 0, 0) 42px);
+  /* Sharper circular mask combined with angular fade for smooth blending */
+  mask-image:
+    radial-gradient(circle 42px at 100% 100%, rgba(0, 0, 0, 1) 0px, rgba(0, 0, 0, 1) 40px, rgba(0, 0, 0, 0) 42px),
+    conic-gradient(from 270deg at 100% 100%, transparent 0deg, black 10deg, black 80deg, rgba(0, 0, 0, 0.5) 90deg);
+  -webkit-mask-image:
+    radial-gradient(circle 42px at 100% 100%, rgba(0, 0, 0, 1) 0px, rgba(0, 0, 0, 1) 40px, rgba(0, 0, 0, 0) 42px),
+    conic-gradient(from 270deg at 100% 100%, transparent 0deg, black 10deg, black 80deg, rgba(0, 0, 0, 0.5) 90deg);
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
+  /* For Safari */
 
   clip-path: inset(calc(100% - 40px) 0 0 calc(100% - 40px));
 }
