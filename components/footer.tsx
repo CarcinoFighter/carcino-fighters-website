@@ -20,17 +20,17 @@ export function Footer() {
             CONTACT
           </p>
           <a
-            href="mailto:inquiries@thecarcinofoundation.org"
+            href="mailto:support@carcino.work"
             className="text-[#D5B0FF] font-dmsans text-base font-normal leading-6 hover:underline max-sm:text-sm"
           >
-            inquiries@thecarcinofoundation.org
+            support@carcino.work
           </a>
 
           <a
-            href="tel:+917605055424"
+            href="tel:+918777429831"
             className="text-[#D5B0FF] font-dmsans text-base font-normal leading-6 hover:underline max-sm:text-sm"
           >
-            +91 76050 55424
+            +91 87774 29831
           </a>
         </div>
       </div>
