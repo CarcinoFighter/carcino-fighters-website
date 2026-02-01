@@ -608,7 +608,7 @@ export default function Leadership() {
           transition={{ duration: 0.8, ease: easeSoft }}
           viewport={{ once: true }}
         >
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mt-4 text-white">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl leading-[0.9] text-center font-wintersolace text-white py-4 px-4 sm:px-10">
             Our Leadership
           </h1>
 
