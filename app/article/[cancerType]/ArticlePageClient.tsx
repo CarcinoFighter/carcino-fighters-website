@@ -84,6 +84,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   relative
   max-w-full sm:max-w-4xl
   dark:prose-invert
+  font-dmsans
   ${readmore ? "" : "max-h-[50vh] sm:max-h-[60vh] overflow-hidden"}
 `}
 
