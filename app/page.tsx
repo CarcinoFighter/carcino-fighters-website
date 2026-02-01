@@ -272,7 +272,7 @@ export default function Home() {
                 className="object-cover w-full h-full"
                 priority
               />
-              <div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-black via-black/50 to-transparent lg:hidden" />
+              <div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-black via-black/99 to-transparent lg:hidden" />
 
               { /*<div className="absolute inset-0 bg-[#471F77]/52" /> 
               <div className="absolute inset-0 bg-[#000000] opacity-55" />*/}
