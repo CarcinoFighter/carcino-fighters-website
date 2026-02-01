@@ -412,12 +412,14 @@ export default function Home() {
                     const words = title.split(/\s+/);
                     const maxWordLength = Math.max(...words.map(w => w.length));
 
-                    if (maxWordLength > 12) return "text-[14px] sm:text-[18px]";
-                    if (maxWordLength >= 9) return "text-[18px] sm:text-[22px]";
+                    // Priority 1: Longest word must fit
+                    if (maxWordLength > 12) return "text-[14px] sm:text-[18px]"; // Very long word
+                    if (maxWordLength >= 9) return "text-[18px] sm:text-[22px]"; // Moderately long word
 
+                    // Priority 2: Total length
                     if (title.length > 35) return "text-[16px] sm:text-[20px]";
-                    if (title.length > 15) return "text-[20px] sm:text-[26px]";
-                    return "text-[25px] sm:text-[35px]";
+                    if (title.length >= 15) return "text-[18px] sm:text-[24px]";
+                    return "text-[22px] sm:text-[30px]";
                   };
 
                   return (
@@ -439,16 +441,16 @@ export default function Home() {
                           },
                         }}
                       >
-                        <CardContainer className="w-full h-full px-4 rounded-[44px]">
+                        <CardContainer className="w-full h-full px-1 rounded-[40px]">
                           <CardBody
                             className="
                               relative z-20
                               group/card
                               vision-pro-ui-hoverable
-                              w-full h-full min-h-[260px]
-                              py-5
+                              w-full h-full min-h-[200px]
+                              py-3
                               flex flex-col justify-center
-                              rounded-[44px]
+                              rounded-[40px]
                               overflow-hidden isolation-isolate liquid-glass !shadow-none
                               backdrop-blur-[30px]
                               select-none
@@ -466,12 +468,12 @@ export default function Home() {
                               className="
                                 relative z-10
                                 flex flex-col items-center gap-2
-                                rounded-[44px]
+                                rounded-[40px]
                                 pointer-events-none
                                 w-full
                               "
                             >
-                              <div className="lowercase text-[18px] sm:text-[22px] lg:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 text-center w-full">
+                              <div className="lowercase text-[16px] sm:text-[20px] lg:text-[22px] font-medium font-instrumentserifitalic text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 text-center w-full">
                                 Research Article
                               </div>
 
@@ -479,7 +481,7 @@ export default function Home() {
                                 {article.title}
                               </h3>
 
-                              <p className="text-[15px] sm:text-[20px] text-center text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 font-dmsans w-full font-light">
+                              <p className="text-[14px] sm:text-[18px] text-center text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 font-dmsans w-full font-light">
                                 by {article.author ?? "Unknown Author"}
                               </p>
                             </CardItem>
