@@ -151,73 +151,92 @@ export function Navbar() {
       </div>
 
       {/* Mobile NavMenu */}
-      <div className="sm:hidden fixed top-5 left-5 z-20 ">
+      <div className="sm:hidden fixed top-0 left-0 right-0 z-20 flex items-center justify-between px-5 py-5 m-2">
+        {/* Logo on the left */}
+        <div className="flex items-center gap-2">
+          <Image
+            src="/logo-footer.svg"
+            alt="TCF"
+            width={36}
+            height={36}
+            className="object-contain"
+          />
+          <span className="text-white font-tttravelsnext text-[11px] font-bold leading-tight tracking-tight">
+            THE<br /> CARCINO<br />FOUNDATION
+          </span>
+        </div>
+
+        {/* Hamburger on the right */}
         <Menu
           className="text-foreground p-1 backdrop-blur-xs border-accent-forground border rounded-sm"
-          size={28}
+          size={32}
           onClick={() => setMobileMenuOpen(true)}
         />
 
-        {isMobileMenuOpen && (<>
+        {/* Backdrop */}
+        {isMobileMenuOpen && (
           <div
             className="fixed inset-0 bg-background/42 z-20 backdrop-blur-md"
             onClick={() => setMobileMenuOpen(false)}
-          ></div>
-        </>)}
+          />
+        )}
 
+        {/* Compact Menu Box */}
         <div
-          className={`fixed inset-y-0 w-[50%] rounded-2xl left-0 bg-background z-30 flex flex-col items-start p-6 transform transition-transform duration-300 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          className={`fixed top-20 right-5 w-56 backdrop-blur-2xl z-30 rounded-2xl border border-white/10 shadow-xl transform transition-all duration-300 ${isMobileMenuOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"
             }`}
         >
-          <button
-            className="self-end text-foreground text-2xl mb-4"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            &times;
-          </button>
-          <div className="flex flex-row items-center justify-start leading-1 gap-2 w-full pb-5">
-            <div>
-              <Image
-                src="/ribbon_phone.png"
-                alt=""
-                width={27.28}
-                height={34.86}
-                quality={100}
-                className="object-cover h-full"
-              />
-            </div>
-            <div className="text-foreground font-dmsans text-lg">Carcino <br /> Foundation</div>
-          </div>
-          <div className="bg-accent px-5 w-full h-[1px] mb-5"></div>
-          <nav className="flex flex-col gap-10 w-full h-full font-dmsans text-xl">
-            <Link onClick={() => setMobileMenuOpen(false)} href="/" className={pathname === "/" ? "text-primary font-bold" : ""}>
-              <div className="flex flex-row items-center gap-2">
-                <House size={24} />
-                Home
-              </div>
+
+          {/* Menu content */}
+          <nav className="flex flex-col p-4 gap-1 relative z-10">
+            <Link
+              onClick={() => setMobileMenuOpen(false)}
+              href="/"
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-dmsans text-base",
+                pathname === "/" ? "bg-primary/20 text-primary font-semibold" : "hover:bg-white/5"
+              )}
+            >
+              <House size={22} />
+              Home
             </Link>
-            <Link onClick={() => setMobileMenuOpen(false)} href="/leadership" className={pathname.startsWith("/leadership") ? "text-primary font-bold" : ""}>
-              <div className="flex flex-row items-center gap-2">
-                <SearchX size={24} />
-                About
-              </div>
+            <Link
+              onClick={() => setMobileMenuOpen(false)}
+              href="/leadership"
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-dmsans text-base",
+                pathname.startsWith("/leadership") ? "bg-primary/20 text-primary font-semibold" : "hover:bg-white/5"
+              )}
+            >
+              <SearchX size={22} />
+              About
             </Link>
-            <Link onClick={() => setMobileMenuOpen(false)} href="/article" className={pathname.startsWith("/article") ? "text-primary font-bold" : ""}>
-              <div className="flex flex-row items-center gap-2">
-                <BookOpen size={24} />
-                Articles
-              </div>
+            <Link
+              onClick={() => setMobileMenuOpen(false)}
+              href="/article"
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-dmsans text-base",
+                pathname.startsWith("/article") ? "bg-primary/20 text-primary font-semibold" : "hover:bg-white/5"
+              )}
+            >
+              <BookOpen size={22} />
+              Articles
             </Link>
-            <div className="mt-auto">
-              <Link onClick={() => setMobileMenuOpen(false)} href={isAuthenticated ? "/dashboard" : "/sign-up"} className={pathname.startsWith("/sign") || pathname.startsWith("/dashboard") ? "text-primary font-bold" : ""}>
-                <div className="flex flex-row items-center gap-2">
-                  {isAuthenticated ? <User size={24} /> : <UserPlus size={24} />}
-                  {isAuthenticated ? "Dashboard" : "Sign Up"}
-                </div>
-              </Link>
-            </div>
+
+            <div className="h-px bg-border my-2" />
+
+            <Link
+              onClick={() => setMobileMenuOpen(false)}
+              href={isAuthenticated ? "/dashboard" : "/sign-up"}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-dmsans text-base",
+                pathname.startsWith("/sign") || pathname.startsWith("/dashboard") ? "bg-primary/20 text-primary font-semibold" : "hover:bg-white/5"
+              )}
+            >
+              {isAuthenticated ? <User size={22} /> : <UserPlus size={22} />}
+              {isAuthenticated ? "Dashboard" : "Sign Up"}
+            </Link>
           </nav>
-          {/* <ModeTogglePhone></ModeTogglePhone> */}
         </div>
       </div>
 

@@ -265,16 +265,17 @@ export default function Home() {
               variants={fadeScale}
             >
               <Image
-                src={`/landing/Background.png`}
+                src={`/landing/Background-wcd.png`}
                 height={888}
                 width={1440}
                 alt="background"
                 className="object-cover w-full h-full"
                 priority
               />
+              <div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-black via-black/50 to-transparent lg:hidden" />
 
-              <div className="absolute inset-0 bg-[#471F77]/52" />
-              <div className="absolute inset-0 bg-[#000000] opacity-55" />
+              { /*<div className="absolute inset-0 bg-[#471F77]/52" /> 
+              <div className="absolute inset-0 bg-[#000000] opacity-55" />*/}
             </motion.div>
 
             <motion.div
@@ -282,19 +283,18 @@ export default function Home() {
               variants={staggerContainer}
             >
               <ShinyText
-                text={"Breaking Down Cancer for Everyone"}
+                text={"Together Against Cancer This World Cancer Day"}
                 disabled={true}
                 speed={4}
-                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium w-5xl mt-5 max-sm:text-3xl max-sm:w-4/5"
+                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-3xl mt-5 max-sm:text-3xl max-sm:w-3/5 leading-[109%]"
                 textColor="#fafafa"
               />
               <motion.span
                 className="font-dmsans text-2xl max-sm:px-6 sm:max-w-[35%] w-full text-center max-sm:text-xs max-sm:w-4/5 max-sm:font-light"
                 variants={fadeUp}
               >
-                At the Carcino Foundation, we believe that everyone should be
-                able to learn about one of the leading causes of human
-                mortality.
+                Cancer affects millions of lives—but together, awareness, compassion,
+                and early detection can change the story.
                 {/* but in a way everyone can understand. */}
               </motion.span>
               <motion.div
@@ -311,7 +311,7 @@ export default function Home() {
                     href="/article"
                     className="relative z-10 flex items-center gap-2"
                   >
-                    Read Our Documents{" "}
+                    Learn More{" "}
                     <ArrowUpRight className="transition-transform" />
                   </Link>
 
