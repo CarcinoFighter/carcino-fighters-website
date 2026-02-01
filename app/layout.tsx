@@ -5,6 +5,7 @@ import { Geist, Space_Grotesk, Cinzel, Michroma } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import localFont from "next/font/local";
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 // import { Footer } from "@/components/footer";
 
@@ -241,9 +242,8 @@ export default function RootLayout({
           </svg>
 
           {children}
-
-
         </ThemeProvider>
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ""} />
       </body>
 
     </html>
