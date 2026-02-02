@@ -254,7 +254,7 @@ export default function Home() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.6 }}
             variants={staggerContainer}
-            className="h-screen flex bg-transparent flex-col mb-10 items-center gap-[12rem] justify-center w-full overflow-y-hidden"
+            className="h-screen flex bg-transparent flex-col mb-10 items-center gap-[12rem] justify-center w-full overflow-y-hidden relative lg:static"
           >
             <motion.div
               style={{ y }}
@@ -272,7 +272,7 @@ export default function Home() {
                 className="object-cover w-full h-full"
                 priority
               />
-              <div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-black via-black/99 to-transparent lg:hidden" />
+              <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black to-transparent lg:hidden" />
 
               { /*<div className="absolute inset-0 bg-[#471F77]/52" /> 
               <div className="absolute inset-0 bg-[#000000] opacity-55" />*/}
