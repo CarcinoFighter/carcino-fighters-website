@@ -290,7 +290,7 @@ export default function Home() {
                 textColor="#fafafa"
               />
               <motion.span
-                className="font-dmsans text-2xl max-sm:px-6 sm:max-w-[35%] w-full text-center max-sm:text-xs max-sm:w-4/5 max-sm:font-light"
+                className="font-dmsans text-2xl sm:max-w-[55%] w-full text-center max-sm:text-xs max-sm:w-4/5 max-sm:font-light"
                 variants={fadeUp}
               >
                 Cancer affects millions of lives—but together, awareness, compassion,
@@ -592,7 +592,7 @@ export default function Home() {
                     </CardHeader>
                     <CardContent>
                       <p className="font-dmsans leading-[20px] text-muted-foreground text-sm lg:text-lg">
-                        Working with plenty of pioneers in the field of medicine
+                        Working with plenty of pioneers in the field of human and life science
                         has helped us bring out the truth behind cancer.
                       </p>
                     </CardContent>
@@ -655,7 +655,7 @@ export default function Home() {
                     </CardHeader>
                     <CardContent>
                       <p className="font-dmsans leading-[20px] text-muted-foreground lg:text-lg">
-                        We believe that our generation can beat cancer. And we
+                        We believe that our generation can fight cancer. And we
                         try our best to educate our peers.
                       </p>
                     </CardContent>
