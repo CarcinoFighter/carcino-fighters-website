@@ -725,39 +725,41 @@ export default function AdminPage() {
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-transparent" />
                     Loading submissions...
                   </div>
-                ) : submissions.length === 0 ? (
+                ) : submissions.filter(s => s.author_user_id === currentUser.id).length === 0 ? (
                   <div className="mt-3 text-sm text-white/60">No submissions yet.</div>
                 ) : (
                   <div className="mt-4 space-y-3">
-                    {submissions.map((s) => {
-                      const statusColor = s.status === "approved" ? "bg-green-100 text-green-800" : s.status === "rejected" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-800";
-                      const kind = s.doc_id ? "Edit" : "New";
-                      const submittedAt = s.created_at ? new Date(s.created_at).toLocaleString() : "";
-                      return (
-                        <div key={s.id} className="rounded-xl border border-white/10 bg-white/5 p-4 shadow-sm">
-                          <div className="flex flex-wrap items-start justify-between gap-3">
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColor}`}>{s.status}</span>
-                                <span className="text-xs uppercase tracking-[0.12em] text-muted-foreground">{kind}</span>
+                    {submissions
+                      .filter(s => s.author_user_id === currentUser.id)
+                      .map((s) => {
+                        const statusColor = s.status === "approved" ? "bg-green-100 text-green-800" : s.status === "rejected" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-800";
+                        const kind = s.doc_id ? "Edit" : "New";
+                        const submittedAt = s.created_at ? new Date(s.created_at).toLocaleString() : "";
+                        return (
+                          <div key={s.id} className="rounded-xl border border-white/10 bg-white/5 p-4 shadow-sm">
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColor}`}>{s.status}</span>
+                                  <span className="text-xs uppercase tracking-[0.12em] text-muted-foreground">{kind}</span>
+                                </div>
+                                <div className="text-base font-semibold leading-snug">{s.title}</div>
+                                <div className="text-sm text-muted-foreground">Slug: {s.slug}</div>
+                                {submittedAt && <div className="text-xs text-muted-foreground">Submitted {submittedAt}</div>}
                               </div>
-                              <div className="text-base font-semibold leading-snug">{s.title}</div>
-                              <div className="text-sm text-muted-foreground">Slug: {s.slug}</div>
-                              {submittedAt && <div className="text-xs text-muted-foreground">Submitted {submittedAt}</div>}
+                              <div className="text-right text-sm text-white/70">
+                                {s.author?.name || s.author?.username || s.author?.email || "You"}
+                              </div>
                             </div>
-                            <div className="text-right text-sm text-white/70">
-                              {s.author?.name || s.author?.username || s.author?.email || "You"}
-                            </div>
+                            <div className="mt-3 text-sm text-white/70 line-clamp-3 whitespace-pre-line">{s.content}</div>
+                            {s.status === "rejected" && s.reviewer_note && (
+                              <div className="mt-2 rounded border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-100">
+                                Rejected: {s.reviewer_note}
+                              </div>
+                            )}
                           </div>
-                          <div className="mt-3 text-sm text-white/70 line-clamp-3 whitespace-pre-line">{s.content}</div>
-                          {s.status === "rejected" && s.reviewer_note && (
-                            <div className="mt-2 rounded border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-100">
-                              Rejected: {s.reviewer_note}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                   </div>
                 )}
               </div>
@@ -1047,6 +1049,7 @@ export default function AdminPage() {
                       const authorLabel = s.author?.name || s.author?.username || s.author?.email || "Unknown";
                       const submittedAt = s.created_at ? new Date(s.created_at).toLocaleString() : "";
                       const kind = s.doc_id ? "Edit" : "New";
+                      const isOwn = s.author_user_id === currentUser?.id;
                       return (
                         <div key={s.id} className="rounded-xl border border-white/10 bg-white/5 p-4 shadow-sm">
                           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1058,20 +1061,26 @@ export default function AdminPage() {
                               {submittedAt && <div className="text-xs text-white/60">Submitted {submittedAt}</div>}
                             </div>
                             <div className="flex flex-wrap gap-2">
-                              <button
-                                className="bg-emerald-500 hover:bg-emerald-400 text-white px-3 py-2 rounded-lg shadow-md hover:cursor-pointer disabled:opacity-60"
-                                onClick={() => handleReviewSubmission(s.id, "approve")}
-                                disabled={Boolean(reviewing[s.id])}
-                              >
-                                {reviewing[s.id] ? "Approving..." : "Approve"}
-                              </button>
-                              <button
-                                className={subtleButton}
-                                onClick={() => handleReviewSubmission(s.id, "reject")}
-                                disabled={Boolean(reviewing[s.id])}
-                              >
-                                {reviewing[s.id] ? "Working..." : "Reject"}
-                              </button>
+                              {isOwn ? (
+                                <span className="text-xs text-white/50 italic self-center px-3">Cannot review own submission</span>
+                              ) : (
+                                <>
+                                  <button
+                                    className="bg-emerald-500 hover:bg-emerald-400 text-white px-3 py-2 rounded-lg shadow-md hover:cursor-pointer disabled:opacity-60"
+                                    onClick={() => handleReviewSubmission(s.id, "approve")}
+                                    disabled={Boolean(reviewing[s.id])}
+                                  >
+                                    {reviewing[s.id] ? "Approving..." : "Approve"}
+                                  </button>
+                                  <button
+                                    className={subtleButton}
+                                    onClick={() => handleReviewSubmission(s.id, "reject")}
+                                    disabled={Boolean(reviewing[s.id])}
+                                  >
+                                    {reviewing[s.id] ? "Working..." : "Reject"}
+                                  </button>
+                                </>
+                              )}
                             </div>
                           </div>
                           <div className="mt-3 text-sm text-white/70 line-clamp-3 whitespace-pre-line">{s.content}</div>
