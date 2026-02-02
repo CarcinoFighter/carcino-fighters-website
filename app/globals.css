@@ -273,38 +273,24 @@
     @apply border-border;
   }
 
-  html {
-    scrollbar-gutter: stable;
-  }
+  html {}
 
-  body {
-    @apply bg-white dark:bg-black max-h-dvh max-w-dvw text-foreground;
-    overflow: auto;
-    scrollbar-width: none;
-    /* For Firefox */
-    -ms-overflow-style: none;
-    /* For Internet Explorer and Edge */
-  }
-
-  body::-webkit-scrollbar {
-    display: none;
-    /* For Chrome, Safari, and Opera */
-  }
-
-  body {
-    scrollbar-width: none;
-    /* Hides scrollbar for Firefox */
-  }
-
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .hide-scrollbar {
+  /* Global scrollbar hiding */
+  * {
     -ms-overflow-style: none;
     /* IE and Edge */
     scrollbar-width: none;
     /* Firefox */
+  }
+
+  *::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Keep body styles but remove redundant scrollbar stuff if covered by * */
+  body {
+    @apply bg-white dark:bg-black max-h-dvh max-w-dvw text-foreground;
+    overflow: auto;
   }
 
 }
