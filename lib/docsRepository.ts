@@ -1,6 +1,7 @@
 // lib/docsRepository.ts
 import { unstable_cache } from 'next/cache';
 import { supabase } from '@/lib/initSupabase';
+import { getAvatarUrls } from '@/lib/avatarService';
 
 function resolveApiUrl(path: string) {
   if (typeof window !== 'undefined') {
@@ -127,20 +128,12 @@ async function getDocBySlugWithAvatarUncached(slug: string): Promise<ArticleWith
     }
 
     let profilePicture: string | null = null;
+
     try {
-      const res = await fetch(resolveApiUrl('/api/avatars'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: [doc.author_user_id || doc.id] })
-      });
-      if (res.ok) {
-        const json = await res.json();
-        profilePicture = json?.map?.[doc.author_user_id || doc.id] ?? null;
-      } else {
-        console.warn('Avatar API failed', res.status);
-      }
+      const picMap = await getAvatarUrls([doc.author_user_id || doc.id]);
+      profilePicture = picMap[doc.author_user_id || doc.id] ?? null;
     } catch (e) {
-      console.warn('Avatar API error', e);
+      console.warn('Avatar fetch error', e);
     }
 
     const finalPfp = profilePicture || avatarUrlFallback || null;
@@ -241,17 +234,9 @@ async function getAllDocsWithAvatarsUncached(): Promise<ArticleWithAvatar[]> {
     let picMap: Record<string, string | null> = {};
     const ids = Array.from(new Set(docs.map(d => d.author_user_id || d.id))).filter(Boolean) as string[];
     try {
-      const res = await fetch(resolveApiUrl('/api/avatars'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids })
-      });
-      if (res.ok) {
-        const json = await res.json();
-        picMap = json?.map || {};
-      }
+      picMap = await getAvatarUrls(ids);
     } catch (e) {
-      console.warn('Avatars API error', e);
+      console.warn('Avatars fetch error', e);
     }
 
     return docs.map(d => {
@@ -376,17 +361,9 @@ async function getLeadershipMembersUncached(): Promise<Record<string, Leadership
     const ids = users.map(u => u.id);
     let picMap: Record<string, string | null> = {};
     try {
-      const res = await fetch(resolveApiUrl('/api/avatars'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids })
-      });
-      if (res.ok) {
-        const json = await res.json();
-        picMap = json?.map || {};
-      }
+      picMap = await getAvatarUrls(ids);
     } catch (e) {
-      console.warn('Avatars API error in leadership:', e);
+      console.warn('Avatars fetch error in leadership:', e);
     }
 
     const map: Record<string, LeadershipMember> = {};
