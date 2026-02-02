@@ -19,6 +19,32 @@ interface ArticlePageClientProps {
   moreArticles: ArticleSummary[];
 }
 const easeSoft = [0.33, 1, 0.68, 1] as const;
+
+function MarkdownImage({ src, alt }: { src: string; alt: string }) {
+  const [error, setError] = useState(false);
+  if (error) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        className="rounded-lg shadow-lg my-8 max-w-full overflow-hidden h-auto w-full object-cover"
+        loading="lazy"
+      />
+    );
+  }
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      width={1200}
+      height={800}
+      sizes="(max-width: 768px) 100vw, 800px"
+      className="rounded-lg shadow-lg my-8 max-w-full overflow-hidden h-auto"
+      onError={() => setError(true)}
+    />
+  );
+}
+
 export function ArticlePageClient({ article, moreArticles }: ArticlePageClientProps) {
   const [readmore, setReadmore] = useState(false);
   // const firstCardRef = useRef<HTMLDivElement | null>(null);
@@ -113,17 +139,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                     img: (props: ImgHTMLAttributes<HTMLImageElement>) => {
                       const src = typeof props.src === "string" ? props.src : undefined;
                       if (!src) return null;
-                      const alt = props.alt ?? "";
-                      return (
-                        <Image
-                          src={src}
-                          alt={alt}
-                          width={1200}
-                          height={800}
-                          sizes="(max-width: 768px) 100vw, 800px"
-                          className="rounded-lg shadow-lg my-8 max-w-full overflow-hidden h-auto"
-                        />
-                      );
+                      return <MarkdownImage src={src} alt={props.alt ?? ""} />;
                     },
                   }}
                 >
@@ -154,12 +170,14 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   bg-clip-text text-transparent ">
                 About the Author
               </h2>
-              <div className="relative text-left flex flex-col sm:flex-row gap-6  p-5 rounded-[44px] overflow-hidden ">
+              <div className="relative text-left flex flex-col sm:flex-row gap-6  p-5 rounded-[40px] overflow-hidden ">
 
 
-                <div className=" divGlass-effect pointer-events-none z-0  "></div>
-                <div className=" divGlass-tint pointer-events-none z-0 "></div>
-                <div className=" divGlass-shine pointer-events-none z-0 relative opacity-70"></div>
+                <div className="liquidGlass-effect pointer-events-none !rounded-[40px]"></div>
+                <div className="cardGlass-tint pointer-events-none !rounded-[40px]"></div>
+                <div className="glass-noise"></div>
+                <div className="cardGlass-borders pointer-events-none"></div>
+                <div className="cardGlass-shine pointer-events-none"></div>
 
 
                 <Avatar className="w-20 h-20 relative z-10 mx-auto sm:mx-0">
