@@ -178,6 +178,17 @@ async function applySubmissionToDocs(client: SupabaseClient<any, any, any>, subm
 
 	let applied;
 	if (doc_id) {
+		// Check for slug collision on update (exclude self)
+		const { count } = await client
+			.from("cancer_docs")
+			.select("*", { count: "exact", head: true })
+			.eq("slug", slug)
+			.neq("id", doc_id);
+
+		if (count && count > 0) {
+			throw new Error(`A document with slug "${slug}" already exists. Please choose a unique slug.`);
+		}
+
 		const { data, error } = await client
 			.from("cancer_docs")
 			.update(payload)
@@ -187,9 +198,20 @@ async function applySubmissionToDocs(client: SupabaseClient<any, any, any>, subm
 		if (error) throw error;
 		applied = data;
 	} else {
+		// Check for slug collision
+		const { count } = await client
+			.from("cancer_docs")
+			.select("*", { count: "exact", head: true })
+			.eq("slug", slug);
+
+		if (count && count > 0) {
+			throw new Error(`A document with slug "${slug}" already exists. Please reject this submission or ask the author to change the slug.`);
+		}
+
+		// Omit position to let DB default handle it (if any) or leave it null if allowed
 		const { data, error } = await client
 			.from("cancer_docs")
-			.insert({ ...payload, position: null })
+			.insert({ ...payload })
 			.select("id, slug, title, content, position, author_user_id")
 			.maybeSingle();
 		if (error) throw error;
@@ -235,6 +257,8 @@ export async function GET() {
 		return NextResponse.json({ error: message }, { status: 500 });
 	}
 }
+
+
 
 export async function POST(req: Request) {
 	try {
@@ -697,25 +721,27 @@ export async function POST(req: Request) {
 				title,
 				content,
 				author_user_id: session.user.id,
-				status: session.user.admin_access ? "approved" : "pending",
+				status: "pending",
 			};
 
-			const { data: submission, error: subErr } = await client
-				.from("cancer_doc_submissions")
-				.insert(submissionPayload)
-				.select()
-				.maybeSingle();
-			if (subErr) return NextResponse.json({ error: subErr.message }, { status: 400 });
+			let submission;
+			try {
+				const { data, error: subErr } = await client
+					.from("cancer_doc_submissions")
+					.insert(submissionPayload)
+					.select()
+					.maybeSingle();
 
-			if (session.user.admin_access && submission) {
-				try {
-					const applied = await applySubmissionToDocs(client, submission as DocSubmissionRow, session.user.id);
-					return NextResponse.json({ submission: applied.submission, doc: applied.applied, autoApproved: true });
-				} catch (err) {
-					const message = err instanceof Error ? err.message : String(err);
-					return NextResponse.json({ error: message }, { status: 400 });
+				if (subErr) {
+					return NextResponse.json({ error: `Submission Insert Failed: ${subErr.message}` }, { status: 400 });
 				}
+				submission = data;
+			} catch (err: unknown) {
+				const msg = err instanceof Error ? err.message : String(err);
+				return NextResponse.json({ error: `Submission Logic Error: ${msg}` }, { status: 400 });
 			}
+
+			// Auto-approve removed upon request. All submissions go to pending.
 
 			return NextResponse.json({ submission, autoApproved: false });
 		}
@@ -787,6 +813,7 @@ export async function POST(req: Request) {
 			if (subErr) return NextResponse.json({ error: subErr.message }, { status: 400 });
 			if (!submission) return NextResponse.json({ error: "Submission not found" }, { status: 404 });
 			if (submission.status !== "pending") return NextResponse.json({ error: "Submission already reviewed" }, { status: 400 });
+			if (submission.author_user_id === session.user.id) return NextResponse.json({ error: "You cannot review your own submission" }, { status: 403 });
 
 			if (decision === "approve") {
 				try {
