@@ -290,7 +290,7 @@ export default function Home() {
                 textColor="#fafafa"
               />
               <motion.span
-                className="font-dmsans text-2xl sm:max-w-[55%] w-full text-center max-sm:text-xs max-sm:w-4/5 max-sm:font-light"
+                className="font-dmsans text-2xl sm:max-w-[50%] w-full text-center max-sm:text-xs max-sm:w-4/5 font-light leading-[109%] tracking-[-2%]"
                 variants={fadeUp}
               >
                 Cancer affects millions of lives—but together, awareness, compassion,
@@ -305,7 +305,7 @@ export default function Home() {
               >
                 <Button
                   variant="ghost"
-                  className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-giest font-medium transition-all duration-300"
+                  className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-dmsans font-medium transition-all duration-300"
                 >
                   <Link
                     href="/article"
