@@ -400,10 +400,10 @@ function LeaderCard({ leader, isLoading }: { leader: Leader; isLoading?: boolean
               </div>
 
               <div className="flex flex-col items-center gap-1 w-full text-center mt-4">
-                <h2 className="text-sm md:text-base font-bold text-white tracking-wide leading-tight">
+                <h2 className="text-sm md:text-base font-dmsans font-bold text-white tracking-wide leading-tight">
                   {leader.name}
                 </h2>
-                <p className="text-[10px] md:text-[11px] font-medium text-purple-300 uppercase tracking-widest px-2">
+                <p className="text-[10px] md:text-[11px] font-dmsans font-medium text-purple-300 uppercase tracking-widest px-2">
                   {leader.title}
                 </p>
               </div>
@@ -414,7 +414,7 @@ function LeaderCard({ leader, isLoading }: { leader: Leader; isLoading?: boolean
                 transition={{ duration: 0.3, ease: easeSoft }}
               >
                 <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-purple-500/30 to-transparent mb-3" />
-                <p className="text-xs md:text-sm leading-relaxed font-light text-center text-gray-200 px-2 pb-2">
+                <p className="text-xs md:text-sm leading-relaxed font-dmsans font-light text-center text-gray-200 px-2 pb-2">
                   {leader.description}
                 </p>
               </motion.div>
@@ -612,7 +612,7 @@ export default function Leadership() {
             Our Leadership
           </h1>
 
-          <p className="text-sm md:text-base lg:text-lg leading-relaxed max-w-[470px] text-zinc-300">
+          <p className="text-sm md:text-base lg:text-lg leading-relaxed max-w-[470px] text-zinc-300 font-dmsans">
             Meet the team leading the organisation, who keep both speed and quality at the top of their priorities.
           </p>
         </motion.div>
