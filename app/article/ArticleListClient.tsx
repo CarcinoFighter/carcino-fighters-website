@@ -91,8 +91,8 @@ export function ArticleListClient({ articles }: ArticleListClientProps) {
   text-white py-8 px-4 sm:px-10">
                 Research <br className="sm:hidden" /> Articles
               </h1>
-              <p className="text-lg text-muted-foreground font-dmsans mb-8 leading-[120%]">
-                With extensive hard work and highly strenuous fact checking, by our Writing Team has led us to offer you a selection of curated articles.
+              <p className="text-lg text-muted-foreground font-dmsans mb-8 leading-[120%] font-light max-w-[80%]">
+                With extensive hard work and highly strenuous fact checking, our Writing Team has led us to offer you a selection of curated articles.
               </p>
             </div>
           </motion.div>
@@ -111,12 +111,12 @@ export function ArticleListClient({ articles }: ArticleListClientProps) {
                 <div className="liquidGlass-text pointer-events-none"></div>
 
                 <div className="relative z-10 w-full flex flex-row justify-start items-center font-dmsans gap-2 px-6 py-2">
-                  <Search className="text-[#CDA8E8]" size={20} />
+                  <Search className="text-[#898989]" size={20} />
                   <Input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search articles..."
-                    className="bg-transparent border-none focus-visible:ring-0 text-white !text-[20px] placeholder:!text-[20px] placeholder:text-[#CDA8E8]/70 w-full h-14 shadow-none tracking-tighter"
+                    className="bg-transparent border-none focus-visible:ring-0 text-white !text-[20px] placeholder:!text-[20px] placeholder:text-[#898989]/70 w-full h-14 shadow-none tracking-tighter !font-light"
                   />
                 </div>
               </div>
