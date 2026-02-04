@@ -117,7 +117,10 @@ const dmsans = localFont({
   variable: "--font-dmsans",
 });
 export const metadata: Metadata = {
-  title: "The Carcino Foundation – Breaking Down Cancer for Anyone and Everyone",
+  title: {
+    template: '%s | The Carcino Foundation',
+    default: "The Carcino Foundation – Breaking Down Cancer for Anyone and Everyone",
+  },
   description: "A simple hub, built to educate and help emerging and concurrent generations upon one of the leading causes of death in humanity.",
 };
 
