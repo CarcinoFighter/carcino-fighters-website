@@ -1,5 +1,10 @@
 import { ArticleListClient } from "./ArticleListClient";
 import { getAllDocs } from "@/lib/docsRepository";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Articles",
+};
 
 export const revalidate = 600;
 
