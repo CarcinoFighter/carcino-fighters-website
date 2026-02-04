@@ -297,31 +297,42 @@ export default function Home() {
                 and early detection can change the story.
                 {/* but in a way everyone can understand. */}
               </motion.span>
-              <motion.div
-                variants={fadeUp}
-                whileHover={{ y: -2, scale: 1.04 }}
-                whileTap={{ scale: 0.98 }}
-                className="inline-flex"
-              >
-                <Button
-                  variant="ghost"
-                  className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-dmsans font-medium transition-all duration-300"
+              <div className="flex flex-col items-center gap-2">
+                <motion.div
+                  variants={fadeUp}
+                  whileHover={{ y: -2, scale: 1.04 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="inline-flex"
                 >
-                  <Link
-                    href="/article"
-                    className="relative z-10 flex items-center gap-2"
+                  <Button
+                    variant="ghost"
+                    className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-dmsans font-medium transition-all duration-300"
                   >
-                    Learn More{" "}
-                    <ArrowUpRight className="transition-transform" />
-                  </Link>
+                    <Link
+                      href="/article"
+                      className="relative z-10 flex items-center gap-2"
+                    >
+                      Learn More{" "}
+                      <ArrowUpRight className="transition-transform" />
+                    </Link>
 
-                  {/* Liquid glass layers */}
-                  <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-                  <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
-                  <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
-                  <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
-                </Button>
-              </motion.div>
+                    {/* Liquid glass layers */}
+                    <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+                    <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
+                    <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
+                    <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+                  </Button>
+                </motion.div>
+                <motion.div variants={fadeUp} className="mt-10">
+                  <Link
+                    href="/the-vision"
+                    className="flex items-center justify-center gap-2 text-white font-dmsans hover:opacity-80 transition-opacity font-light text-[#E0E0E0]"
+                  >
+                    <span className="underline decoration-1 underline-offset-4">Read the Editor's Note</span>
+                    <ArrowUpRight size={18} className="transition-transform" />
+                  </Link>
+                </motion.div>
+              </div>
             </motion.div>
           </motion.div>
 
