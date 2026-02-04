@@ -2,6 +2,11 @@ import { notFound } from "next/navigation";
 import Script from "next/script";
 import { Footer } from "@/components/footer";
 import { EditorsNoteClient } from "./EditorsNoteClient";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "The Vision",
+};
 
 export const revalidate = 60;
 
