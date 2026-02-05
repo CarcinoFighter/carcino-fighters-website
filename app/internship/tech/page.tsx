@@ -83,14 +83,14 @@ export default function RegistrationPage() {
 
 
             {/* Hero Section */}
-            <div className="flex flex-col lg:gap-6 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pt-[68px] pb-10 z-10">
-                <Label className="border p-3 rounded-sm font-space_grotesk text-base text-foreground">
-                    Join Our Mission
-                </Label>
-                <h1 className="text-5xl lg:text-5xl xl:text-7xl font-cinzel text-foreground">
+            <div className="flex flex-col lg:gap-1 md:gap-1 gap-1 items-center text-center lg:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pt-[68px] pb-10 z-10">
+                <h1 className="text-5xl lg:text-5xl xl:text-7xl font-wintersolace bg-gradient-to-r
+  from-[#b793d8] from-8%
+  to-[#ffffff] to-85%
+  bg-clip-text text-transparent font-bold px-5 py-10">
                     Sign up for our Tech Team
                 </h1>
-                <p className="text-lg text-muted-foreground font-space_grotesk max-w-2xl">
+                <p className="text-sm font-[100] text-white font-dmsans tracking-[120%] max-w-[33%] text-center">
                     Become part of our growing community working to educate the world about cancer prevention and awareness.
                 </p>
             </div>
@@ -100,10 +100,10 @@ export default function RegistrationPage() {
                 <div className="flex flex-col items-center lg:items-center justify-center gap-6 w-full lg:max-w-[60%] h-fit lg:px-14 md:px-10 px-6 py-10">
                     <Card className="w-full max-w-3xl border-accent bg-background">
                         <CardHeader>
-                            <h2 className="text-2xl font-giest text-foreground">
+                            <h2 className="text-2xl font-dmsans font-semibold text-foreground">
                                 Student Information
                             </h2>
-                            <p className="text-muted-foreground font-space_grotesk">
+                            <p className="text-muted-foreground font-dmsans font-light text-white">
                                 Please fill out all fields to complete your registration
                             </p>
                         </CardHeader>
@@ -111,7 +111,7 @@ export default function RegistrationPage() {
                             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Personal Information */}
                                 <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="fullName" className="font-space_grotesk">
+                                    <Label htmlFor="fullName" className="font-dmsans font-light">
                                         Full Name*
                                     </Label>
                                     <Input
@@ -119,7 +119,7 @@ export default function RegistrationPage() {
                                         name="fullName"
                                         type="text"
                                         placeholder="Enter your full name"
-                                        className="py-5"
+                                        className="py-5 rounded-[10px]"
                                         required
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
@@ -127,7 +127,7 @@ export default function RegistrationPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="email" className="font-space_grotesk">
+                                    <Label htmlFor="email" className="font-dmsans font-light">
                                         Email Address*
                                     </Label>
                                     <Input
@@ -135,7 +135,7 @@ export default function RegistrationPage() {
                                         name="email"
                                         type="email"
                                         placeholder="your@email.com"
-                                        className="py-5"
+                                        className="py-5 rounded-[10px]"
                                         required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
@@ -143,7 +143,7 @@ export default function RegistrationPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="phone" className="font-space_grotesk">
+                                    <Label htmlFor="phone" className="font-dmsans font-light">
                                         Contact Number*
                                     </Label>
 
@@ -154,7 +154,7 @@ export default function RegistrationPage() {
                                             name="phone"
                                             type="text"
                                             placeholder="1234567890"
-                                            className="py-5"
+                                            className="py-5 rounded-[10px]"
                                             required
                                             value={phone}
                                             onChange={(e) => {
@@ -172,7 +172,7 @@ export default function RegistrationPage() {
                                 </div>
 
                                 <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="school" className="font-space_grotesk">
+                                    <Label htmlFor="school" className="font-dmsans font-light">
                                         School/Institution Name*
                                     </Label>
                                     <Input
@@ -180,7 +180,7 @@ export default function RegistrationPage() {
                                         name="school"
                                         type="text"
                                         placeholder="Enter your school name"
-                                        className="py-5"
+                                        className="py-5 rounded-[10px]"
                                         required
                                         value={school}
                                         onChange={(e) => setSchool(e.target.value)}
@@ -188,7 +188,7 @@ export default function RegistrationPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="grade" className="font-space_grotesk">
+                                    <Label htmlFor="grade" className="font-dmsans font-light">
                                         Grade / Year of Passing / Graduating*
                                     </Label>
                                     <Input
@@ -196,7 +196,7 @@ export default function RegistrationPage() {
                                         name="grade"
                                         type="text"
                                         placeholder="e.g. 12th Grade"
-                                        className="py-5"
+                                        className="py-5 rounded-[10px] rounded-[10px]"
                                         required
                                         value={grade}
                                         onChange={(e) => setGrade(e.target.value)}
@@ -204,7 +204,7 @@ export default function RegistrationPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="age" className="font-space_grotesk">
+                                    <Label htmlFor="age" className="font-dmsans font-light">
                                         Age*
                                     </Label>
                                     <Input
@@ -212,7 +212,7 @@ export default function RegistrationPage() {
                                         name="age"
                                         type="number"
                                         placeholder="Your age"
-                                        className="py-5"
+                                        className="py-5 rounded-[10px]"
                                         required
                                         value={age}
                                         onChange={(e) => {
@@ -227,10 +227,10 @@ export default function RegistrationPage() {
                                 </div>
 
                                 <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="time" className="font-space_grotesk">
+                                    <Label htmlFor="time" className="font-dmsans font-light">
                                         How much time per week can you commit to the team?*
                                     </Label>
-                                                                        <div className="flex flex-col gap-2 p-3">
+                                    <div className="flex flex-col gap-2 p-3">
                                         {[
                                             "1-2 hours",
                                             "2-3 hours",
@@ -252,16 +252,16 @@ export default function RegistrationPage() {
                                                     }}
                                                 >
                                                     <div
-                                                        className={`w-4 h-4 border border-primary rounded-full flex items-center justify-center transition-colors ${selected ? "bg-primary" : "bg-transparent"
+                                                        className={`w-4 h-4 border border-primary rounded-full flex items-center justify-center transition-colors ${selected ? "bg-white" : "bg-transparent"
                                                             }`}
                                                     >
                                                         {selected && (
-                                                            <div className="w-2 h-2 bg-background rounded-full"></div>
+                                                            <div className="w-2 h-2 bg-white rounded-full"></div>
                                                         )}
                                                     </div>
                                                     <Label
                                                         htmlFor={`time-${index}`}
-                                                        className="font-space_grotesk cursor-pointer"
+                                                        className="font-dmsans font-light cursor-pointer"
                                                     >
                                                         {timeOption}
                                                     </Label>
@@ -272,7 +272,7 @@ export default function RegistrationPage() {
                                 </div>
 
                                 <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="message" className="font-space_grotesk">
+                                    <Label htmlFor="message" className="font-dmsans font-light">
                                         Qualification or Past experience*
                                     </Label>
                                     <textarea
@@ -288,7 +288,7 @@ export default function RegistrationPage() {
                                 </div>
 
                                 <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="time" className="font-space_grotesk">
+                                    <Label htmlFor="time" className="font-dmsans font-light">
                                         Are you comfortable working in a team and receiving feedback on your work?*
                                     </Label>
                                     <div className="flex flex-col gap-2 p-3">
@@ -317,7 +317,7 @@ export default function RegistrationPage() {
                                                     </div>
                                                     <Label
                                                         htmlFor={`criticism-${index}`}
-                                                        className="font-space_grotesk cursor-pointer"
+                                                        className="font-dmsans font-light cursor-pointer"
                                                     >
                                                         {criticismOption}
                                                     </Label>
@@ -328,7 +328,7 @@ export default function RegistrationPage() {
                                 </div>
 
                                 <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="message" className="font-space_grotesk">
+                                    <Label htmlFor="message" className="font-dmsans font-light">
                                         Link to your GitHub / portfolio / personal website (if any)
                                     </Label>
                                     <textarea
@@ -343,7 +343,7 @@ export default function RegistrationPage() {
                                 </div>
 
                                 <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="message" className="font-space_grotesk">
+                                    <Label htmlFor="message" className="font-dmsans font-light">
                                         What languages, frameworks, or tools do you know best?*
                                     </Label>
                                     <textarea
@@ -359,7 +359,7 @@ export default function RegistrationPage() {
                                 </div>
 
                                 <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="time" className="font-space_grotesk">
+                                    <Label htmlFor="time" className="font-dmsans font-light">
                                         Preferred Role*
                                     </Label>
                                     <div className="flex flex-col gap-2 p-3">
@@ -384,16 +384,15 @@ export default function RegistrationPage() {
                                                                 }
                                                             });
                                                         }}
-                                                        className={`aspect-square w-4 border border-primary rounded-sm relative cursor-pointer ${
-                                                            role.includes(roleOption) ? "bg-primary" : ""
-                                                        }`}
+                                                        className={`aspect-square w-4 border border-primary rounded-sm relative cursor-pointer ${role.includes(roleOption) ? "bg-primary" : ""
+                                                            }`}
                                                     >
                                                         {role.includes(roleOption) && (
                                                             <Check className="absolute h-3 w-3 aspect-square mx-auto my-auto top-0 bottom-0 left-0 right-0 stroke-3" />
                                                         )}
                                                     </div>
                                                 </div>
-                                                <Label htmlFor={`writing-${index}`} className="font-space_grotesk">
+                                                <Label htmlFor={`writing-${index}`} className="font-dmsans font-light">
                                                     {roleOption}
                                                 </Label>
                                             </div>
@@ -405,7 +404,7 @@ export default function RegistrationPage() {
                                     <Button
                                         variant="default"
                                         type="submit"
-                                        className="w-full py-6 text-lg font-giest font-medium cursor-pointer"
+                                        className="w-full py-6 text-lg font-dmsans font-medium cursor-pointer"
                                         disabled={isSubmitting}
                                     >
                                         {isSubmitting ? (
