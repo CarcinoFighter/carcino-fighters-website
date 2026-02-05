@@ -13,7 +13,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Eye, EyeOff, Lock, User as UserIcon, Mail, Phone, Calendar, FileText, Globe } from "lucide-react";
 
 function AuthSkeleton() {
     return (
@@ -60,6 +61,10 @@ function SignUpInner() {
         username: "",
         email: "",
         password: "",
+        number: "",
+        dob: "",
+        bio: "",
+        private_account: false,
     });
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -83,6 +88,10 @@ function SignUpInner() {
                     username: formData.username,
                     email: formData.email,
                     password: formData.password,
+                    number: formData.number,
+                    dob: formData.dob,
+                    bio: formData.bio,
+                    private_account: formData.private_account,
                 }),
             });
             const data = await res.json().catch(() => ({}));
@@ -112,9 +121,9 @@ function SignUpInner() {
             />
 
             <form onSubmit={handleSignUp}>
-                <div className="min-h-screen flex items-center justify-center">
-                    <div className="p-3 my-auto rounded-xl bg-[#2C2638]/50 backdrop-blur-sm md:flex md:gap-2 drop-shadow-2xl drop-shadow-black/50 max-w-4xl w-full mx-4">
-                        <div className="hidden md:flex items-center justify-center p-4">
+                <div className="min-h-screen flex items-center justify-center p-4">
+                    <div className="p-3 my-auto rounded-xl bg-[#2C2638]/50 backdrop-blur-sm md:flex md:gap-2 drop-shadow-2xl drop-shadow-black/50 max-w-4xl w-full mx-4 overflow-y-auto max-h-[90vh] hide-scrollbar">
+                        <div className="hidden md:flex items-center justify-center p-4 sticky top-0 h-fit">
                             <Image
                                 src="/dummy_image4.png"
                                 width={400}
@@ -130,47 +139,88 @@ function SignUpInner() {
                                     Create an account
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="flex-col space-y-5 items-center">
-                                <Input
-                                    type="text"
-                                    className="bg-[#3C364C] text-white placeholder:text-gray-400 border-gray-600 focus:border-purple-500"
-                                    placeholder="Full Name"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    required
-                                />
-                                <Input
-                                    type="text"
-                                    className="bg-[#3C364C] text-white placeholder:text-gray-400 border-gray-600 focus:border-purple-500"
-                                    placeholder="Username"
-                                    value={formData.username}
-                                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                                    required
-                                />
-                                <Input
-                                    type="email"
-                                    className="bg-[#3C364C] text-white placeholder:text-gray-400 border-gray-600 focus:border-purple-500"
-                                    placeholder="Email"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    required
-                                />
-                                <div className="relative flex gap-2 items-center">
+                            <CardContent className="flex-col space-y-4 items-center">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <Input
-                                        type={type}
+                                        type="text"
                                         className="bg-[#3C364C] text-white placeholder:text-gray-400 border-gray-600 focus:border-purple-500"
-                                        placeholder="Password"
-                                        value={formData.password}
-                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                        placeholder="Full Name"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         required
                                     />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword((prev) => !prev)}
-                                        className="absolute right-3 text-white/70 hover:text-white hover:cursor-pointer z-10"
+                                    <Input
+                                        type="text"
+                                        className="bg-[#3C364C] text-white placeholder:text-gray-400 border-gray-600 focus:border-purple-500"
+                                        placeholder="Username"
+                                        value={formData.username}
+                                        onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                                        required
+                                    />
+                                    <Input
+                                        type="email"
+                                        className="bg-[#3C364C] text-white placeholder:text-gray-400 border-gray-600 focus:border-purple-500"
+                                        placeholder="Email"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        required
+                                    />
+                                    <Input
+                                        type="tel"
+                                        className="bg-[#3C364C] text-white placeholder:text-gray-400 border-gray-600 focus:border-purple-500"
+                                        placeholder="Phone Number"
+                                        value={formData.number}
+                                        onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                                    />
+                                    <div className="flex flex-col space-y-1">
+                                        <span className="text-xs text-gray-400 pl-1">Date of Birth</span>
+                                        <Input
+                                            type="date"
+                                            className="bg-[#3C364C] text-white placeholder:text-gray-400 border-gray-600 focus:border-purple-500 block w-full"
+                                            value={formData.dob}
+                                            onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="relative flex gap-2 items-center">
+                                        <Input
+                                            type={type}
+                                            className="bg-[#3C364C] text-white placeholder:text-gray-400 border-gray-600 focus:border-purple-500 w-full"
+                                            placeholder="Password"
+                                            value={formData.password}
+                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword((prev) => !prev)}
+                                            className="absolute right-3 text-white/70 hover:text-white hover:cursor-pointer z-10"
+                                        >
+                                            <Icon className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <Textarea
+                                    className="bg-[#3C364C] text-white placeholder:text-gray-400 border-gray-600 focus:border-purple-500 min-h-[100px]"
+                                    placeholder="Description"
+                                    value={formData.bio}
+                                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                                />
+
+                                <div className="flex items-center space-x-2 bg-[#3C364C]/30 p-3 rounded-lg border border-gray-600/50">
+                                    <input
+                                        type="checkbox"
+                                        id="private_account"
+                                        className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 bg-[#3C364C]"
+                                        checked={formData.private_account}
+                                        onChange={(e) => setFormData({ ...formData, private_account: e.target.checked })}
+                                    />
+                                    <label
+                                        htmlFor="private_account"
+                                        className="text-sm font-medium leading-none text-gray-200 cursor-pointer select-none"
                                     >
-                                        <Icon className="w-5 h-5" />
-                                    </button>
+                                        Private Account
+                                    </label>
                                 </div>
 
                                 <Button

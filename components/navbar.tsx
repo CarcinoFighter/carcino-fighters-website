@@ -151,27 +151,40 @@ export function Navbar() {
       </div>
 
       {/* Mobile NavMenu */}
-      <div className="sm:hidden fixed top-0 left-0 right-0 z-20 flex items-center justify-between px-5 py-5 m-2">
-        {/* Logo on the left */}
-        <div className="flex items-center gap-2">
-          <Image
-            src="/logo-footer.svg"
-            alt="TCF"
-            width={36}
-            height={36}
-            className="object-contain"
-          />
-          <span className="text-white font-tttravelsnext text-[11px] font-bold leading-tight tracking-tight">
-            THE<br /> CARCINO<br />FOUNDATION
-          </span>
-        </div>
-
-        {/* Hamburger on the right */}
-        <Menu
-          className="text-foreground p-1 backdrop-blur-xs border-accent-forground border rounded-sm"
-          size={32}
-          onClick={() => setMobileMenuOpen(true)}
+      <div className="sm:hidden fixed top-0 left-0 right-0 z-20 pointer-events-none">
+        {/* Gradient Blur Background */}
+        <div
+          className="absolute inset-x-0 top-0 h-32 pointer-events-none -z-10"
+          style={{
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            maskImage: 'linear-gradient(to bottom, black 0%, rgba(0,0,0,0.8) 40%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, black 0%, rgba(0,0,0,0.8) 40%, transparent 100%)'
+          }}
         />
+
+        <div className="flex items-center justify-between px-5 py-5 m-2 pointer-events-auto">
+          {/* Logo on the left */}
+          <div className="flex items-center gap-2">
+            <Image
+              src="/logo-footer.svg"
+              alt="TCF"
+              width={36}
+              height={36}
+              className="object-contain"
+            />
+            <span className="text-white font-tttravelsnext text-[11px] font-bold leading-tight tracking-tight">
+              THE<br /> CARCINO<br />FOUNDATION
+            </span>
+          </div>
+
+          {/* Hamburger on the right */}
+          <Menu
+            className="text-foreground p-1 backdrop-blur-xs border-accent-forground border rounded-sm"
+            size={32}
+            onClick={() => setMobileMenuOpen(true)}
+          />
+        </div>
 
         {/* Backdrop */}
         {isMobileMenuOpen && (
