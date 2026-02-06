@@ -10,6 +10,8 @@ import {
 } from "framer-motion"
 import { useState, useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
+// @ts-ignore
+import DarkVeil from "@/components/DarkVeil"
 
 /* ---------- TYPES ---------- */
 
@@ -590,13 +592,16 @@ export default function Leadership() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden text-white">
-      <div className="fixed inset-0 pointer-events-none -z-10">
-        <img
-          src="/leadership-bg-new-2.jpg"
-          alt="Leadership"
-          className="fixed inset-0 w-screen h-screen object-cover animate-fadeIn"
+      <div className="fixed inset-0 pointer-events-none -z-10 bg-black">
+        <DarkVeil
+          hueShift={0}
+          noiseIntensity={0.16}
+          scanlineIntensity={0}
+          speed={0.5}
+          scanlineFrequency={0}
+          warpAmount={0}
+          resolutionScale={1}
         />
-        <div className="absolute inset-0 bg-black/20" />
       </div>
 
       <div className="relative z-10 flex flex-col items-center gap-8 md:gap-14 px-4 sm:px-6 pb-20 pt-20 md:pt-32 lg:px-20">
