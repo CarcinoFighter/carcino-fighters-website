@@ -359,18 +359,23 @@ function LeaderCard({ leader, isLoading }: { leader: Leader; isLoading?: boolean
   return (
     <div className="relative z-0" style={{ borderRadius: currentRadius }}>
       <div
+        className="relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-md"
         style={{
-          background: "rgba(0,0,0,0.20)",
-          backdropFilter: "blur(14px)",
-          WebkitBackdropFilter: "blur(14px)",
           borderRadius: currentRadius,
         }}
       >
+        {/* Card Glass Internal Layers */}
+        <div className="liquidGlass-effect pointer-events-none"></div>
+        <div className="cardGlass-tint pointer-events-none"></div>
+        <div className="glass-noise"></div>
+        <div className="cardGlass-borders pointer-events-none"></div>
+        <div className="cardGlass-shine pointer-events-none"></div>
+
         <HolographicCard
           onClick={() => setIsExpanded(!isExpanded)}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          className="group cursor-pointer"
+          className="group cursor-pointer relative z-10"
           borderRadius={currentRadius}
         >
           <motion.article

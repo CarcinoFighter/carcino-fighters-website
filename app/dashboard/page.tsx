@@ -268,7 +268,6 @@ export default function DashboardPage() {
                             {/* Card Content */}
                             <div className="relative z-10 w-full flex flex-col items-center">
                                 {/* Subtle violet hue internal glow */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent pointer-events-none" />
                                 <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-purple-500/20 transition-colors duration-700" />
 
                                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
