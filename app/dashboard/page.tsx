@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
+// @ts-ignore
+import DarkVeil from "@/components/DarkVeil";
 import { createClient } from "@supabase/supabase-js";
 
 type User = {
@@ -234,150 +236,172 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white px-6 md:px-12 pb-12 pt-20 md:pt-32 font-dmsans overflow-x-hidden">
-            <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-900/20 blur-[120px] rounded-full" />
-                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-900/10 blur-[120px] rounded-full" />
+        <div className="min-h-screen text-white px-6 md:px-12 pb-12 pt-20 md:pt-32 font-dmsans overflow-x-hidden">
+            <div className="fixed inset-0 pointer-events-none -z-10 bg-black">
+                <DarkVeil
+                    hueShift={0}
+                    noiseIntensity={0.16}
+                    scanlineIntensity={0}
+                    speed={0.5}
+                    scanlineFrequency={0}
+                    warpAmount={0}
+                    resolutionScale={1}
+                />
             </div>
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-4 xl:col-span-3">
                     <div className="sticky top-12">
-                        <div className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8 flex flex-col items-center text-center shadow-2xl relative overflow-hidden group hover:shadow-[0_0_30px_rgba(139,92,246,0.2)] transition-shadow duration-500">
-                            {/* Subtle violet hue internal glow */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent pointer-events-none" />
-                            <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-purple-500/20 transition-colors duration-700" />
+                        <div className="relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[30px] rounded-[40px] p-8 flex flex-col items-center text-center group hover:shadow-[0_0_30px_rgba(139,92,246,0.2)] transition-shadow duration-500">
+                            {/* Card Glass Internal Layers */}
+                            <div className="liquidGlass-effect pointer-events-none"></div>
+                            <div className="cardGlass-tint pointer-events-none"></div>
+                            <div className="glass-noise"></div>
+                            <div className="cardGlass-borders pointer-events-none"></div>
+                            <div className="cardGlass-shine pointer-events-none"></div>
 
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            {/* Admin Purple Sheen */}
+                            {user?.email?.endsWith("@carcino.work") && (
+                                <div className="absolute inset-0 z-20 border border-purple-500/30 rounded-[40px] pointer-events-none shadow-[0_0_50px_rgba(168,85,247,0.15)]" />
+                            )}
 
-                            <div className="relative w-32 h-32 mb-6 group-hover:scale-105 transition-transform duration-500">
-                                <div className="absolute inset-0 rounded-full border-2 border-white/10" />
-                                {user?.profilePicture ? (
-                                    <Image
-                                        src={user.profilePicture}
-                                        alt={user.name || "User"}
-                                        fill
-                                        className="rounded-full object-cover p-1"
-                                        unoptimized
-                                    />
+                            {/* Card Content */}
+                            <div className="relative z-10 w-full flex flex-col items-center">
+                                {/* Subtle violet hue internal glow */}
+                                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent pointer-events-none" />
+                                <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-purple-500/20 transition-colors duration-700" />
+
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                                <div className="relative w-32 h-32 mb-6 group-hover:scale-105 transition-transform duration-500">
+                                    <div className="absolute inset-0 rounded-full border-2 border-white/10" />
+                                    {user?.profilePicture ? (
+                                        <Image
+                                            src={user.profilePicture}
+                                            alt={user.name || "User"}
+                                            fill
+                                            className="rounded-full object-cover p-1"
+                                            unoptimized
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full rounded-full bg-purple-900/30 border border-purple-500/20 flex items-center justify-center text-3xl font-bold text-purple-300/80">
+                                            {user?.name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || "?"}
+                                        </div>
+                                    )}
+                                    {isEditing && (
+                                        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 rounded-full opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+                                            <label htmlFor="pfp-upload" className="text-xs font-medium text-white cursor-pointer p-2">
+                                                Change
+                                                <input
+                                                    id="pfp-upload"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={(e) => {
+                                                        const f = e.target.files?.[0];
+                                                        if (f) handleUpload(f);
+                                                    }}
+                                                />
+                                            </label>
+                                        </div>
+                                    )}
+                                    {uploading && (
+                                        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 rounded-full">
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        </div>
+                                    )}
+                                </div>
+
+                                <h2 className="text-2xl font-bold mb-1">{user?.name || user?.username}</h2>
+                                <p className="text-gray-400 text-sm mb-1">{user?.email}</p>
+                                {user?.email?.endsWith("@carcino.work") && user?.position ? (
+                                    <p className="text-purple-400/80 text-xs font-medium uppercase tracking-widest mb-6">
+                                        {user.position}
+                                    </p>
                                 ) : (
-                                    <div className="w-full h-full rounded-full bg-purple-900/30 border border-purple-500/20 flex items-center justify-center text-3xl font-bold text-purple-300/80">
-                                        {user?.name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || "?"}
-                                    </div>
+                                    <div className="mb-6" />
                                 )}
-                                {isEditing && (
-                                    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 rounded-full opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
-                                        <label htmlFor="pfp-upload" className="text-xs font-medium text-white cursor-pointer p-2">
-                                            Change
-                                            <input
-                                                id="pfp-upload"
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={(e) => {
-                                                    const f = e.target.files?.[0];
-                                                    if (f) handleUpload(f);
-                                                }}
+
+                                <div className="w-full h-[1px] bg-white/5 mb-6" />
+
+                                {!isEditing ? (
+                                    <>
+                                        <p className="text-gray-300 text-sm leading-[120%] mb-8 whitespace-pre-wrap ">
+                                            {user?.description || "No bio description yet."}
+                                        </p>
+                                        <button
+                                            onClick={() => {
+                                                setEditForm({
+                                                    description: user?.description || "",
+                                                    password: ""
+                                                });
+                                                setIsEditing(true);
+                                            }}
+                                            className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-sm font-medium py-2 px-4 rounded-lg mb-4 transition-colors w-full"
+                                        >
+                                            Edit Profile
+                                        </button>
+                                    </>
+                                ) : (
+                                    <form onSubmit={handleUpdateProfile} className="w-full space-y-4 mb-6 text-left">
+                                        <div>
+                                            <label className="text-xs text-gray-500 uppercase tracking-wider mb-1 block">Description</label>
+                                            <textarea
+                                                className="w-full bg-[#111] border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-purple-500 min-h-[100px]"
+                                                value={editForm.description}
+                                                onChange={(e) => setEditForm(s => ({ ...s, description: e.target.value }))}
+                                                placeholder="Tell us about yourself..."
                                             />
-                                        </label>
-                                    </div>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-gray-500 uppercase tracking-wider mb-1 block">New Password (Optional)</label>
+                                            <input
+                                                type="password"
+                                                className="w-full bg-[#111] border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-purple-500"
+                                                value={editForm.password}
+                                                onChange={(e) => setEditForm(s => ({ ...s, password: e.target.value }))}
+                                                placeholder="Leave blank to keep current"
+                                            />
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                type="submit"
+                                                disabled={updating}
+                                                className="flex-1 bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
+                                            >
+                                                {updating ? "Saving..." : "Save"}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsEditing(false)}
+                                                className="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 text-sm font-medium py-2 rounded-lg transition-colors"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </form>
                                 )}
-                                {uploading && (
-                                    <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 rounded-full">
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    </div>
+
+                                {user?.email?.endsWith("@carcino.work") && !isEditing && (
+                                    <Link
+                                        href="/admin"
+                                        className="w-full bg-white/5 hover:bg-white/10 text-white text-sm font-medium py-3 rounded-xl mb-4 transition-all duration-300 flex items-center justify-center gap-2 border border-white/10 hover:border-purple-500/50 group/admin"
+                                    >
+                                        Admin Panel
+                                        <ArrowUpRight className="w-4 h-4 text-gray-500 group-hover/admin:text-purple-400 transition-colors" />
+                                    </Link>
+                                )}
+
+                                {!isEditing && (
+                                    <button
+                                        onClick={handleLogout}
+                                        disabled={loggingOut}
+                                        className="text-sm text-red-400 hover:text-red-300 transition-colors font-medium flex items-center gap-2 mt-2"
+                                    >
+                                        {loggingOut ? "Signing out..." : "Sign Out"}
+                                    </button>
                                 )}
                             </div>
-
-                            <h2 className="text-2xl font-bold mb-1">{user?.name || user?.username}</h2>
-                            <p className="text-gray-400 text-sm mb-1">{user?.email}</p>
-                            {user?.email?.endsWith("@carcino.work") && user?.position ? (
-                                <p className="text-purple-400/80 text-xs font-medium uppercase tracking-widest mb-6">
-                                    {user.position}
-                                </p>
-                            ) : (
-                                <div className="mb-6" />
-                            )}
-
-                            <div className="w-full h-[1px] bg-white/5 mb-6" />
-
-                            {!isEditing ? (
-                                <>
-                                    <p className="text-gray-300 text-sm leading-[120%] mb-8 whitespace-pre-wrap ">
-                                        {user?.description || "No bio description yet."}
-                                    </p>
-                                    <button
-                                        onClick={() => {
-                                            setEditForm({
-                                                description: user?.description || "",
-                                                password: ""
-                                            });
-                                            setIsEditing(true);
-                                        }}
-                                        className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-sm font-medium py-2 px-4 rounded-lg mb-4 transition-colors w-full"
-                                    >
-                                        Edit Profile
-                                    </button>
-                                </>
-                            ) : (
-                                <form onSubmit={handleUpdateProfile} className="w-full space-y-4 mb-6 text-left">
-                                    <div>
-                                        <label className="text-xs text-gray-500 uppercase tracking-wider mb-1 block">Description</label>
-                                        <textarea
-                                            className="w-full bg-[#111] border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-purple-500 min-h-[100px]"
-                                            value={editForm.description}
-                                            onChange={(e) => setEditForm(s => ({ ...s, description: e.target.value }))}
-                                            placeholder="Tell us about yourself..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-500 uppercase tracking-wider mb-1 block">New Password (Optional)</label>
-                                        <input
-                                            type="password"
-                                            className="w-full bg-[#111] border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-purple-500"
-                                            value={editForm.password}
-                                            onChange={(e) => setEditForm(s => ({ ...s, password: e.target.value }))}
-                                            placeholder="Leave blank to keep current"
-                                        />
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            type="submit"
-                                            disabled={updating}
-                                            className="flex-1 bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
-                                        >
-                                            {updating ? "Saving..." : "Save"}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsEditing(false)}
-                                            className="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 text-sm font-medium py-2 rounded-lg transition-colors"
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </form>
-                            )}
-
-                            {user?.email?.endsWith("@carcino.work") && !isEditing && (
-                                <Link
-                                    href="/admin"
-                                    className="w-full bg-white/5 hover:bg-white/10 text-white text-sm font-medium py-3 rounded-xl mb-4 transition-all duration-300 flex items-center justify-center gap-2 border border-white/10 hover:border-purple-500/50 group/admin"
-                                >
-                                    Admin Panel
-                                    <ArrowUpRight className="w-4 h-4 text-gray-500 group-hover/admin:text-purple-400 transition-colors" />
-                                </Link>
-                            )}
-
-                            {!isEditing && (
-                                <button
-                                    onClick={handleLogout}
-                                    disabled={loggingOut}
-                                    className="text-sm text-red-400 hover:text-red-300 transition-colors font-medium flex items-center gap-2 mt-2"
-                                >
-                                    {loggingOut ? "Signing out..." : "Sign Out"}
-                                </button>
-                            )}
                         </div>
                     </div>
                 </div>
@@ -389,49 +413,63 @@ export default function DashboardPage() {
                     </div>
 
                     {docs.length === 0 ? (
-                        <div className="p-12 rounded-3xl bg-[#111] border border-white/5 text-center">
-                            <p className="text-gray-500">You haven't written any articles yet.</p>
+                        <div className="relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[30px] rounded-[40px] p-12 text-center group">
+                            {/* Card Glass Internal Layers */}
+                            <div className="liquidGlass-effect pointer-events-none"></div>
+                            <div className="cardGlass-tint pointer-events-none"></div>
+                            <div className="glass-noise"></div>
+                            <div className="cardGlass-borders pointer-events-none"></div>
+                            <div className="cardGlass-shine pointer-events-none"></div>
+
+                            <p className="relative z-10 text-gray-400 font-medium font-dmsans">You haven't written any articles yet.</p>
                         </div>
                     ) : (
                         docs.map((doc) => (
                             <div
                                 key={doc.id}
-                                className="group relative bg-[#0a0a0a] border border-white/5 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row gap-8 hover:bg-[#111] transition-all duration-300 overflow-hidden"
+                                className="group relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[30px] rounded-[40px] p-6 sm:p-8 flex flex-col md:flex-row gap-8 hover:bg-white/5 transition-all duration-300"
                             >
-                                <div className="w-full md:w-48 h-48 md:h-auto shrink-0 relative rounded-2xl overflow-hidden bg-[#1A1A1A]">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 to-indigo-900/40" />
-                                    <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-purple-500/20 blur-2xl rounded-full" />
-                                    <div className="absolute top-4 left-4 w-full h-full opacity-50">
+                                {/* Card Glass Internal Layers */}
+                                <div className="liquidGlass-effect pointer-events-none"></div>
+                                <div className="cardGlass-tint pointer-events-none"></div>
+                                <div className="glass-noise"></div>
+                                <div className="cardGlass-borders pointer-events-none"></div>
+                                <div className="cardGlass-shine pointer-events-none"></div>
 
+                                <div className="relative z-10 w-full flex flex-col md:flex-row gap-8">
+                                    <div className="w-full md:w-48 h-48 md:h-auto shrink-0 relative rounded-2xl overflow-hidden bg-[#1A1A1A]">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 to-indigo-900/40" />
+                                        <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-purple-500/20 blur-2xl rounded-full" />
+                                        <div className="absolute top-4 left-4 w-full h-full opacity-50">
+
+                                        </div>
+                                    </div>
+
+
+                                    <div className="flex-1 flex flex-col justify-center">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <span className="px-3 py-1 rounded-full bg-white/5 border border-white/5 text-xs font-medium text-gray-300">
+                                                Information
+                                            </span>
+                                        </div>
+
+                                        <h3 className="text-2xl font-bold mb-3 group-hover:text-purple-300 transition-colors">
+                                            {doc.title}
+                                        </h3>
+
+                                        <p className="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
+                                            {doc.content?.substring(0, 150) || "No content preview available."}...
+                                        </p>
+
+                                        <Link
+                                            href={`/article/${doc.slug}`}
+                                            className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 text-sm font-medium group/link"
+                                        >
+                                            View Article
+                                            <ArrowUpRight className="w-4 h-4 transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5" />
+                                        </Link>
                                     </div>
                                 </div>
-
-
-                                <div className="flex-1 flex flex-col justify-center">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <span className="px-3 py-1 rounded-full bg-white/5 border border-white/5 text-xs font-medium text-gray-300">
-                                            Information
-                                        </span>
-                                    </div>
-
-                                    <h3 className="text-2xl font-bold mb-3 group-hover:text-purple-300 transition-colors">
-                                        {doc.title}
-                                    </h3>
-
-                                    <p className="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
-                                        {doc.content?.substring(0, 150) || "No content preview available."}...
-                                    </p>
-
-                                    <Link
-                                        href={`/article/${doc.slug}`}
-                                        className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 text-sm font-medium group/link"
-                                    >
-                                        View Article
-                                        <ArrowUpRight className="w-4 h-4 transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5" />
-                                    </Link>
-                                </div>
-
-                                <div className="absolute inset-0 border border-white/0 group-hover:border-purple-500/20 rounded-3xl pointer-events-none transition-colors duration-500" />
                             </div>
                         ))
                     )}
