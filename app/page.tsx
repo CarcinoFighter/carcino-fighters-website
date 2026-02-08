@@ -290,7 +290,7 @@ export default function Home() {
               >
                 <Button
                   variant="ghost"
-                  className="relative px-3 py-2 sm:px-7 sm:py-6 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-dmsans font-normal transition-all duration-300 mt-20 sm:mt-10 text-xs sm:text-base"
+                  className="relative px-3 py-2 sm:px-7 sm:py-6 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-dmsans font-normal transition-all duration-300 mt-12 sm:mt-10 text-xs sm:text-base"
                 >
                   <Link
                     href="/article"
@@ -314,11 +314,11 @@ export default function Home() {
                 text={"Breaking Down Cancer for Everyone"}
                 disabled={true}
                 speed={4}
-                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-3xl -mt-5 sm:mt-3 max-sm:text-3xl max-sm:w-3/5 leading-[109%]"
+                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-3xl sm:mt-3 max-sm:text-3xl max-sm:w-3/5 leading-[109%]"
                 textColor="#fafafa"
               />
               <motion.span
-                className="font-dmsans text-[#c6c6c6] text-2xl sm:max-w-[50%] -mt-4 sm:-mt-0 w-full text-center max-sm:text-xs max-sm:w-4/5 font-light leading-[109%] tracking-[-2%]"
+                className="font-dmsans text-[#c6c6c6] text-2xl sm:max-w-[50%] sm:-mt-0 w-full text-center max-sm:text-xs max-sm:w-4/5 font-light leading-[109%] tracking-[-2%]"
                 variants={fadeUp}
               >
                 Cancer affects millions of lives—but together, awareness,
@@ -334,7 +334,7 @@ export default function Home() {
                 >
                   <Button
                     variant="ghost"
-                    className="relative px-4 py-3 md:px-8 md:py-7 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300 font-normal -mt-4"
+                    className="relative px-4 py-3 md:px-8 md:py-7 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300 font-normal"
                   >
                     <Link
                       href="/article"
