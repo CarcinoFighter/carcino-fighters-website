@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 
 export function Footer() {
   return (
@@ -34,9 +35,13 @@ export function Footer() {
           </a>
         </div>
       </div>
-      <span className="text-[#D5B0FF] font-dmsans text-sm md:text-base">
-        All Rights Reserved.
-      </span>
+      <div className="flex flex-col md:flex-row gap-2 md:gap-4 items-center text-[#D5B0FF] font-dmsans text-sm md:text-base">
+        <span>All Rights Reserved.</span>
+        <div className="flex gap-4">
+          <Link href="/privacy-policy" className="hover:underline">Privacy Policy</Link>
+          <Link href="/terms-of-service" className="hover:underline">Terms of Service</Link>
+        </div>
+      </div>
     </div>
   );
 }
