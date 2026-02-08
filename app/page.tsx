@@ -265,7 +265,7 @@ export default function Home() {
               variants={fadeScale}
             >
               <Image
-                src={`/landing/Background-wcd.png`}
+                src={`/landing/background_new.png`}
                 height={888}
                 width={1440}
                 alt="background"
@@ -274,7 +274,7 @@ export default function Home() {
               />
               <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black to-transparent lg:hidden" />
 
-              { /*<div className="absolute inset-0 bg-[#471F77]/52" /> 
+              {/*<div className="absolute inset-0 bg-[#471F77]/52" /> 
               <div className="absolute inset-0 bg-[#000000] opacity-55" />*/}
             </motion.div>
 
@@ -282,20 +282,48 @@ export default function Home() {
               className="flex z-10 flex-col w-full justify-self-center self-center items-center gap-11"
               variants={staggerContainer}
             >
+              <motion.div
+                variants={fadeUp}
+                whileHover={{ y: -2, scale: 1.04 }}
+                whileTap={{ scale: 0.98 }}
+                className="inline-flex"
+              >
+                <Button
+                  variant="ghost"
+                  className="relative px-3 py-2 sm:px-7 sm:py-6 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-dmsans font-normal transition-all duration-300 mt-20 sm:mt-10 text-xs sm:text-base"
+                >
+                  <Link
+                    href="/article"
+                    className="relative z-10 flex items-center gap-1"
+                  >
+                    Read the
+                    <span className="font-bold">Chief Editor's</span>
+                    Note
+                    <span />
+                    <ArrowUpRight className="transition-transform" />
+                  </Link>
+
+                  {/* Liquid glass layers */}
+                  <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+
+                  <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
+                  <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+                </Button>
+              </motion.div>
               <ShinyText
-                text={"Together Against Cancer This World Cancer Day"}
+                text={"Breaking Down Cancer for Everyone"}
                 disabled={true}
                 speed={4}
-                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-3xl mt-5 max-sm:text-3xl max-sm:w-3/5 leading-[109%]"
+                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-3xl -mt-5 sm:mt-3 max-sm:text-3xl max-sm:w-3/5 leading-[109%]"
                 textColor="#fafafa"
               />
               <motion.span
-                className="font-dmsans text-2xl sm:max-w-[50%] w-full text-center max-sm:text-xs max-sm:w-4/5 font-light leading-[109%] tracking-[-2%]"
+                className="font-dmsans text-[#c6c6c6] text-2xl sm:max-w-[50%] -mt-4 sm:-mt-0 w-full text-center max-sm:text-xs max-sm:w-4/5 font-light leading-[109%] tracking-[-2%]"
                 variants={fadeUp}
               >
-                Cancer affects millions of lives—but together, awareness, compassion,
-                and early detection can change the story.
-                {/* but in a way everyone can understand. */}
+                Cancer affects millions of lives—but together, awareness,
+                compassion, and early detection can change the story.
+                {/*but in a way everyone can understand. */}
               </motion.span>
               <div className="flex flex-col items-center gap-2">
                 <motion.div
@@ -306,31 +334,22 @@ export default function Home() {
                 >
                   <Button
                     variant="ghost"
-                    className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-dmsans font-medium transition-all duration-300"
+                    className="relative px-4 py-3 md:px-8 md:py-7 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300 font-normal -mt-4"
                   >
                     <Link
                       href="/article"
-                      className="relative z-10 flex items-center gap-2"
+                      className="relative z-10 flex items-center gap-2 text-[#e0e0e0] text-[12px] sm:text-[22px] font-light"
                     >
-                      Learn More{" "}
+                      Read Articles{" "}
                       <ArrowUpRight className="transition-transform" />
                     </Link>
 
                     {/* Liquid glass layers */}
                     <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-                    <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
+
                     <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
                     <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
                   </Button>
-                </motion.div>
-                <motion.div variants={fadeUp} className="mt-10">
-                  <Link
-                    href="/the-vision"
-                    className="flex items-center justify-center gap-2 text-white font-dmsans hover:opacity-80 transition-opacity font-light text-[#E0E0E0]"
-                  >
-                    <span className="underline decoration-1 underline-offset-4">Read the Editor's Note</span>
-                    <ArrowUpRight size={18} className="transition-transform" />
-                  </Link>
                 </motion.div>
               </div>
             </motion.div>
@@ -345,7 +364,6 @@ export default function Home() {
             variants={staggerContainer}
             className="z-10 font-giest flex flex-col lg:gap-8 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full sm:max-w-[90%] mx-auto h-fit lg:px-14 md:px-10 px-6 pb-6 py-7 relative"
           >
-
             <motion.h1
               className="text-5xl leading-[0.9]
   sm:text-5xl sm:leading-[0.9]
@@ -383,10 +401,9 @@ export default function Home() {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
-              key={loading ? 'skeleton' : 'cards'}
+              key={loading ? "skeleton" : "cards"}
               variants={staggerContainer}
             >
-
               {/* <div className="pointer-events-none absolute z-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <motion.div
                   initial={false}
@@ -421,7 +438,9 @@ export default function Home() {
                 featuredArticles.map((article) => {
                   const getTitleFontSize = (title: string) => {
                     const words = title.split(/\s+/);
-                    const maxWordLength = Math.max(...words.map(w => w.length));
+                    const maxWordLength = Math.max(
+                      ...words.map((w) => w.length),
+                    );
 
                     // Priority 1: Longest word must fit
                     if (maxWordLength > 12) return "text-[14px] sm:text-[18px]"; // Very long word
@@ -436,7 +455,11 @@ export default function Home() {
                   return (
                     <Link
                       key={article.id}
-                      href={article.slug ? `/article/${article.slug}` : `/article/${article.id}`}
+                      href={
+                        article.slug
+                          ? `/article/${article.slug}`
+                          : `/article/${article.id}`
+                      }
                       className="h-full block"
                     >
                       <motion.div
@@ -488,7 +511,9 @@ export default function Home() {
                                 Research Article
                               </div>
 
-                              <h3 className={`${getTitleFontSize(article.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}>
+                              <h3
+                                className={`${getTitleFontSize(article.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}
+                              >
                                 {article.title}
                               </h3>
 
@@ -603,8 +628,9 @@ export default function Home() {
                     </CardHeader>
                     <CardContent>
                       <p className="font-dmsans leading-[20px] text-muted-foreground text-sm lg:text-lg">
-                        Working with plenty of pioneers in the field of human and life science
-                        has helped us bring out the truth behind cancer.
+                        Working with plenty of pioneers in the field of human
+                        and life science has helped us bring out the truth
+                        behind cancer.
                       </p>
                     </CardContent>
                   </Card>
