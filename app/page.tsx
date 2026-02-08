@@ -293,7 +293,7 @@ export default function Home() {
                   className="relative px-3 py-2 sm:px-7 sm:py-6 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-dmsans font-normal transition-all duration-300 mt-12 sm:mt-10 text-xs sm:text-base"
                 >
                   <Link
-                    href="/article"
+                    href="/the-vision"
                     className="relative z-10 flex items-center gap-1"
                   >
                     Read the
