@@ -189,14 +189,14 @@ export function Navbar() {
         {/* Backdrop */}
         {isMobileMenuOpen && (
           <div
-            className="fixed inset-0 bg-background/42 z-20 backdrop-blur-md"
+            className="fixed inset-0 bg-background/42 z-20 backdrop-blur-md pointer-events-auto"
             onClick={() => setMobileMenuOpen(false)}
           />
         )}
 
         {/* Compact Menu Box */}
         <div
-          className={`fixed top-20 right-5 w-56 backdrop-blur-2xl z-30 rounded-2xl border border-white/10 shadow-xl transform transition-all duration-300 ${isMobileMenuOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"
+          className={`fixed top-20 right-5 w-56 backdrop-blur-2xl z-30 rounded-2xl border border-white/10 shadow-xl transform transition-all duration-300 ${isMobileMenuOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-4 pointer-events-none"
             }`}
         >
 
