@@ -40,6 +40,8 @@ function MarkdownImage({ src, alt }: { src: string; alt: string }) {
 
 // Hardcoded content for now
 const markdownContent = `
+## Terms of Service
+
 **Effective Date:** 20/02/2025
 
 Welcome to The Carcino Foundation. By accessing or using our website, you agree to comply with and be bound by the following terms and conditions.
