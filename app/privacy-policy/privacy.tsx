@@ -57,7 +57,7 @@ This statement applies to all information collected by **The Carcino Foundation*
 
 **Your Consent:** By accessing our Services or providing your personal information to us, you acknowledge and agree to the practices outlined in this Privacy Statement.
 
-When you engage with The Carcino Foundation we collect a variety of information . In general, the type of information we collect on you will depend on how you choose to interact with The Carcino Foundation. For instance, if you are using our website to gather or search information on cancer related topics we will need a type of information from you. 
+When you engage with The Carcino Foundation we collect a variety of information. In general, the type of information we collect on you will depend on how you choose to interact with The Carcino Foundation. For instance, if you are using our website to gather or search information on cancer related topics we will need a type of information from you. 
 
 The type of data we collect depends on how you interact with The Carcino Foundation. We collect **"Personal Information",** data that identifies you directly or can be linked to you as an individual.
 
@@ -83,13 +83,47 @@ We collect data through several primary channels:
 
 ### Data Protection and Security
 
+- technical security measures
+- access to personal data
+- any third-parties that are involved
+- how and where data is stored
+- user responsibility
+
 ### Third-Party Sharing
+
+We might use and share your data with third-party organizations we are affiliated with for the purpose of cancer awareness and outreach. 
 
 ### Cookies and Tracking
 
+A cookie is a small text file that the website you visit sends to your computer. The cookie essentially tracks the user’s behavior on the site.
+
+Essential cookies that are stored: 
+
+- **jwt auth cookie:** Personal data, as in, name, profile picture (optional), email address, date of birth, username, phone number, description (optional) and encrypted password data is stored when you sign up to the website.
+    
+    An option is provided to have a private account where the jwt auth cookie won't be exposed.
+    
+- **Google oauth:** Signing up through Google limits the data storage to openid, email and profile (including image and name).
+
+3rd party cookie that is stored:
+
+- **Google analytics (GA4):** Through this, data related to site access, device type, language and accessibility setting of the device, pages visited, buttons clicked, time spent, referrers clicked and traffic source used to enter the website, e.g. social media, direct link, or some other campaigns etc. is taken.
+
+*No sensitive personal health data is tracked through cookies without explicit consent.*
+
 ### Your Rights
 
-### Contact Us`;
+The Carcino Foundation is an India-based organisation and the rights for users of our website are in line with the rights given to Indians. You have the right to access, to request a copy of, to correct, to opt-out of data sharing, and to delete your Personal Information. We request you to contact us for the same.
+
+In case of deletion, some personal information will be retained to document this request.
+
+### Contact Us
+
+If you have any queries about our privacy policy, or if you wish to update/correct your personal profile or change your communication preferences, please contact us at:
+
+**E-mail:** [support@carcino.work](mailto:support@carcino.work)
+
+**Telephone:** +91 87774 29831`;
 
 export function Privacy() {
     return (
