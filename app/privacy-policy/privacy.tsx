@@ -37,7 +37,9 @@ function MarkdownImage({ src, alt }: { src: string; alt: string }) {
 
 // Hardcoded content for now
 const markdownContent = `
-**Last Updated: 20/02/2025**
+## Privacy Policy
+
+**Last Updated: 09/02/2026**
 
 The Carcino Foundation values your trust, and we understand the importance of protecting your privacy. We want to make sure that you understand how your information is collected and used by us. This Privacy Statement describes 
 
