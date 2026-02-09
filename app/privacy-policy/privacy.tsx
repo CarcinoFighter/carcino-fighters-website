@@ -61,6 +61,20 @@ When you engage with The Carcino Foundation we collect a variety of information.
 
 The type of data we collect depends on how you interact with The Carcino Foundation. We collect **"Personal Information",** data that identifies you directly or can be linked to you as an individual.
 
+### Survivors:
+
+Your name, cancer subtype, your story and information that has been made available to us, with your consent, during the interview, is made available publicly on our Site in text form. Slight modifications to the tone of the article is made without altering the content. 
+
+*Personal information are required for organisational documentation only, and are kept confidential.*
+
+### Data Analytics:
+
+We use data to evaluate engagement levels with our Site and programs. We also perform data analysis and research activities to gain a greater general understanding of needs of patients, caregivers, audience. This analysis helps us improve experience, support, mission delivery. We do not use automated decision-making without humsn intervention in an ethical way. When we perform data analytics we may also use information that has been anonymised in a manner that it no longer reveals your specific identity. 
+
+### Internet Protocol Address:
+
+Your IP address is automatically assigned to your computer by your Internet Service Provider. An IP address may be identified and logged automatically in our server log files whenever a user accesses the Services, along with the time of visit and the page(s) that were visited. We use IP addresses for purposes such as calculating usage levels, diagnosing server problems, and administering the Services. We may also derive your approximate location from your IP address. 
+
 ### **Categories of Data:**
 
 - **Contact Information:** Such as your name, email address, mailing address, and phone number.
@@ -78,8 +92,12 @@ We collect data through several primary channels:
     **(Note:** Information posted in public forums becomes public. Please use caution when sharing personal details.) 
     
 - **Event Registration:** When registering for events, you may share your relationship to cancer (e.g., survivor or caregiver) to help us tailor your experience.
-- **Employment & Volunteering:** We collect work history and may conduct background checks depending on the role.
+- **Employment & Volunteering:** We collect work history and may conduct background checks depending on the role. Generally, collected through our Sign Up forms on the Site.
 - **Third-Party Partnerships:** We receive information from partners during fundraising campaigns or promotions. This may include donor reports (name, contact info, and donation amount).
+- **Healthcare provider for campaigns and underprivilege support:** We will require your educational qualification, contact information, employment status, demographic status and/or business contact infomation through online platforms like Gmail, Whatsapp. *For organisational data documentation only.*
+- **Collaborations:** If you partner with The Carcino Foundation to provide services, or help us with our mission, we may collect business information, employer and contact information. If it is necessary for purposes of paying you for services provided, we may also collect bank information, employer, identification number, etc.
+
+*These information are confidential, and are required only for documentation purposes. No above mentioned categories of data are shared with third parties or public unless stated.* *No personal information is made public.* 
 
 ### Data Protection and Security
 
@@ -111,11 +129,23 @@ Essential cookies that are stored:
 
 *No sensitive personal health data is tracked through cookies without explicit consent.*
 
+### With whom we may share your personal information
+
+*The Carcino Foundation does not sell or share personal information of its constituents.*
+
+- Personal Information are shared with campaign volunteers, third party collaborators, service providers, only if/when required. With your consent.
+- We may need to share personal information with third parties assisting us with operational servies like website hosting, data analytics, email delivery, IT infrastructure.
+- Volunteers, Healthcare providers, employees - We may share limited personal information with the internal team assisting our organisation and to collaborating NGOs, Fundraising organisations who require the information as part of their duties. Confidentiality is maintained throughout.
+
 ### Your Rights
 
 The Carcino Foundation is an India-based organisation and the rights for users of our website are in line with the rights given to Indians. You have the right to access, to request a copy of, to correct, to opt-out of data sharing, and to delete your Personal Information. We request you to contact us for the same.
 
 In case of deletion, some personal information will be retained to document this request.
+
+***With your consent. In addition to the other uses described in this section, we may also use your information as you expressly authorized us to do so. We will explicitly inform you on the way we use your information.*** 
+
+*Internal employees have access to organisational data documentation.*
 
 ### Contact Us
 
