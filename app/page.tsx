@@ -290,7 +290,7 @@ export default function Home() {
               >
                 <Button
                   variant="ghost"
-                  className="relative px-3 py-2 sm:px-7 sm:py-6 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-dmsans font-normal transition-all duration-300 mt-12 sm:mt-10 text-xs sm:text-base"
+                  className="relative px-3 py-2 sm:px-5 sm:py-4 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-dmsans font-normal transition-all duration-300 mt-12 sm:mt-10 text-xs sm:text-base"
                 >
                   <Link
                     href="/the-vision"
@@ -334,14 +334,14 @@ export default function Home() {
                 >
                   <Button
                     variant="ghost"
-                    className="relative px-4 py-3 md:px-8 md:py-7 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300 font-normal"
+                    className="relative px-4 py-3 md:px-[22px] md:py-[22px] rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300 font-normal"
                   >
                     <Link
                       href="/article"
-                      className="relative z-10 flex items-center gap-2 text-[#e0e0e0] text-[12px] sm:text-[22px] font-light"
+                      className="relative z-10 flex items-center gap-2 text-[#e0e0e0] text-[12px] sm:text-[20px] font-light"
                     >
                       Read Articles{" "}
-                      <ArrowUpRight className="transition-transform" />
+                      <ArrowUpRight className="transition-transform mt-[1px]" />
                     </Link>
 
                     {/* Liquid glass layers */}
