@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-
 @plugin 'tailwindcss-animate';
 
 @custom-variant dark (&:is(.dark *));
@@ -103,9 +102,11 @@
     }
 
     100% {
-      background-image: radial-gradient(circle at 0% 100%,
-          #00000000,
-          #00000000);
+      background-image: radial-gradient(
+        circle at 0% 100%,
+        #00000000,
+        #00000000
+      );
     }
   }
 
@@ -139,7 +140,6 @@
 
   /* Gentle float for icons */
   @keyframes floaty {
-
     0%,
     100% {
       transform: translateY(0);
@@ -168,21 +168,25 @@
   .skeleton {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(90deg,
-        rgba(255, 255, 255, 0.06) 25%,
-        rgba(255, 255, 255, 0.12) 37%,
-        rgba(255, 255, 255, 0.06) 63%);
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.06) 25%,
+      rgba(255, 255, 255, 0.12) 37%,
+      rgba(255, 255, 255, 0.06) 63%
+    );
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s infinite;
   }
 
   /* Gradient shine text helper */
   .shine-text {
-    background-image: linear-gradient(110deg,
-        rgba(255, 255, 255, 0.18) 0%,
-        rgba(255, 255, 255, 0.85) 20%,
-        rgba(255, 255, 255, 0.25) 40%,
-        rgba(255, 255, 255, 0.18) 60%);
+    background-image: linear-gradient(
+      110deg,
+      rgba(255, 255, 255, 0.18) 0%,
+      rgba(255, 255, 255, 0.85) 20%,
+      rgba(255, 255, 255, 0.25) 40%,
+      rgba(255, 255, 255, 0.18) 60%
+    );
     background-size: 200% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -205,7 +209,8 @@
     }
 
     to {
-      transform: rotate(360deg) translateX(100px) translateZ(30px) rotate(-360deg);
+      transform: rotate(360deg) translateX(100px) translateZ(30px)
+        rotate(-360deg);
     }
   }
 
@@ -219,7 +224,6 @@
     transform-style: preserve-3d;
     perspective: 1000px;
   }
-
 
   :root {
     --background: 268 0% 100%;
@@ -273,7 +277,8 @@
     @apply border-border;
   }
 
-  html {}
+  html {
+  }
 
   /* Global scrollbar hiding */
   * {
@@ -292,7 +297,6 @@
     @apply bg-white dark:bg-black max-h-dvh max-w-dvw text-foreground;
     overflow: auto;
   }
-
 }
 
 .liquid-glass {
@@ -302,7 +306,9 @@
   overflow: hidden;
   cursor: pointer;
 
-  box-shadow: 0 6px 6px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 6px 6px rgba(0, 0, 0, 0.2),
+    0 0 20px rgba(0, 0, 0, 0.1);
 
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
 }
@@ -333,12 +339,10 @@
   z-index: 2;
   box-shadow: 0 -30px 40px -20px rgba(255, 255, 255, 0.15) inset;
 
-
   border-top: 0.7px solid rgba(255, 255, 255, 0.356);
   /* very light top border */
   border-bottom: 0.1px solid rgba(255, 255, 255, 0.3);
 }
-
 
 .liquidGlass-shine::before {
   content: "";
@@ -356,19 +360,22 @@
   box-shadow: inset 0.1px 0.1px 2.5px rgba(255, 255, 255, 1);
 
   /* fade stops inward from top-left */
-  mask-image: radial-gradient(farthest-corner at top left,
-      rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 4px,
-      rgba(0, 0, 0, 0) 20px);
-  -webkit-mask-image: radial-gradient(farthest-corner at top left,
-      rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 4px,
-      rgba(0, 0, 0, 0) 20px);
+  mask-image: radial-gradient(
+    farthest-corner at top left,
+    rgba(0, 0, 0, 1) 0px,
+    rgba(0, 0, 0, 1) 4px,
+    rgba(0, 0, 0, 0) 20px
+  );
+  -webkit-mask-image: radial-gradient(
+    farthest-corner at top left,
+    rgba(0, 0, 0, 1) 0px,
+    rgba(0, 0, 0, 1) 4px,
+    rgba(0, 0, 0, 0) 20px
+  );
 
   /* clip so it doesn’t bleed beyond edge */
   clip-path: inset(0 5px 0 0 round 55px 0 0 0);
 }
-
 
 .liquidGlass-shine::after {
   content: "";
@@ -386,22 +393,22 @@
   box-shadow: inset -0.1px -0.1px 2.5px rgba(255, 255, 255, 1);
 
   /* fade stops inward from bottom-right */
-  mask-image: radial-gradient(farthest-corner at bottom right,
-      rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 4px,
-      rgba(0, 0, 0, 0) 20px);
-  -webkit-mask-image: radial-gradient(farthest-corner at bottom right,
-      rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 4px,
-      rgba(0, 0, 0, 0) 20px);
+  mask-image: radial-gradient(
+    farthest-corner at bottom right,
+    rgba(0, 0, 0, 1) 0px,
+    rgba(0, 0, 0, 1) 4px,
+    rgba(0, 0, 0, 0) 20px
+  );
+  -webkit-mask-image: radial-gradient(
+    farthest-corner at bottom right,
+    rgba(0, 0, 0, 1) 0px,
+    rgba(0, 0, 0, 1) 4px,
+    rgba(0, 0, 0, 0) 20px
+  );
 
   /* clip to prevent bleed */
   clip-path: inset(0 0 0 5px round 0 0 55px 0);
 }
-
-
-
-
 
 .liquidGlass-text {
   z-index: 3;
@@ -409,9 +416,6 @@
   font-family: "DM Sans", sans-serif;
   color: white;
 }
-
-
-
 
 .cardGlass-borders {
   position: absolute;
@@ -428,39 +432,73 @@
   /* Vertical borders remain solid for most of length, dissolving to 0% opacity exactly at the 40px junction */
   /* Each border segment has its own fade direction: Top-right, Bottom-left diagonal logic */
   mask-image:
-    linear-gradient(to right, black calc(100% - 80px), transparent calc(100% - 40px)),
+    linear-gradient(
+      to right,
+      black calc(100% - 80px),
+      transparent calc(100% - 40px)
+    ),
     /* Top: fade right */
     linear-gradient(to bottom, transparent 40px, black 80px),
     /* Right: fade top */
-    linear-gradient(to left, black calc(100% - 80px), transparent calc(100% - 20px)),
+    linear-gradient(
+        to left,
+        black calc(100% - 80px),
+        transparent calc(100% - 20px)
+      ),
     /* Bottom: fade left */
     linear-gradient(to top, transparent 40px, black 80px);
   /* Left: fade bottom */
-  mask-size: 100% 80px, 80px 100%, 100% 80px, 80px 100%;
-  mask-position: top center, center right, bottom center, center left;
+  mask-size:
+    100% 80px,
+    80px 100%,
+    100% 80px,
+    80px 100%;
+  mask-position:
+    top center,
+    center right,
+    bottom center,
+    center left;
   mask-repeat: no-repeat;
   -webkit-mask-image:
-    linear-gradient(to right, black calc(100% - 80px), transparent calc(100% - 20px)),
+    linear-gradient(
+      to right,
+      black calc(100% - 80px),
+      transparent calc(100% - 20px)
+    ),
     linear-gradient(to bottom, transparent 40px, black 80px),
-    linear-gradient(to left, black calc(100% - 80px), transparent calc(100% - 20px)),
+    linear-gradient(
+      to left,
+      black calc(100% - 80px),
+      transparent calc(100% - 20px)
+    ),
     linear-gradient(to top, transparent 40px, black 80px);
-  -webkit-mask-size: 100% 80px, 80px 100%, 100% 80px, 80px 100%;
-  -webkit-mask-position: top center, center right, bottom center, center left;
+  -webkit-mask-size:
+    100% 80px,
+    80px 100%,
+    100% 80px,
+    80px 100%;
+  -webkit-mask-position:
+    top center,
+    center right,
+    bottom center,
+    center left;
   -webkit-mask-repeat: no-repeat;
 
   /* Precise corner gaps */
-  clip-path: polygon(40px 0,
-      calc(100% - 40px) 0,
-      calc(100% - 40px) 40px,
-      100% 40px,
-      100% calc(100% - 40px),
-      calc(100% - 40px) calc(100% - 40px),
-      calc(100% - 40px) 100%,
-      40px 100%,
-      40px calc(100% - 40px),
-      0 calc(100% - 40px),
-      0 40px,
-      40px 40px);
+  clip-path: polygon(
+    40px 0,
+    calc(100% - 40px) 0,
+    calc(100% - 40px) 40px,
+    100% 40px,
+    100% calc(100% - 40px),
+    calc(100% - 40px) calc(100% - 40px),
+    calc(100% - 40px) 100%,
+    40px 100%,
+    40px calc(100% - 40px),
+    0 calc(100% - 40px),
+    0 40px,
+    40px 40px
+  );
 }
 
 .cardGlass-shine {
@@ -469,7 +507,6 @@
   z-index: 22;
   /* Slightly higher to overlap precisely if needed */
 }
-
 
 /* Noise texture for frosted effect */
 .glass-noise {
@@ -499,11 +536,33 @@
 
   /* Sharper circular mask combined with angular fade for smooth blending */
   mask-image:
-    radial-gradient(circle 42px at 0% 0%, rgba(0, 0, 0, 1) 0px, rgba(0, 0, 0, 1) 40px, rgba(0, 0, 0, 0) 42px),
-    conic-gradient(from 90deg at 0% 0%, transparent 0deg, black 10deg, black 80deg, transparent 90deg);
+    radial-gradient(
+      circle 42px at 0% 0%,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 40px,
+      rgba(0, 0, 0, 0) 42px
+    ),
+    conic-gradient(
+      from 90deg at 0% 0%,
+      transparent 0deg,
+      black 10deg,
+      black 80deg,
+      transparent 90deg
+    );
   -webkit-mask-image:
-    radial-gradient(circle 42px at 0% 0%, rgba(0, 0, 0, 1) 0px, rgba(0, 0, 0, 1) 40px, rgba(0, 0, 0, 0) 42px),
-    conic-gradient(from 90deg at 0% 0%, transparent 0deg, black 10deg, black 80deg, transparent 90deg);
+    radial-gradient(
+      circle 42px at 0% 0%,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 40px,
+      rgba(0, 0, 0, 0) 42px
+    ),
+    conic-gradient(
+      from 90deg at 0% 0%,
+      transparent 0deg,
+      black 10deg,
+      black 80deg,
+      transparent 90deg
+    );
   mask-composite: intersect;
   -webkit-mask-composite: source-in;
   /* For Safari */
@@ -511,7 +570,6 @@
   /* Strictly clip to 40x40 corner area to match border gaps */
   clip-path: inset(0 calc(100% - 40px) calc(100% - 40px) 0);
 }
-
 
 .cardGlass-shine::after {
   content: "";
@@ -529,11 +587,33 @@
 
   /* Sharper circular mask combined with angular fade for smooth blending */
   mask-image:
-    radial-gradient(circle 42px at 100% 100%, rgba(0, 0, 0, 1) 0px, rgba(0, 0, 0, 1) 40px, rgba(0, 0, 0, 0) 42px),
-    conic-gradient(from 270deg at 100% 100%, transparent 0deg, black 10deg, black 80deg, rgba(0, 0, 0, 0.5) 90deg);
+    radial-gradient(
+      circle 42px at 100% 100%,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 40px,
+      rgba(0, 0, 0, 0) 42px
+    ),
+    conic-gradient(
+      from 270deg at 100% 100%,
+      transparent 0deg,
+      black 10deg,
+      black 80deg,
+      rgba(0, 0, 0, 0.5) 90deg
+    );
   -webkit-mask-image:
-    radial-gradient(circle 42px at 100% 100%, rgba(0, 0, 0, 1) 0px, rgba(0, 0, 0, 1) 40px, rgba(0, 0, 0, 0) 42px),
-    conic-gradient(from 270deg at 100% 100%, transparent 0deg, black 10deg, black 80deg, rgba(0, 0, 0, 0.5) 90deg);
+    radial-gradient(
+      circle 42px at 100% 100%,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 40px,
+      rgba(0, 0, 0, 0) 42px
+    ),
+    conic-gradient(
+      from 270deg at 100% 100%,
+      transparent 0deg,
+      black 10deg,
+      black 80deg,
+      rgba(0, 0, 0, 0.5) 90deg
+    );
   mask-composite: intersect;
   -webkit-mask-composite: source-in;
   /* For Safari */
@@ -541,17 +621,28 @@
   clip-path: inset(calc(100% - 40px) 0 0 calc(100% - 40px));
 }
 
-.cardGlass-tint {
+.cardGlass-tint,
+.storyGlass-tint {
   z-index: 1;
   border-radius: 40px;
   position: absolute;
   inset: 0;
   background: rgba(255, 255, 255, 0.02);
   box-shadow: inset 0.6px 0.6px 0.4px rgba(255, 255, 255, 0.4);
-  transition: background 0.4s ease, box-shadow 0.4s ease;
+  transition:
+    background 0.28s ease,
+    box-shadow 0.28s ease,
+    opacity 0.28s ease;
+  opacity: 0;
 }
 
 .group\/card:hover .cardGlass-tint {
   background: #8959bd;
   box-shadow: inset 0.6px 0.6px 0.4px rgba(255, 255, 255, 0.3);
+  opacity: 0.92;
+}
+
+.group\/card:hover .storyGlass-tint {
+  box-shadow: inset 0.6px 0.6px 0.4px rgba(255, 255, 255, 0.3);
+  opacity: 0.92;
 }
