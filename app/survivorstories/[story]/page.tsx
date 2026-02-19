@@ -3,13 +3,14 @@
 import React from "react";
 import Link from "next/link";
 import {
-  getDocBySlugWithAvatar,
-  getRandomArticleSummaries,
-  getAllDocsWithAvatars,
-} from "@/lib/docsRepository";
+  getSurvivorStoryBySlug,
+  getAllSurvivorStories,
+  getRandomSurvivorStories,
+  type SurvivorStory,
+  type SurvivorStorySummary,
+} from "@/lib/survivorStoriesRepository";
 import Script from "next/script";
 import StoryPageClient from "./StoryPageClient";
-import type { ArticleWithAvatar, ArticleSummary } from "@/lib/docsRepository";
 
 interface Props {
   params: Promise<{
@@ -21,25 +22,25 @@ export default async function Page({ params }: Props) {
   const { story } = await params;
 
   // Try to load the article by slug (or id if slug isn't found)
-  let article: ArticleWithAvatar | null = null;
+  let storyData: SurvivorStory | null = null;
   try {
-    article = await getDocBySlugWithAvatar(story);
+    storyData = await getSurvivorStoryBySlug(story);
   } catch (e) {
     console.error("Error fetching story:", e);
   }
 
   // Fallback: if `story` is actually an id (not a slug), try to find by id
-  if (!article) {
+  if (!storyData) {
     try {
-      const all = await getAllDocsWithAvatars();
+      const all = await getAllSurvivorStories();
       const byId = all.find((d) => d.id === story);
-      if (byId) article = byId as ArticleWithAvatar;
+      if (byId) storyData = byId as SurvivorStory;
     } catch (e) {
       console.error("Fallback id lookup failed:", e);
     }
   }
 
-  if (!article) {
+  if (!storyData) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8">
         <div className="max-w-3xl w-full text-center">
@@ -55,20 +56,20 @@ export default async function Page({ params }: Props) {
     );
   }
 
-  const moreArticles: ArticleSummary[] =
-    (await getRandomArticleSummaries(3, article.slug)) || [];
+  const moreArticles: SurvivorStorySummary[] =
+    (await getRandomSurvivorStories(3, storyData.slug)) || [];
 
   const storySchema = {
     "@context": "https://schema.org",
     "@type": "MedicalScholarlyArticle",
-    headline: article.title,
-    description: article.content
+    headline: storyData.title,
+    description: (storyData.summary || storyData.content || "")
       .replace(/[#*_`>\-\[\]!\(\)]/g, "")
       .slice(0, 160),
-    url: `https://thecarcinofoundation.org/survivorstories/${article.slug}`,
+    url: `https://thecarcinofoundation.org/survivorstories/${storyData.slug}`,
     author: {
       "@type": "Person",
-      name: article.author || "Carcino Research Team",
+      name: storyData.authorName || "Carcino Research Team",
     },
     publisher: {
       "@type": "NGO",
@@ -97,8 +98,8 @@ export default async function Page({ params }: Props) {
       {
         "@type": "ListItem",
         position: 3,
-        name: article.title,
-        item: `https://thecarcinofoundation.org/survivorstories/${article.slug}`,
+        name: storyData.title,
+        item: `https://thecarcinofoundation.org/survivorstories/${storyData.slug}`,
       },
     ],
   };
@@ -115,7 +116,7 @@ export default async function Page({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      <StoryPageClient story={article} related={moreArticles} />
+      <StoryPageClient story={storyData} related={moreArticles} />
     </>
   );
 }

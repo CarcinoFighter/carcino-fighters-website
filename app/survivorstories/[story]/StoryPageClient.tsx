@@ -11,11 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Footer } from "@/components/footer";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
-import type { ArticleWithAvatar, ArticleSummary } from "@/lib/docsRepository";
+import type { SurvivorStory, SurvivorStorySummary } from "@/lib/survivorStoriesRepository";
 
 interface StoryPageClientProps {
-  story: ArticleWithAvatar;
-  related: ArticleSummary[];
+  story: SurvivorStory;
+  related: SurvivorStorySummary[];
 }
 
 function MDImage({ src, alt }: { src?: string; alt?: string }) {
@@ -58,17 +58,15 @@ export default function StoryPageClient({
           </h1>
           <div className="mt-4 flex items-center justify-center gap-4 text-sm">
             <Avatar className="w-12 h-12">
-              <AvatarImage src={story.profilePicture || "/logo.png"} />
+              <AvatarImage src={story.avatarUrl || "/logo.png"} />
               <AvatarFallback>
-                {(story.author || "?").slice(0, 2).toUpperCase()}
+                {(story.authorName || "?").slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="text-left">
-              <div className="font-semibold">{story.author ?? "Unknown"}</div>
-              {story.position && (
-                <div className="text-xs text-muted-foreground">
-                  {story.position}
-                </div>
+              <div className="font-semibold">{story.authorName ?? "Unknown"}</div>
+              {story.authorBio && (
+                <div className="text-xs text-muted-foreground">{story.authorBio}</div>
               )}
             </div>
           </div>
@@ -139,7 +137,7 @@ export default function StoryPageClient({
               ),
             }}
           >
-            {story.content}
+            {story.content ?? ""}
           </ReactMarkdown>
 
           <div
@@ -171,7 +169,7 @@ export default function StoryPageClient({
               >
                 <div className="font-bold uppercase text-sm">{r.title}</div>
                 <div className="text-xs text-muted-foreground mt-2">
-                  by {r.author ?? "Unknown"}
+                  by {r.authorName ?? "Unknown"}
                 </div>
               </Link>
             ))}
