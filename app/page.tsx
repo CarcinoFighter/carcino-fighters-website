@@ -269,10 +269,10 @@ export default function Home() {
                 height={888}
                 width={1440}
                 alt="background"
-                className="object-cover w-full h-[100%] md:h-[110%]"
+                className="object-cover w-full h-[100%] md:h-[106%]"
                 priority
               />
-              <div className="absolute inset-x-0 bottom-0 md:bottom-[-10%] h-2/5 bg-gradient-to-t from-black to-transparent lg:h-2/6" />
+              <div className="absolute inset-x-0 bottom-0 md:bottom-[-6%] h-2/5 bg-gradient-to-t from-black to-transparent lg:h-2/12" />
 
               {/*<div className="absolute inset-0 bg-[#471F77]/52" /> 
               <div className="absolute inset-0 bg-[#000000] opacity-55" />*/}
