@@ -161,7 +161,7 @@ export default function Home() {
                         className="block flex-shrink-0 w-[450px]"
                       >
                         <motion.div
-                          className="tribute-card"
+                          className="tribute-card group"
                           layout
                           whileHover={{ y: -4, scale: 1.015 }}
                           variants={{
@@ -179,7 +179,7 @@ export default function Home() {
                                 relative z-20
                                 group/card
                                 vision-pro-ui-hoverable
-                                w-[450px] h-[320px]
+                                w-[450px] h-[300px]
                                 py-3
                                 flex flex-col 
                                 rounded-[40px]
@@ -189,11 +189,14 @@ export default function Home() {
                               "
                             >
                               <div
-                                className="absolute inset-0 bg-cover bg-center"
-                                style={{ backgroundImage: `url(${imgSrc})` }}
+                                className="absolute inset-0 bg-cover bg-center "
+                                style={{
+                                  backgroundImage: `url(${imgSrc})`,
+                                }}
                               />
-                              <div className="liquidGlass-effect pointer-events-none"></div>
-                              <div className="cardGlass-tint pointer-events-none"></div>
+                              {/* gradient overlay to improve text readability */}
+                              <div className="absolute bottom-0 w-full h-3/5 bg-gradient-to-t from-black/90 to-transparent pointer-events-none transition-opacity duration-300 group-hover:opacity-0" />
+                              <div className="storyGlass-tint pointer-events-none"></div>
                               <div className="glass-noise"></div>
                               <div className="cardGlass-borders pointer-events-none"></div>
                               <div className="cardGlass-shine pointer-events-none"></div>
@@ -203,21 +206,25 @@ export default function Home() {
                                 translateZ="20"
                                 className="
                                   relative z-10
-                                  flex flex-col items-center gap-1
+                                  flex flex-col items-center
+                                  justify-end
                                   rounded-[40px]
                                   pointer-events-none
-                                  w-full mt-32
+                                  w-full h-full
+                                  p-4
                                 "
                               >
-                                <h3 className="text-[24px] leading-[1] p-2 text-center font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-[#f8f8f8]">
-                                  {item.name}
-                                </h3>
-                                <div className="text-[20px] text-[#ffffff] font-tttravelsnext">
-                                  {item.year}
-                                </div>
-                                <p className="text-[14px] sm:text-[16px] text-center text-[#dfdfdf] transition-colors duration-300 font-dmsans w-full font-light">
+                                {/* description overlays top, visible only on hover */}
+                                <p className="absolute bottom-28 bg-black/30 backdrop-blur-sm px-4 text-[14px] sm:text-[16px] text-center text-[#dfdfdf] transition-opacity duration-300 font-dmsans w-full font-light opacity-0 group-hover:opacity-100">
                                   {item.text}
                                 </p>
+
+                                <h3 className="text-[26px] leading-[1] p-2 align-middle justify-center text-center font-tttravelsnext font-bold max-w-[300px] mx-auto w-full text-[#f8f8f8]">
+                                  {item.name}
+                                </h3>
+                                <div className="text-[16px] text-[#ffffff] font-tttravelsnext">
+                                  {item.year}
+                                </div>
                               </CardItem>
                             </CardBody>
                           </CardContainer>

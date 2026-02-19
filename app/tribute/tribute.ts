@@ -15,10 +15,10 @@ export const tributes: Tribute[] = [
     image: "/tribute/johndoe.png",
   },
   {
-    name: "Jane Smith",
-    year: "1965–2021",
-    text: "A constant source of inspiration, kindness, and wisdom.",
-    image: "/tribute/janesmith.png",
+    name: "BARSHA CHAKRABORTY",
+    year: "30th April 1982- 28th March 2018",
+    text: "",
+    image: "/tribute/barshachakraborty.jpeg",
   },
   {
     name: "Alan Smithee",
