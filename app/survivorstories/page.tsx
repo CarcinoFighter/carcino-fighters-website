@@ -21,12 +21,14 @@ const staggerContainer = {
   },
 };
 
-interface Article {
+interface SurvivorStory {
   id: string;
   slug: string;
   title: string;
-  author: string | null;
-  content: string;
+  authorName: string | null;
+  content: string | null;
+  summary: string | null;
+  tags?: string[] | null;
 }
 
 // interface Position {
@@ -35,7 +37,7 @@ interface Article {
 // }
 
 export default function Home() {
-  const [articles, setArticles] = React.useState<Article[]>([]);
+  const [stories, setStories] = React.useState<SurvivorStory[]>([]);
   const [loading, setLoading] = React.useState(true);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const heroRef = React.useRef<HTMLDivElement | null>(null);
@@ -53,26 +55,26 @@ export default function Home() {
   React.useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("/api/articles");
+        const res = await fetch("/api/survivor-stories");
         if (res.ok) {
-          const docs = await res.json();
-          setArticles(docs);
+          const payload = await res.json();
+          setStories(payload?.stories ?? []);
         }
       } catch (error) {
-        console.error("Failed to load articles", error);
+        console.error("Failed to load stories", error);
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  const featuredArticles = React.useMemo<Article[]>(() => {
-    if (articles.length === 0) return [];
-    return [...articles];
-  }, [articles]);
-  const excerptFromContent = (content?: string, len = 100) => {
-    if (!content) return null;
-    let text = content as string;
+  const featuredStories = React.useMemo<SurvivorStory[]>(() => {
+    if (stories.length === 0) return [];
+    return [...stories];
+  }, [stories]);
+  const excerptFromContent = (textInput?: string | null, len = 100) => {
+    if (!textInput) return null;
+    let text = textInput;
 
     // Remove common README header markers like "# README" or "README" at start
     text = text.replace(/^[#>\s\-]*readme[:\s\-]*\n?/i, "");
@@ -129,7 +131,7 @@ export default function Home() {
     cards.forEach((card) => {
       card.style.height = `${maxHeight}px`;
     });
-  }, [loading, featuredArticles]);
+  }, [loading, featuredStories]);
 
   return (
     <>
@@ -200,12 +202,12 @@ export default function Home() {
                     Loading stories...
                   </span>
                 </div>
-              ) : articles.length === 0 ? (
+              ) : stories.length === 0 ? (
                 <div className="col-span-full text-center text-lg text-muted-foreground">
                   No stories found.
                 </div>
               ) : (
-                featuredArticles.map((article) => {
+                featuredStories.map((story) => {
                   const colors = [
                     "#E39E2E",
                     "#64A04B",
@@ -220,9 +222,9 @@ export default function Home() {
                     "/landing/background_new.png",
                   ];
                   const cardColor =
-                    colors[featuredArticles.indexOf(article) % colors.length];
+                    colors[featuredStories.indexOf(story) % colors.length];
                   const backgroundImage =
-                    images[featuredArticles.indexOf(article) % images.length];
+                    images[featuredStories.indexOf(story) % images.length];
 
                   const getTitleFontSize = (title: string) => {
                     const words = title.split(/\s+/);
@@ -242,11 +244,11 @@ export default function Home() {
 
                   return (
                     <Link
-                      key={article.id}
+                      key={story.id}
                       href={
-                        article.slug
-                          ? `/survivorstories/${article.slug}`
-                          : `/survivorstories/${article.id}`
+                        story.slug
+                          ? `/survivorstories/${story.slug}`
+                          : `/survivorstories/${story.id}`
                       }
                       className="h-full block"
                     >
@@ -301,14 +303,14 @@ export default function Home() {
                               "
                             >
                               <h3
-                                className={`${getTitleFontSize(article.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}
+                                className={`${getTitleFontSize(story.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}
                               >
-                                {article.title}
+                                {story.title}
                               </h3>
 
                               <p className="text-[12px] sm:text-[14px] text-center text-[#FFF9D0] group-hover/card:text-white transition-colors duration-300 font-dmsans w-[80%] font-light leading-none">
-                                {excerptFromContent(article.content) ??
-                                  "Unknown Author"}
+                                {excerptFromContent(story.summary ?? story.content) ??
+                                  story.authorName ?? "Unknown Author"}
                               </p>
                             </CardItem>
                           </div>

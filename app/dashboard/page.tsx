@@ -179,7 +179,7 @@ export default function DashboardPage() {
                 const authData = await authRes.json().catch(() => ({}));
 
                 if (!authRes.ok || !authData.authenticated || !authData.user) {
-                    router.replace("/sign-in");
+                    router.replace("/admin/login");
                     return;
                 }
 
@@ -224,7 +224,7 @@ export default function DashboardPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "logout" }),
             });
-            router.replace("/sign-in");
+            router.replace("/admin/login");
         } catch (err) {
             console.error("Logout error", err);
             setLoggingOut(false);
