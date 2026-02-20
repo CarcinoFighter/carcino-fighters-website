@@ -198,7 +198,7 @@ export default function Home() {
               className="flex z-10 flex-col w-full items-center gap-8 sm:gap-5 mt-40 sm:mt-28"
               variants={staggerContainer}
             >
-              <span className="text-4xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-[40%] max-sm:text-4xl max-sm:w-3/5 leading-[109%] text-[#f8f8f8]">
+              <span className="text-3xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-[40%] max-sm:text-3xl max-sm:w-3/5 leading-[109%] text-[#f8f8f8]">
                 Forever in our Hearts
               </span>
               <span className="font-dmsans text-[#ffffff] text-2xl sm:max-w-[60%] w-full text-center max-sm:text-sm max-sm:w-4/5 font-light leading-[109%] tracking-[-2%]">
@@ -208,7 +208,7 @@ export default function Home() {
             </motion.div>
 
             <motion.div
-              className="relative z-10 w-full py-2 mt-10 md:mt-0"
+              className="relative z-10 w-full py-2"
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
@@ -246,7 +246,7 @@ export default function Home() {
                     return (
                       <div
                         key={`${item.name}-${idx}`}
-                        className="block flex-shrink-0 w-[380px] sm:w-[420px]"
+                        className="block flex-shrink-0 w-[320px] sm:w-[420px] overflow-hidden"
                         onMouseEnter={() => {
                           hoveredRef.current = true;
                         }}
@@ -267,13 +267,13 @@ export default function Home() {
                             },
                           }}
                         >
-                          <CardContainer className="w-[380px] sm:w-[420px] px-0 rounded-[40px]">
+                          <CardContainer className="w-[320px] sm:w-[420px] px-0 rounded-[40px]">
                             <CardBody
                               className="
                                 relative z-20
                                 group/card
                                 vision-pro-ui-hoverable
-                                w-[380px] sm:w-[420px] h-[260px]
+                                w-[320px] sm:w-[420px] max-w-full h-[260px]
                                 py-3
                                 flex flex-col
                                 rounded-[40px]
