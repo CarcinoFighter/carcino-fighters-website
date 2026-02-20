@@ -195,7 +195,7 @@ export default function Home() {
             </div>
 
             <motion.div
-              className="flex z-10 flex-col w-full items-center gap-8 sm:gap-5 mt-40 sm:mt-28"
+              className="flex z-10 flex-col w-full items-center gap-8 sm:gap-5 mt-32 sm:mt-28"
               variants={staggerContainer}
             >
               <span className="text-3xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-[40%] max-sm:text-3xl max-sm:w-3/5 leading-[109%] text-[#f8f8f8]">
