@@ -255,9 +255,8 @@ export default function RegistrationPage() {
                           }}
                         >
                           <div
-                            className={`w-4 h-4 border border-primary rounded-full flex items-center justify-center transition-colors ${
-                              selected ? "bg-white" : "bg-transparent"
-                            }`}
+                            className={`w-4 h-4 border border-primary rounded-full flex items-center justify-center transition-colors ${selected ? "bg-white" : "bg-transparent"
+                              }`}
                           >
                             {selected && (
                               <div className="w-2 h-2 bg-white rounded-full"></div>
@@ -314,9 +313,8 @@ export default function RegistrationPage() {
                             }}
                           >
                             <div
-                              className={`w-4 h-4 border border-primary rounded-full flex items-center justify-center transition-colors ${
-                                selected ? "bg-primary" : "bg-transparent"
-                              }`}
+                              className={`w-4 h-4 border border-primary rounded-full flex items-center justify-center transition-colors ${selected ? "bg-primary" : "bg-transparent"
+                                }`}
                             >
                               {/* Only show the inner dot if selected */}
                               {selected && (
@@ -367,11 +365,10 @@ export default function RegistrationPage() {
                                 }
                               });
                             }}
-                            className={`aspect-square w-4 border border-primary rounded-sm relative cursor-pointer ${
-                              writing.includes(writingOption)
-                                ? "bg-primary"
-                                : ""
-                            }`}
+                            className={`aspect-square w-4 border border-primary rounded-sm relative cursor-pointer ${writing.includes(writingOption)
+                              ? "bg-primary"
+                              : ""
+                              }`}
                           >
                             {writing.includes(writingOption) && (
                               <Check className="absolute h-3 w-3 aspect-square mx-auto my-auto top-0 bottom-0 left-0 right-0 stroke-3" />
