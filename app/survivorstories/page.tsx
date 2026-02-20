@@ -5,7 +5,6 @@ import Script from "next/script";
 import Link from "next/link";
 import Image from "next/image";
 import { CardContainer, CardItem } from "@/components/ui/3d-card";
-import { Footer } from "@/components/footer";
 import { motion, MotionConfig, useScroll } from "framer-motion";
 // import { useState } from "react";
 

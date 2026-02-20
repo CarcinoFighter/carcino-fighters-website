@@ -19,7 +19,7 @@ import type {
 
 interface StoryPageClientProps {
   story: SurvivorStory;
-  related: SurvivorStorySummary[];
+  related: (SurvivorStorySummary & { image_url?: string | null })[];
   cardColor: string;
 }
 
@@ -60,10 +60,34 @@ const fadeUp = {
 
 export default function StoryPageClient({
   story,
-  related,
+  related: relatedProp,
   cardColor,
 }: StoryPageClientProps) {
   const [expanded, setExpanded] = useState(false);
+  const [related, setRelated] =
+    useState<(SurvivorStorySummary & { image_url?: string | null })[]>(
+      relatedProp,
+    );
+
+  // Fetch full story data (including image_url) the same way the main menu does
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/survivor-stories");
+        if (res.ok) {
+          const payload = await res.json();
+          const allStories: (SurvivorStorySummary & {
+            image_url?: string | null;
+          })[] = payload?.stories ?? [];
+          const relatedIds = new Set(relatedProp.map((r) => r.id));
+          const enriched = allStories.filter((s) => relatedIds.has(s.id));
+          if (enriched.length > 0) setRelated(enriched);
+        }
+      } catch (e) {
+        // silently fall back to relatedProp
+      }
+    })();
+  }, []);
 
   return (
     <div className="min-h-screen text-foreground bg-[#2A292F] relative overflow-hidden">
@@ -71,10 +95,10 @@ export default function StoryPageClient({
       <div
         style={{
           position: "absolute",
-          left: -900,
-          top: -800,
-          width: 1800,
-          height: 1800,
+          left: -800,
+          top: -700,
+          width: 1600,
+          height: 1600,
           borderRadius: "50%",
           background: `radial-gradient(circle, ${cardColor}55 0%, transparent 60%)`,
           pointerEvents: "none",
@@ -84,12 +108,12 @@ export default function StoryPageClient({
       <div
         style={{
           position: "absolute",
-          right: -500,
-          top: 0,
-          width: 1500,
-          height: 1500,
+          right: -800,
+          top: -200,
+          width: 1600,
+          height: 1600,
           borderRadius: "50%",
-          background: `radial-gradient(circle, ${cardColor}55 0%, transparent 60%)`,
+          background: `radial-gradient(circle, ${cardColor}55 0%, transparent 55%)`,
           pointerEvents: "none",
           zIndex: 0,
         }}
@@ -231,24 +255,82 @@ export default function StoryPageClient({
         </div>
 
         <section className="mt-16">
-          <h2 className="text-2xl font-semibold mb-4">More stories</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {related.map((r) => (
-              <Link
-                key={r.id}
-                href={
-                  r.slug
-                    ? `/survivorstories/${r.slug}`
-                    : `/survivorstories/${r.id}`
-                }
-                className="block p-4 rounded-lg bg-muted/20 hover:bg-muted/30"
-              >
-                <div className="font-bold uppercase text-sm">{r.title}</div>
-                <div className="text-xs text-muted-foreground mt-2">
-                  by {r.authorName ?? "Unknown"}
-                </div>
-              </Link>
-            ))}
+          <h2 className="text-2xl font-semibold mb-6">More stories</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {related.map((r, i) => {
+              const colors = [
+                "#E39E2E",
+                "#64A04B",
+                "#4145ca",
+                "#9E8DC5",
+                "#7F2D3F",
+                "#818181",
+              ];
+              const relatedCardColor = colors[i % colors.length];
+              const backgroundImage = r.image_url || "/sfs_bg.png";
+
+              const getTitleFontSize = (title: string) => {
+                const words = title.split(/\s+/);
+                const maxWordLength = Math.max(...words.map((w) => w.length));
+                if (maxWordLength > 12) return "text-[14px] sm:text-[18px]";
+                if (maxWordLength >= 9) return "text-[18px] sm:text-[22px]";
+                if (title.length > 35) return "text-[16px] sm:text-[20px]";
+                if (title.length >= 15) return "text-[18px] sm:text-[24px]";
+                return "text-[22px] sm:text-[30px]";
+              };
+
+              return (
+                <Link
+                  key={r.id}
+                  href={
+                    r.slug
+                      ? `/survivorstories/${r.slug}`
+                      : `/survivorstories/${r.id}`
+                  }
+                  className="block h-full"
+                >
+                  <motion.div
+                    className="h-full"
+                    whileHover={{ y: -4, scale: 1.015 }}
+                    transition={{ duration: 0.3, ease: easeSoft }}
+                  >
+                    <div
+                      style={{
+                        backgroundImage: `url('${backgroundImage}')`,
+                        backgroundColor: relatedCardColor,
+                        backgroundBlendMode: "multiply",
+                      }}
+                      className="
+                        relative
+                        group/card
+                        vision-pro-ui-hoverable
+                        w-full h-[180px]
+                        flex flex-col justify-center
+                        rounded-[32px]
+                        overflow-hidden isolation-isolate liquid-glass !shadow-none
+                        select-none bg-cover
+                      "
+                    >
+                      <div
+                        className="storyGlass-tint pointer-events-none"
+                        style={{ backgroundColor: relatedCardColor }}
+                      />
+                      <div className="cardGlass-borders pointer-events-none" />
+                      <div className="cardGlass-shine pointer-events-none" />
+                      <div className="liquidGlass-text pointer-events-none" />
+
+                      <div className="relative z-10 flex flex-col items-center gap-2 p-4 w-full justify-center">
+                        <h3
+                          className={`${getTitleFontSize(r.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}
+                        >
+                          {r.title}
+                        </h3>
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
+              );
+            })}
           </div>
         </section>
 
