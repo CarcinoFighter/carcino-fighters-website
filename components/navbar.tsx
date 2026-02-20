@@ -15,6 +15,7 @@ import {
   BookOpen,
   House,
   Menu,
+  Newspaper,
   SearchX,
   User,
   UserPlus,
@@ -68,6 +69,7 @@ export function Navbar() {
     { label: "About", href: "/leadership" },
     { label: "Articles", href: "/article" },
     { label: "Survivors", href: "/survivorstories" },
+    { label: "Blogs", href: "/blogs" },
   ];
   const selectedTab = tabs.find((tab) =>
     tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href),
@@ -286,6 +288,19 @@ export function Navbar() {
             >
               <Award size={22} />
               Survivors
+            </Link>
+            <Link
+              onClick={() => setMobileMenuOpen(false)}
+              href="/blogs"
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-dmsans text-base",
+                pathname.startsWith("/article")
+                  ? "bg-primary/20 text-primary font-semibold"
+                  : "hover:bg-white/5",
+              )}
+            >
+              <Newspaper size={22} />
+              Blogs
             </Link>
 
             <div className="h-px bg-border my-2" />
