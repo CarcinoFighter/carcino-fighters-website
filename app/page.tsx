@@ -290,7 +290,7 @@ export default function Home() {
               >
                 <Button
                   variant="ghost"
-                  className="relative px-3 py-2 sm:px-5 sm:py-4 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-dmsans font-normal transition-all duration-300 mt-12 sm:mt-10 text-xs sm:text-base"
+                  className="relative px-3 py-2 sm:px-5 sm:py-4 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-dmsans font-normal transition-all duration-300 mt-12 sm:mt-10 text-xs sm:text-[15px]"
                 >
                   <Link
                     href="/the-vision"
@@ -338,7 +338,7 @@ export default function Home() {
                   >
                     <Link
                       href="/article"
-                      className="relative z-10 flex items-center gap-2 text-[#e0e0e0] text-[12px] sm:text-[20px] font-light"
+                      className="relative z-10 flex items-center gap-2 text-[#e0e0e0] text-[12px] sm:text-[18px] font-light"
                     >
                       Read Articles{" "}
                       <ArrowUpRight className="transition-transform mt-[1px]" />
@@ -763,7 +763,7 @@ export default function Home() {
                   className=" text-base sm:text-lg
         font-dmsans
         text-muted-foreground sm:ml-10
-        max-w-full sm:max-w-[85%] xl:max-w-[70%]"
+        max-w-full sm:max-w-[85%] xl:max-w-[70%] leading-[22px]"
                 >
                   Do you wish to contribute to the cause? Write to us or send us
                   articles, and our Writing Team will work on it and share it

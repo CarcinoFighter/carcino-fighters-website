@@ -38,10 +38,4 @@ export const tributes: Tribute[] = [
     text: "A constant source of inspiration, kindness, and wisdom.",
     image: "/tribute/janefoster.png",
   },
-  {
-    name: "Alan Smith",
-    year: "1965–2021",
-    text: "A constant source of inspiration, kindness, and wisdom.",
-    image: "/tribute/Alansmith.png",
-  },
 ];
