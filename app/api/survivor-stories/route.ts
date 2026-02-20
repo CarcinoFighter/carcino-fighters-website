@@ -18,6 +18,7 @@ type StoryBody = {
   slug?: string;
   content?: string | null;
   image_url?: string | null;
+  colour?: string | null;
   tags?: string[] | string | null;
 };
 
@@ -137,6 +138,7 @@ function mapStory(row: any) {
     slug: row.slug,
     content: row.content,
     image_url: row.image_url,
+    colour: row.colour,
     tags: row.tags,
     views: row.views,
     likes: row.likes,
@@ -162,7 +164,7 @@ export async function GET(req: Request) {
     const query = sb!
       .from("survivorstories")
       .select(
-        "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
+        "id, user_id, title, slug, content, image_url, colour, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
       )
       .eq("deleted", false)
       .order("created_at", { ascending: false });
@@ -215,10 +217,11 @@ export async function POST(req: Request) {
           slug: uniqueSlug,
           content: body.content ?? null,
           image_url: body.image_url ?? null,
+          colour: body.colour ?? null,
           tags: normalizedTags,
         })
         .select(
-          "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
+          "id, user_id, title, slug, content, image_url, colour, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
         )
         .maybeSingle();
 
@@ -243,6 +246,7 @@ export async function POST(req: Request) {
       if (body.title !== undefined) updates.title = body.title;
       if (body.content !== undefined) updates.content = body.content;
       if (body.image_url !== undefined) updates.image_url = body.image_url;
+      if (body.colour !== undefined) updates.colour = body.colour;
       if (body.tags !== undefined) updates.tags = normalizedTags;
 
       if (body.slug !== undefined) {
@@ -255,7 +259,7 @@ export async function POST(req: Request) {
         .update(updates)
         .eq("id", body.id)
         .select(
-          "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
+          "id, user_id, title, slug, content, image_url, colour, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
         )
         .maybeSingle();
 

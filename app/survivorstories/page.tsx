@@ -29,6 +29,7 @@ interface SurvivorStory {
   content: string | null;
   image_url?: string | null;
   tags?: string[] | null;
+  colour?: string | null;
 }
 
 // interface Position {
@@ -207,7 +208,7 @@ export default function Home() {
                   No stories found.
                 </div>
               ) : (
-                featuredStories.map((story) => {
+                featuredStories.map((story, idx) => {
                   const colors = [
                     "#E39E2E",
                     "#64A04B",
@@ -221,13 +222,8 @@ export default function Home() {
                     "/landing/Background.png",
                     "/landing/background_new.png",
                   ];
-                  const cardColor =
-                    colors[featuredStories.indexOf(story) % colors.length];
-                  const backgroundImage =
-                    story.image_url ||
-                    defaultImages[
-                      featuredStories.indexOf(story) % defaultImages.length
-                    ];
+                  const cardColor = story.colour || colors[idx % colors.length];
+                  const backgroundImage = story.image_url || defaultImages[idx % defaultImages.length];
 
                   const getTitleFontSize = (title: string) => {
                     const words = title.split(/\s+/);
