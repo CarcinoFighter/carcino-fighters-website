@@ -23,6 +23,7 @@ type Story = {
   content: string | null;
   tags: string[] | null;
   created_at: string;
+  image_url?: string | null;
 };
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
@@ -37,6 +38,7 @@ export default function SurvivorDashboard() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [storySaving, setStorySaving] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [colorMode, setColorMode] = useState<"light" | "dark">("light");
   const [mounted, setMounted] = useState(false);
@@ -53,6 +55,7 @@ export default function SurvivorDashboard() {
     slug: "",
     content: "",
     tags: "",
+    image_url: "",
   });
 
   function contentExcerpt(text?: string | null, len = 120) {
@@ -186,6 +189,32 @@ export default function SurvivorDashboard() {
     }
   }
 
+  async function handleCoverUpload(file: File) {
+    if (!file) return;
+    setImageUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("action", "upload_image");
+      formData.append("image", file);
+
+      const res = await fetch("/api/survivor-stories", { method: "POST", body: formData });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error || "Image upload failed");
+        return;
+      }
+      if (data.image_url) {
+        setStoryForm((p) => ({ ...p, image_url: data.image_url }));
+      }
+    } catch (err) {
+      console.error("cover upload error", err);
+      setError("Image upload failed");
+    } finally {
+      setImageUploading(false);
+    }
+  }
+
   async function handleStorySubmit(e: React.FormEvent) {
     e.preventDefault();
     setStorySaving(true);
@@ -196,6 +225,7 @@ export default function SurvivorDashboard() {
         id: editingId ?? undefined,
         title: storyForm.title,
         slug: storyForm.slug || undefined,
+        image_url: storyForm.image_url || undefined,
         content: storyForm.content,
         tags: storyForm.tags,
       };
@@ -211,7 +241,7 @@ export default function SurvivorDashboard() {
         return;
       }
 
-      setStoryForm({ title: "", slug: "", content: "", tags: "" });
+      setStoryForm({ title: "", slug: "", image_url: "", content: "", tags: "" });
       setEditingId(null);
       await fetchStories();
     } catch (err) {
@@ -374,6 +404,46 @@ export default function SurvivorDashboard() {
                   </div>
                 </div>
                 <div className="space-y-2">
+                  <div className="space-y-1">
+                    <label className="text-xs text-white/60">Cover image</label>
+                    <p className="text-[11px] text-white/50">Upload a file or paste a bucket URL.</p>
+                  </div>
+                  <div className="flex flex-col md:flex-row gap-2 md:items-center">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      className="bg-white/10 border-white/10"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleCoverUpload(file);
+                      }}
+                      disabled={imageUploading}
+                    />
+                    <div className="text-[11px] text-white/50 flex-1">
+                      {imageUploading ? "Uploading cover..." : ""}
+                    </div>
+                  </div>
+                  {storyForm.image_url ? (
+                    <div className="rounded-lg border border-white/10 overflow-hidden bg-white/5">
+                      <div className="h-44 w-full bg-black/30">
+                        <img src={storyForm.image_url} alt="Cover preview" className="h-full w-full object-cover" />
+                      </div>
+                      <div className="flex items-center justify-between px-3 py-2 text-[11px] text-white/70">
+                        <span>Cover preview</span>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 px-2"
+                          onClick={() => setStoryForm((p) => ({ ...p, image_url: "" }))}
+                        >
+                          Clear
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+                <div className="space-y-2">
                   <label className="text-xs text-white/60">Story content (Markdown)</label>
                   <div className="rounded-xl border border-white/10 bg-black/40 p-2" data-color-mode={colorMode}>
                     {mounted ? (
@@ -423,14 +493,14 @@ export default function SurvivorDashboard() {
                       variant="ghost"
                       onClick={() => {
                         setEditingId(null);
-                        setStoryForm({ title: "", slug: "", content: "", tags: "" });
+                        setStoryForm({ title: "", slug: "", image_url: "", content: "", tags: "" });
                       }}
                     >
                       Cancel edit
                     </Button>
                   )}
-                  <Button type="submit" disabled={storySaving}>
-                    {storySaving ? "Saving..." : editingId ? "Update story" : "Publish story"}
+                  <Button type="submit" disabled={storySaving || imageUploading}>
+                    {storySaving ? "Saving..." : imageUploading ? "Wait for upload..." : editingId ? "Update story" : "Publish story"}
                   </Button>
                 </div>
               </form>
@@ -466,6 +536,7 @@ export default function SurvivorDashboard() {
                       setStoryForm({
                         title: story.title,
                         slug: story.slug,
+                        image_url: story.image_url ?? "",
                         content: story.content ?? "",
                         tags: (story.tags || []).join(", "),
                       });

@@ -27,6 +27,7 @@ interface SurvivorStory {
   title: string;
   authorName: string | null;
   content: string | null;
+  image_url?: string | null;
   tags?: string[] | null;
 }
 
@@ -215,15 +216,13 @@ export default function Home() {
                     "#7F2D3F",
                     "#818181",
                   ];
-                  const images = [
+                  const defaultImages = [
                     "/sfs_bg.png",
                     "/landing/Background.png",
                     "/landing/background_new.png",
                   ];
-                  const cardColor =
-                    colors[featuredStories.indexOf(story) % colors.length];
-                  const backgroundImage =
-                    images[featuredStories.indexOf(story) % images.length];
+                  const cardColor = colors[featuredStories.indexOf(story) % colors.length];
+                  const backgroundImage = story.image_url || defaultImages[featuredStories.indexOf(story) % defaultImages.length];
 
                   const getTitleFontSize = (title: string) => {
                     const words = title.split(/\s+/);
