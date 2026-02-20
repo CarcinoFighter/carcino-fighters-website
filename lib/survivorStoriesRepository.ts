@@ -7,6 +7,7 @@ type RawStoryRow = {
   title: string;
   slug: string;
   content: string | null;
+  image_url?: string | null;
   tags: string[] | null;
   views: number | null;
   likes: number | null;
@@ -35,6 +36,7 @@ export type SurvivorStory = {
   title: string;
   slug: string;
   content: string | null;
+  image_url?: string | null;
   tags: string[] | null;
   views: number | null;
   likes: number | null;
@@ -68,6 +70,7 @@ function mapRow(row: RawStoryRow | null): SurvivorStory | null {
     title: row.title,
     slug: row.slug,
     content: row.content,
+    image_url: row.image_url ?? null,
     tags: row.tags,
     views: row.views,
     likes: row.likes,
@@ -85,7 +88,7 @@ async function getStoryBySlugRaw(slug: string) {
   const { data, error } = await supabase
     .from("survivorstories")
     .select(
-      "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+      "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
     )
     .eq("slug", slug)
     .eq("deleted", false)
@@ -114,7 +117,7 @@ async function getAllStoriesRaw() {
   const { data, error } = await supabase
     .from("survivorstories")
     .select(
-      "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+      "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
     )
     .eq("deleted", false)
     .order("created_at", { ascending: false });
@@ -137,7 +140,7 @@ async function getRandomStoriesRaw(limit = 3, excludeSlug?: string) {
   const { data, error } = await supabase
     .from("survivorstories")
     .select(
-      "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+      "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
     )
     .eq("deleted", false)
     .limit(30);

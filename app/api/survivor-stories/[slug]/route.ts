@@ -14,6 +14,7 @@ function mapStory(row: any) {
     title: row.title,
     slug: row.slug,
     content: row.content,
+    image_url: row.image_url,
     tags: row.tags,
     views: row.views,
     likes: row.likes,
@@ -42,7 +43,7 @@ export async function GET(
     const { data, error } = await sb
       .from("survivorstories")
       .select(
-        "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+        "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
       )
       .eq("deleted", false)
       .or(`slug.eq.${slug},id.eq.${slug}`)
