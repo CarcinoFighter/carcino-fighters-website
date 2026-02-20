@@ -17,6 +17,15 @@ import type {
   SurvivorStorySummary,
 } from "@/lib/survivorStoriesRepository";
 
+const colors = [
+  "#E39E2E",
+  "#64A04B",
+  "#4145ca",
+  "#9E8DC5",
+  "#7F2D3F",
+  "#818181",
+];
+
 interface StoryPageClientProps {
   story: SurvivorStory;
   related: (SurvivorStorySummary & { image_url?: string | null })[];
@@ -58,16 +67,27 @@ const fadeUp = {
   },
 };
 
+function pickRelated(
+  all: (SurvivorStorySummary & { image_url?: string | null })[],
+  currentId: string,
+) {
+  // Exclude the currently viewed story
+  const others = all.filter((s) => s.id !== currentId);
+  // If 3 or fewer, show all of them; otherwise pick 3 at random
+  if (others.length <= 3) return others;
+  const shuffled = [...others].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, 3);
+}
+
 export default function StoryPageClient({
   story,
   related: relatedProp,
   cardColor,
 }: StoryPageClientProps) {
   const [expanded, setExpanded] = useState(false);
-  const [related, setRelated] =
-    useState<(SurvivorStorySummary & { image_url?: string | null })[]>(
-      relatedProp,
-    );
+  const [related, setRelated] = useState<
+    (SurvivorStorySummary & { image_url?: string | null })[]
+  >(() => pickRelated(relatedProp, story.id));
 
   // Fetch full story data (including image_url) the same way the main menu does
   React.useEffect(() => {
@@ -79,9 +99,9 @@ export default function StoryPageClient({
           const allStories: (SurvivorStorySummary & {
             image_url?: string | null;
           })[] = payload?.stories ?? [];
-          const relatedIds = new Set(relatedProp.map((r) => r.id));
-          const enriched = allStories.filter((s) => relatedIds.has(s.id));
-          if (enriched.length > 0) setRelated(enriched);
+          if (allStories.length > 0) {
+            setRelated(pickRelated(allStories, story.id));
+          }
         }
       } catch (e) {
         // silently fall back to relatedProp
@@ -91,7 +111,6 @@ export default function StoryPageClient({
 
   return (
     <div className="min-h-screen text-foreground bg-[#2A292F] relative overflow-hidden">
-      {/* Decorative radial gradient orb */}
       <div
         style={{
           position: "absolute",
@@ -106,20 +125,34 @@ export default function StoryPageClient({
         }}
       />
       <div
+        className="max-md:hidden"
         style={{
           position: "absolute",
-          right: -800,
-          top: -200,
-          width: 1600,
-          height: 1600,
+          right: -900,
+          top: -300,
+          width: 1800,
+          height: 1800,
           borderRadius: "50%",
-          background: `radial-gradient(circle, ${cardColor}55 0%, transparent 55%)`,
+          background: `radial-gradient(circle, ${cardColor}55 0%, transparent 50%)`,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          right: -600,
+          bottom: -1200,
+          width: 1800,
+          height: 1800,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, #583B7A 0%, transparent 60%)`,
           pointerEvents: "none",
           zIndex: 0,
         }}
       />
       <ScrollProgress className="hidden md:block" />
-      <main className="max-w-4xl mx-auto p-6 relative z-10 mt-32">
+      <main className="max-w-[80%] md:max-w-5xl mx-auto p-6 relative z-10 mt-32 items-center justify-center self-center">
         <header className="mb-8 text-center">
           <h1
             className="text-4xl md:text-6xl font-wintersolace font-bold leading-tight"
@@ -152,10 +185,10 @@ export default function StoryPageClient({
               prose
               prose-sm sm:prose-base lg:prose-lg
               relative
-              max-w-full sm:max-w-4xl
+              max-w-full sm:max-w-5xl
               dark:prose-invert
-              font-dmsans
-              ${expanded ? "" : "max-h-[50vh] sm:max-h-[60vh] overflow-hidden"}
+              font-dmsans 
+              ${expanded ? "" : "max-h-[60vh] sm:max-h-[80vh] overflow-hidden"}
             `}
           style={
             !expanded
@@ -254,85 +287,84 @@ export default function StoryPageClient({
           </motion.div>
         </div>
 
-        <section className="mt-16">
-          <h2 className="text-2xl font-semibold mb-6">More stories</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {related.map((r, i) => {
-              const colors = [
-                "#E39E2E",
-                "#64A04B",
-                "#4145ca",
-                "#9E8DC5",
-                "#7F2D3F",
-                "#818181",
-              ];
-              const relatedCardColor = colors[i % colors.length];
-              const backgroundImage = r.image_url || "/sfs_bg.png";
+        {related.length > 0 && (
+          <section className="mt-16">
+            <h2 className="sm:text-3xl text-4xl font-instrumentserifitalic text-[#CDA8E8] text-center mb-8">
+              Other Survivor Stories:
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {related.map((r, i) => {
+                const colorsleft: string[] = colors.filter((element) => {
+                  return element !== cardColor;
+                });
+                const relatedCardColor = colorsleft[i % colorsleft.length];
+                const backgroundImage = r.image_url || "/sfs_bg.png";
 
-              const getTitleFontSize = (title: string) => {
-                const words = title.split(/\s+/);
-                const maxWordLength = Math.max(...words.map((w) => w.length));
-                if (maxWordLength > 12) return "text-[14px] sm:text-[18px]";
-                if (maxWordLength >= 9) return "text-[18px] sm:text-[22px]";
-                if (title.length > 35) return "text-[16px] sm:text-[20px]";
-                if (title.length >= 15) return "text-[18px] sm:text-[24px]";
-                return "text-[22px] sm:text-[30px]";
-              };
+                const getTitleFontSize = (title: string) => {
+                  const words = title.split(/\s+/);
+                  const maxWordLength = Math.max(...words.map((w) => w.length));
+                  if (maxWordLength > 12) return "text-[14px] sm:text-[18px]";
+                  if (maxWordLength >= 9) return "text-[18px] sm:text-[22px]";
+                  if (title.length > 35) return "text-[16px] sm:text-[20px]";
+                  if (title.length >= 15) return "text-[18px] sm:text-[24px]";
+                  return "text-[22px] sm:text-[30px]";
+                };
 
-              return (
-                <Link
-                  key={r.id}
-                  href={
-                    r.slug
-                      ? `/survivorstories/${r.slug}`
-                      : `/survivorstories/${r.id}`
-                  }
-                  className="block h-full"
-                >
-                  <motion.div
-                    className="h-full"
-                    whileHover={{ y: -4, scale: 1.015 }}
-                    transition={{ duration: 0.3, ease: easeSoft }}
+                return (
+                  <Link
+                    key={r.id}
+                    href={
+                      r.slug
+                        ? `/survivorstories/${r.slug}`
+                        : `/survivorstories/${r.id}`
+                    }
+                    className="block h-full"
                   >
-                    <div
-                      style={{
-                        backgroundImage: `url('${backgroundImage}')`,
-                        backgroundColor: relatedCardColor,
-                        backgroundBlendMode: "multiply",
-                      }}
-                      className="
-                        relative
-                        group/card
-                        vision-pro-ui-hoverable
-                        w-full h-[180px]
-                        flex flex-col justify-center
-                        rounded-[32px]
-                        overflow-hidden isolation-isolate liquid-glass !shadow-none
-                        select-none bg-cover
-                      "
+                    <motion.div
+                      className="h-full"
+                      whileHover={{ y: -4, scale: 1.015 }}
+                      transition={{ duration: 0.3, ease: easeSoft }}
                     >
                       <div
-                        className="storyGlass-tint pointer-events-none"
-                        style={{ backgroundColor: relatedCardColor }}
-                      />
-                      <div className="cardGlass-borders pointer-events-none" />
-                      <div className="cardGlass-shine pointer-events-none" />
-                      <div className="liquidGlass-text pointer-events-none" />
+                        style={{
+                          backgroundImage: `url('${backgroundImage}')`,
+                          backgroundColor: relatedCardColor,
+                          backgroundBlendMode: "multiply",
+                        }}
+                        className="
+                          relative
+                          group/card
+                          vision-pro-ui-hoverable
+                          w-full h-[180px]
+                          flex flex-col justify-center
+                          rounded-[32px]
+                          overflow-hidden isolation-isolate liquid-glass !shadow-none
+                          select-none bg-cover
+                        "
+                      >
+                        <div
+                          className="storyGlass-tint pointer-events-none"
+                          style={{ backgroundColor: relatedCardColor }}
+                        />
+                        <div className="cardGlass-borders pointer-events-none" />
+                        <div className="cardGlass-shine pointer-events-none" />
+                        <div className="liquidGlass-text pointer-events-none" />
 
-                      <div className="relative z-10 flex flex-col items-center gap-2 p-4 w-full justify-center">
-                        <h3
-                          className={`${getTitleFontSize(r.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}
-                        >
-                          {r.title}
-                        </h3>
+                        <div className="relative z-10 flex flex-col items-center gap-2 p-4 w-full justify-center">
+                          <h3
+                            className={`${getTitleFontSize(r.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}
+                          >
+                            {r.title}
+                          </h3>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
+                    </motion.div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         <div className="mt-12">
           <Link href="/survivorstories" className="text-primary underline">
