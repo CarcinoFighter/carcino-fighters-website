@@ -22,11 +22,27 @@ const staggerContainer = {
 
 const MotionLabel = motion(Label);
 
+const SCROLL_SPEED = 40; // px/s auto-scroll speed
+
 export default function Home() {
   const [items, setItems] = React.useState<Tribute[]>([]);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const heroRef = React.useRef<HTMLDivElement | null>(null);
-  const [paused, setPaused] = React.useState(false);
+  const trackRef = React.useRef<HTMLDivElement | null>(null);
+  const wrapperRef = React.useRef<HTMLDivElement | null>(null);
+
+  const offsetRef = React.useRef(0);
+  const rafRef = React.useRef<number | null>(null);
+  const lastTimeRef = React.useRef<number | null>(null);
+  const halfWidthRef = React.useRef(0);
+
+  // Separate pause reasons so they don't clobber each other
+  const hoveredRef = React.useRef(false);
+  const isDragging = React.useRef(false);
+
+  // Drag via pointer capture
+  const dragStartX = React.useRef(0);
+  const dragStartOffset = React.useRef(0);
 
   const { scrollYProgress } = useScroll({
     container: containerRef,
@@ -38,10 +54,101 @@ export default function Home() {
   React.useEffect(() => {
     setItems(tributes);
   }, []);
+  const featuredItems = React.useMemo<Tribute[]>(() => [...items], [items]);
 
-  const featuredItems = React.useMemo<Tribute[]>(() => {
-    return [...items];
-  }, [items]);
+  // Measure half-width after render
+  React.useEffect(() => {
+    if (!trackRef.current || featuredItems.length === 0) return;
+    halfWidthRef.current = trackRef.current.scrollWidth / 2;
+  }, [featuredItems]);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (trackRef.current)
+        halfWidthRef.current = trackRef.current.scrollWidth / 2;
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // rAF loop
+  React.useEffect(() => {
+    if (featuredItems.length === 0) return;
+
+    const tick = (timestamp: number) => {
+      if (lastTimeRef.current === null) lastTimeRef.current = timestamp;
+      const delta = (timestamp - lastTimeRef.current) / 1000;
+      lastTimeRef.current = timestamp;
+
+      const paused = hoveredRef.current || isDragging.current;
+      if (!paused) {
+        offsetRef.current += SCROLL_SPEED * delta;
+      }
+
+      const half = halfWidthRef.current;
+      if (half > 0) {
+        offsetRef.current = ((offsetRef.current % half) + half) % half;
+      }
+
+      if (trackRef.current) {
+        trackRef.current.style.transform = `translateX(${-offsetRef.current}px)`;
+      }
+
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      lastTimeRef.current = null;
+    };
+  }, [featuredItems]);
+
+  // Wheel scroll handler — horizontal scroll moves the carousel
+  React.useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+
+    const onWheel = (e: WheelEvent) => {
+      // Only intercept horizontal scroll or shift+scroll
+      // Let vertical scroll pass through for page scrolling
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        e.preventDefault();
+        offsetRef.current += e.deltaX;
+      } else if (e.shiftKey) {
+        e.preventDefault();
+        offsetRef.current += e.deltaY;
+      }
+      // Pure vertical scroll (no shift) is NOT prevented — page scrolls normally
+    };
+
+    wrapper.addEventListener("wheel", onWheel, { passive: false });
+    return () => wrapper.removeEventListener("wheel", onWheel);
+  }, [featuredItems]);
+
+  // Pointer capture drag — works even when pointer moves outside element
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    // Only drag on primary button (left click), not right click
+    if (e.button !== 0) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    isDragging.current = true;
+    dragStartX.current = e.clientX;
+    dragStartOffset.current = offsetRef.current;
+    if (wrapperRef.current) wrapperRef.current.style.cursor = "grabbing";
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging.current) return;
+    const dx = e.clientX - dragStartX.current;
+    offsetRef.current = dragStartOffset.current - dx;
+  };
+
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging.current) return;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    isDragging.current = false;
+    if (wrapperRef.current) wrapperRef.current.style.cursor = "grab";
+  };
 
   const homePageSchema = {
     "@context": "https://schema.org",
@@ -63,41 +170,6 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homePageSchema) }}
       />
 
-      {/*
-        THE ROOT CAUSE OF THE TELEPORT BUG:
-        Setting `animation` as a React inline style string means every re-render
-        (including the paused state toggle) can re-assign the `animation` property,
-        which resets the animation back to frame 0.
-
-        THE FIX:
-        - Define the full `animation` in a global CSS class (never touched by React)
-        - React only toggles a secondary `paused` class that sets `animation-play-state: paused`
-        - This way the animation position is NEVER reset — it just freezes and resumes in place
-      */}
-      <style jsx global>{`
-        @keyframes carousel-scroll {
-          from {
-            transform: translateX(0);
-          }
-          to {
-            transform: translateX(-50%);
-          }
-        }
-
-        .carousel-track {
-          display: flex;
-          gap: 1.5rem;
-          width: max-content;
-          will-change: transform;
-          animation: carousel-scroll 40s linear infinite;
-          padding: 12px 0;
-        }
-
-        .carousel-track.paused {
-          animation-play-state: paused;
-        }
-      `}</style>
-
       <div
         ref={containerRef}
         className="flex flex-col relative lg:block lg:h-screen w-full overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background hide-scrollbar"
@@ -117,7 +189,7 @@ export default function Home() {
                 height={1198}
                 width={1728}
                 alt="background"
-                className=" w-full h-full"
+                className="w-full h-full"
                 priority
               />
             </div>
@@ -136,22 +208,38 @@ export default function Home() {
             </motion.div>
 
             <motion.div
-              className="relative z-10 w-full overflow-hidden py-2"
+              className="relative z-10 w-full py-2"
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
               variants={staggerContainer}
+              style={{ overflow: "hidden" }}
             >
+              {/*
+                wrapperRef: receives wheel + pointer events.
+                No overlay — pointer events reach cards naturally for hover.
+                Pointer capture handles drag even outside bounds.
+              */}
               <div
-                className="w-full"
-                style={{ overflowX: "hidden", overflowY: "visible" }}
+                ref={wrapperRef}
+                className="w-full select-none"
+                style={{ cursor: "grab", touchAction: "pan-y" }}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                onPointerCancel={onPointerUp}
                 role="region"
                 aria-label="tribute carousel"
               >
                 <div
-                  className={`carousel-track${paused ? " paused" : ""}`}
-                  onMouseEnter={() => setPaused(true)}
-                  onMouseLeave={() => setPaused(false)}
+                  ref={trackRef}
+                  style={{
+                    display: "flex",
+                    gap: "1.5rem",
+                    width: "max-content",
+                    willChange: "transform",
+                    padding: "12px 0",
+                  }}
                 >
                   {[...featuredItems, ...featuredItems].map((item, idx) => {
                     const imgSrc = item.image;
@@ -159,6 +247,12 @@ export default function Home() {
                       <div
                         key={`${item.name}-${idx}`}
                         className="block flex-shrink-0 w-[450px]"
+                        onMouseEnter={() => {
+                          hoveredRef.current = true;
+                        }}
+                        onMouseLeave={() => {
+                          hoveredRef.current = false;
+                        }}
                       >
                         <motion.div
                           className="tribute-card group"
@@ -181,7 +275,7 @@ export default function Home() {
                                 vision-pro-ui-hoverable
                                 w-[450px] h-[300px]
                                 py-3
-                                flex flex-col 
+                                flex flex-col
                                 rounded-[40px]
                                 overflow-hidden isolation-isolate liquid-glass !shadow-none
                                 backdrop-blur-[30px]
@@ -189,12 +283,9 @@ export default function Home() {
                               "
                             >
                               <div
-                                className="absolute inset-0 bg-cover bg-center "
-                                style={{
-                                  backgroundImage: `url(${imgSrc})`,
-                                }}
+                                className="absolute inset-0 bg-cover bg-center [filter:grayscale(100%)] group-hover:[filter:none] transition-all duration-500"
+                                style={{ backgroundImage: `url(${imgSrc})` }}
                               />
-                              {/* gradient overlay to improve text readability */}
                               <div className="absolute bottom-0 w-full h-3/5 bg-gradient-to-t from-black/90 to-transparent pointer-events-none transition-opacity duration-300 group-hover:opacity-0" />
                               <div className="storyGlass-tint pointer-events-none"></div>
                               <div className="glass-noise"></div>
@@ -214,11 +305,9 @@ export default function Home() {
                                   p-4
                                 "
                               >
-                                {/* description overlays top, visible only on hover */}
                                 <p className="absolute bottom-28 bg-black/30 backdrop-blur-sm px-4 text-[14px] sm:text-[16px] text-center text-[#dfdfdf] transition-opacity duration-300 font-dmsans w-full font-light opacity-0 group-hover:opacity-100">
                                   {item.text}
                                 </p>
-
                                 <h3 className="text-[26px] leading-[1] p-2 align-middle justify-center text-center font-tttravelsnext font-bold max-w-[300px] mx-auto w-full text-[#f8f8f8]">
                                   {item.name}
                                 </h3>
