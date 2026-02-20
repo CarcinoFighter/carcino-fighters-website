@@ -6,16 +6,21 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Footer } from "@/components/footer";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
-import type { SurvivorStory, SurvivorStorySummary } from "@/lib/survivorStoriesRepository";
+import type {
+  SurvivorStory,
+  SurvivorStorySummary,
+} from "@/lib/survivorStoriesRepository";
 
 interface StoryPageClientProps {
   story: SurvivorStory;
   related: SurvivorStorySummary[];
+  cardColor: string;
 }
 
 function MDImage({ src, alt }: { src?: string; alt?: string }) {
@@ -42,21 +47,63 @@ function MDImage({ src, alt }: { src?: string; alt?: string }) {
   );
 }
 
+const easeSoft = [0.33, 1, 0.68, 1] as const;
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.65, ease: easeSoft },
+  },
+};
+
 export default function StoryPageClient({
   story,
   related,
+  cardColor,
 }: StoryPageClientProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground bg-[#2A292F] relative overflow-hidden">
+      {/* Decorative radial gradient orb */}
+      <div
+        style={{
+          position: "absolute",
+          left: -900,
+          top: -800,
+          width: 1800,
+          height: 1800,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, ${cardColor}55 0%, transparent 60%)`,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          right: -500,
+          top: 0,
+          width: 1500,
+          height: 1500,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, ${cardColor}55 0%, transparent 60%)`,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
       <ScrollProgress className="hidden md:block" />
-      <main className="max-w-4xl mx-auto p-6">
+      <main className="max-w-4xl mx-auto p-6 relative z-10 mt-32">
         <header className="mb-8 text-center">
-          <h1 className="text-4xl md:text-6xl font-wintersolace font-bold leading-tight">
+          <h1
+            className="text-4xl md:text-6xl font-wintersolace font-bold leading-tight"
+            style={{ color: cardColor }}
+          >
             {story.title}
           </h1>
-          <div className="mt-4 flex items-center justify-center gap-4 text-sm">
+          {/* <div className="mt-4 flex items-center justify-center gap-4 text-sm">
             <Avatar className="w-12 h-12">
               <AvatarImage src={story.avatarUrl || "/logo.png"} />
               <AvatarFallback>
@@ -64,12 +111,16 @@ export default function StoryPageClient({
               </AvatarFallback>
             </Avatar>
             <div className="text-left">
-              <div className="font-semibold">{story.authorName ?? "Unknown"}</div>
+              <div className="font-semibold">
+                {story.authorName ?? "Unknown"}
+              </div>
               {story.authorBio && (
-                <div className="text-xs text-muted-foreground">{story.authorBio}</div>
+                <div className="text-xs text-muted-foreground">
+                  {story.authorBio}
+                </div>
               )}
             </div>
-          </div>
+          </div> */}
         </header>
 
         <article
@@ -140,18 +191,42 @@ export default function StoryPageClient({
             {story.content ?? ""}
           </ReactMarkdown>
 
+          {/* Use rgba so the fade blends naturally with the radial orb gradients behind it */}
           <div
-            className={`absolute bottom-0 left-0 right-0 h-[80%] bg-gradient-to-t from-background to-transparent ${expanded ? "hidden" : ""}`}
+            className={`absolute bottom-0 left-0 right-0 h-[80%] ${expanded ? "hidden" : ""}`}
+            style={{
+              background:
+                "linear-gradient(to top, rgba(42,41,47,1) 0%, rgba(42,41,47,0.9) 25%, rgba(42,41,47,0.5) 60%, rgba(42,41,47,0) 100%)",
+            }}
           />
         </article>
 
         <div className="mt-6 flex justify-center">
-          <Button variant="secondary" onClick={() => setExpanded((s) => !s)}>
-            {expanded ? "Show less" : "Read more"}
-            <ArrowDown
-              className={`transition-transform ml-2 ${expanded ? "rotate-180" : ""}`}
-            />
-          </Button>
+          <motion.div
+            variants={fadeUp}
+            whileHover={{ y: -2, scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            className="inline-flex"
+          >
+            <Button
+              variant="ghost"
+              onClick={() => setExpanded((s) => !s)}
+              className="relative px-7 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+            >
+              <div className="relative z-10 flex items-center gap-2">
+                {expanded ? "Show less" : "Read more"}
+                <ArrowDown
+                  className={`transition-transform ml-2 ${expanded ? "rotate-180" : ""}`}
+                />
+              </div>
+
+              {/* Liquid glass layers */}
+              <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+              <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
+              <div className="liquidGlass-shine  relative w-[102.5%] h-[100%] !top-[-0.1px] !left-[-2.3px]"></div>
+              <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+            </Button>
+          </motion.div>
         </div>
 
         <section className="mt-16">
