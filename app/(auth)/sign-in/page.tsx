@@ -11,9 +11,9 @@ function SignInInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const registered = searchParams.get("registered");
-    const rawRedirect = searchParams.get("redirectTo") || "/survivorstories/dashboard";
+    const rawRedirect = searchParams.get("redirectTo") || "/blogs/dashboard";
     const redirectTarget = useMemo(
-        () => (rawRedirect.startsWith("/") ? rawRedirect : "/survivorstories/dashboard"),
+        () => (rawRedirect.startsWith("/") ? rawRedirect : "/blogs/dashboard"),
         [rawRedirect]
     );
 
