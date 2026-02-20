@@ -14,18 +14,18 @@ type RawStoryRow = {
   created_at: string;
   updated_at: string;
   deleted: boolean | null;
-  users_public?:
+  users?:
     | {
         name: string | null;
         username: string | null;
         avatar_url: string | null;
-        bio: string | null;
+        description?: string | null;
       }
     | {
         name: string | null;
         username: string | null;
         avatar_url: string | null;
-        bio: string | null;
+        description?: string | null;
       }[]
     | null;
 };
@@ -58,10 +58,10 @@ export type SurvivorStorySummary = {
 
 function mapRow(row: RawStoryRow | null): SurvivorStory | null {
   if (!row) return null;
-  const author = Array.isArray(row.users_public) ? row.users_public[0] : row.users_public;
+  const author = Array.isArray(row.users) ? row.users[0] : row.users;
   const authorName = author?.name ?? author?.username ?? null;
   const authorUsername = author?.username ?? null;
-  const authorBio = author?.bio ?? null;
+  const authorBio = (author as any)?.description ?? null;
   const avatarUrl = author?.avatar_url ?? null;
 
   return {
@@ -88,7 +88,7 @@ async function getStoryBySlugRaw(slug: string) {
   const { data, error } = await supabase
     .from("survivorstories")
     .select(
-      "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+      "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
     )
     .eq("slug", slug)
     .eq("deleted", false)
@@ -117,7 +117,7 @@ async function getAllStoriesRaw() {
   const { data, error } = await supabase
     .from("survivorstories")
     .select(
-      "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+      "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
     )
     .eq("deleted", false)
     .order("created_at", { ascending: false });
@@ -140,7 +140,7 @@ async function getRandomStoriesRaw(limit = 3, excludeSlug?: string) {
   const { data, error } = await supabase
     .from("survivorstories")
     .select(
-      "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+      "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
     )
     .eq("deleted", false)
     .limit(30);

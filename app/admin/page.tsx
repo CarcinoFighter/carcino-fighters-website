@@ -580,6 +580,29 @@ export default function AdminPage() {
             </div>
           )}
 
+          <section className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={`${cardClass} p-6 flex flex-col gap-3`}>
+              <div>
+                <h2 className="font-semibold text-lg">Survivor Stories</h2>
+                <p className="text-sm text-white/70">Publish and edit survivor stories as a society member.</p>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  className={primaryButton}
+                  onClick={() => router.push("/admin/survivor-stories")}
+                >
+                  Open survivor stories
+                </button>
+                <button
+                  className={subtleButton}
+                  onClick={() => router.push("/survivorstories")}
+                >
+                  View public stories
+                </button>
+              </div>
+            </div>
+          </section>
+
           <section className="mb-8 gap-4 flex flex-col">
             <div className={`${cardClass} p-6`}>
               <h2 className="font-semibold mb-3 text-lg">Your Account</h2>
