@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import jwt from "jsonwebtoken";
 
-const COOKIE_NAME = "public_jwt";
+const COOKIE_NAME = "jwt";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY;
 const jwtSecret = process.env.JWT_SECRET;
@@ -50,22 +50,50 @@ async function ensureUniqueSlug(baseSlug: string) {
   return candidate;
 }
 
-async function getSession() {
-  if (missingConfig()) return null;
+async function hashToken(token: string) {
+  const crypto = await import("node:crypto");
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+async function getAdminSession() {
+  if (missingConfig() || !jwtSecret) return null;
   const token = (await cookies()).get(COOKIE_NAME)?.value;
   if (!token) return null;
 
   try {
-    const payload = jwt.verify(token, jwtSecret!) as jwt.JwtPayload & { sub: string };
-    const { data: user, error } = await sb!
-      .from("users_public")
-      .select("id, username, name, bio, avatar_url, deleted")
+    const payload = jwt.verify(token, jwtSecret) as jwt.JwtPayload & { sub: string };
+    const tokenHash = await hashToken(token);
+
+    const { data: sessionRow, error: sessionErr } = await sb!
+      .from("login_sessions")
+      .select("user_id, expires_at")
+      .eq("token_hash", tokenHash)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (sessionErr || !sessionRow) return null;
+    if (sessionRow.expires_at && new Date(sessionRow.expires_at).getTime() < Date.now()) return null;
+    if (sessionRow.user_id !== payload.sub) return null;
+
+    const { data: user, error: userErr } = await sb!
+      .from("users")
+      .select("id, username, name, email, avatar_url, description, position")
       .eq("id", payload.sub)
       .limit(1)
       .maybeSingle();
 
-    if (error || !user || user.deleted) return null;
-    return { id: user.id, username: user.username, name: user.name, bio: user.bio, avatar_url: user.avatar_url };
+    if (userErr || !user) return null;
+
+    return {
+      id: user.id,
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      avatar_url: user.avatar_url,
+      bio: user.description ?? null,
+      position: user.position ?? null,
+    };
   } catch (e) {
     return null;
   }
@@ -76,7 +104,7 @@ async function handleUploadImage(req: Request) {
     return NextResponse.json({ error: "Supabase credentials not configured" }, { status: 500 });
   }
 
-  const session = await getSession();
+  const session = await getAdminSession();
   if (!session?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const formData = await req.formData();
@@ -101,7 +129,7 @@ async function handleUploadImage(req: Request) {
 }
 
 function mapStory(row: any) {
-  const author = row?.users_public;
+  const author = row?.users;
   return {
     id: row.id,
     user_id: row.user_id,
@@ -117,7 +145,7 @@ function mapStory(row: any) {
     deleted: row.deleted,
     authorName: author?.name ?? author?.username ?? null,
     authorUsername: author?.username ?? null,
-    authorBio: author?.bio ?? null,
+    authorBio: author?.description ?? null,
     avatarUrl: author?.avatar_url ?? null,
   };
 }
@@ -128,13 +156,13 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const mine = searchParams.get("mine") === "true";
-    const session = mine ? await getSession() : null;
+    const session = mine ? await getAdminSession() : null;
     if (mine && !session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const query = sb!
       .from("survivorstories")
       .select(
-        "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+        "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
       )
       .eq("deleted", false)
       .order("created_at", { ascending: false });
@@ -162,7 +190,7 @@ export async function POST(req: Request) {
     }
 
     if (missingConfig()) return NextResponse.json({ error: "Supabase credentials not configured" }, { status: 500 });
-    const session = await getSession();
+    const session = await getAdminSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = (await req.json().catch(() => ({}))) as StoryBody;
@@ -190,7 +218,7 @@ export async function POST(req: Request) {
           tags: normalizedTags,
         })
         .select(
-          "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+          "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
         )
         .maybeSingle();
 
@@ -227,7 +255,7 @@ export async function POST(req: Request) {
         .update(updates)
         .eq("id", body.id)
         .select(
-          "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+          "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
         )
         .maybeSingle();
 
