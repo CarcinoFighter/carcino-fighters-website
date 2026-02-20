@@ -26,6 +26,8 @@ const SCROLL_SPEED = 40; // px/s auto-scroll speed
 
 export default function Home() {
   const [items, setItems] = React.useState<Tribute[]>([]);
+  const [isDesktop, setIsDesktop] = React.useState(false);
+
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const heroRef = React.useRef<HTMLDivElement | null>(null);
   const trackRef = React.useRef<HTMLDivElement | null>(null);
@@ -36,11 +38,9 @@ export default function Home() {
   const lastTimeRef = React.useRef<number | null>(null);
   const halfWidthRef = React.useRef(0);
 
-  // Separate pause reasons so they don't clobber each other
   const hoveredRef = React.useRef(false);
   const isDragging = React.useRef(false);
 
-  // Drag via pointer capture
   const dragStartX = React.useRef(0);
   const dragStartOffset = React.useRef(0);
 
@@ -51,67 +51,84 @@ export default function Home() {
   });
   const y = useTransform(scrollYProgress, [0, 1], [0, -200]);
 
+  // Detect desktop
+  React.useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   React.useEffect(() => {
     setItems(tributes);
   }, []);
+
   const featuredItems = React.useMemo<Tribute[]>(() => [...items], [items]);
 
-  // Measure half-width after render
+  // Resize handler — mobile only
   React.useEffect(() => {
-    if (!trackRef.current || featuredItems.length === 0) return;
-    halfWidthRef.current = trackRef.current.scrollWidth / 2;
-  }, [featuredItems]);
-
-  React.useEffect(() => {
+    if (isDesktop) return;
     const handleResize = () => {
       if (trackRef.current)
-        halfWidthRef.current = trackRef.current.scrollWidth / 2;
+        halfWidthRef.current = trackRef.current.scrollWidth / REPEAT;
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [isDesktop]);
 
-  // rAF loop
+  // rAF loop — mobile only
   React.useEffect(() => {
-    if (featuredItems.length === 0) return;
+    if (featuredItems.length === 0 || isDesktop) return;
 
-    const tick = (timestamp: number) => {
-      if (lastTimeRef.current === null) lastTimeRef.current = timestamp;
-      const delta = (timestamp - lastTimeRef.current) / 1000;
-      lastTimeRef.current = timestamp;
-
-      const paused = hoveredRef.current || isDragging.current;
-      if (!paused) {
-        offsetRef.current += SCROLL_SPEED * delta;
-      }
-
-      const half = halfWidthRef.current;
-      if (half > 0) {
-        offsetRef.current = ((offsetRef.current % half) + half) % half;
-      }
-
+    // Wait a frame so the track is fully painted before measuring
+    const setup = requestAnimationFrame(() => {
       if (trackRef.current) {
-        trackRef.current.style.transform = `translateX(${-offsetRef.current}px)`;
+        // One "segment" = 1/REPEAT of total width
+        halfWidthRef.current = trackRef.current.scrollWidth / REPEAT;
       }
+
+      const tick = (timestamp: number) => {
+        if (lastTimeRef.current === null) lastTimeRef.current = timestamp;
+        const delta = Math.min((timestamp - lastTimeRef.current) / 1000, 0.1); // cap delta to avoid huge jumps
+        lastTimeRef.current = timestamp;
+
+        const paused = hoveredRef.current || isDragging.current;
+        if (!paused) {
+          offsetRef.current += SCROLL_SPEED * delta;
+        }
+
+        const segment = halfWidthRef.current;
+        if (segment > 0) {
+          // Keep offset within [0, segment) for seamless looping
+          offsetRef.current =
+            ((offsetRef.current % segment) + segment) % segment;
+        }
+
+        if (trackRef.current) {
+          trackRef.current.style.transform = `translateX(${-offsetRef.current}px)`;
+        }
+
+        rafRef.current = requestAnimationFrame(tick);
+      };
 
       rafRef.current = requestAnimationFrame(tick);
-    };
+    });
 
-    rafRef.current = requestAnimationFrame(tick);
     return () => {
+      cancelAnimationFrame(setup);
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       lastTimeRef.current = null;
+      offsetRef.current = 0;
     };
-  }, [featuredItems]);
+  }, [featuredItems, isDesktop]);
 
-  // Wheel scroll handler — horizontal scroll moves the carousel
+  // Wheel scroll handler — mobile only
   React.useEffect(() => {
+    if (isDesktop) return;
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
 
     const onWheel = (e: WheelEvent) => {
-      // Only intercept horizontal scroll or shift+scroll
-      // Let vertical scroll pass through for page scrolling
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
         e.preventDefault();
         offsetRef.current += e.deltaX;
@@ -119,17 +136,15 @@ export default function Home() {
         e.preventDefault();
         offsetRef.current += e.deltaY;
       }
-      // Pure vertical scroll (no shift) is NOT prevented — page scrolls normally
     };
 
     wrapper.addEventListener("wheel", onWheel, { passive: false });
     return () => wrapper.removeEventListener("wheel", onWheel);
-  }, [featuredItems]);
+  }, [featuredItems, isDesktop]);
 
-  // Pointer capture drag — works even when pointer moves outside element
+  // Pointer drag — mobile only
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Only drag on primary button (left click), not right click
-    if (e.button !== 0) return;
+    if (isDesktop || e.button !== 0) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     isDragging.current = true;
     dragStartX.current = e.clientX;
@@ -138,13 +153,13 @@ export default function Home() {
   };
 
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
+    if (isDesktop || !isDragging.current) return;
     const dx = e.clientX - dragStartX.current;
     offsetRef.current = dragStartOffset.current - dx;
   };
 
   const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
+    if (isDesktop || !isDragging.current) return;
     e.currentTarget.releasePointerCapture(e.pointerId);
     isDragging.current = false;
     if (wrapperRef.current) wrapperRef.current.style.cursor = "grab";
@@ -161,6 +176,13 @@ export default function Home() {
     },
     inLanguage: "en-IN",
   };
+
+  // On desktop: render items once, centered. On mobile: duplicate for infinite scroll.
+  // Repeat items enough times so the track is always much wider than the screen (mobile only)
+  const REPEAT = 10;
+  const displayItems = isDesktop
+    ? featuredItems
+    : Array.from({ length: REPEAT }, () => featuredItems).flat();
 
   return (
     <>
@@ -215,15 +237,13 @@ export default function Home() {
               variants={staggerContainer}
               style={{ overflow: "hidden" }}
             >
-              {/*
-                wrapperRef: receives wheel + pointer events.
-                No overlay — pointer events reach cards naturally for hover.
-                Pointer capture handles drag even outside bounds.
-              */}
               <div
                 ref={wrapperRef}
                 className="w-full select-none"
-                style={{ cursor: "grab", touchAction: "pan-y" }}
+                style={{
+                  cursor: isDesktop ? "default" : "grab",
+                  touchAction: "pan-y",
+                }}
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
@@ -236,12 +256,23 @@ export default function Home() {
                   style={{
                     display: "flex",
                     gap: "1.5rem",
-                    width: "max-content",
-                    willChange: "transform",
-                    padding: "12px 0",
+                    // On desktop: wrap and center. On mobile: single row, infinite scroll.
+                    ...(isDesktop
+                      ? {
+                          flexWrap: "wrap",
+                          justifyContent: "center",
+                          width: "100%",
+                          padding: "12px 2rem",
+                        }
+                      : {
+                          flexWrap: "nowrap",
+                          width: "max-content",
+                          willChange: "transform",
+                          padding: "12px 0",
+                        }),
                   }}
                 >
-                  {[...featuredItems, ...featuredItems].map((item, idx) => {
+                  {displayItems.map((item, idx) => {
                     const imgSrc = item.image;
                     return (
                       <div
