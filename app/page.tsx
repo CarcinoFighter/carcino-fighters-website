@@ -311,18 +311,18 @@ export default function Home() {
                 </Button>
               </motion.div>
               <ShinyText
-                text={"Breaking Down Cancer for Everyone"}
+                text={"One Year of changing the Game"}
                 disabled={true}
                 speed={4}
-                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-3xl sm:mt-3 max-sm:text-3xl max-sm:w-3/5 leading-[109%]"
+                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-[560px] [word-spacing:6px] sm:mt-3 max-sm:text-3xl max-sm:w-3/5 leading-[100%]"
                 textColor="#fafafa"
               />
               <motion.span
-                className="font-dmsans text-[#c6c6c6] text-2xl sm:max-w-[50%] sm:-mt-0 w-full text-center max-sm:text-xs max-sm:w-4/5 font-light leading-[109%] tracking-[1%]"
+                className="font-dmsans text-[#c6c6c6] text-2xl sm:max-w-[750px] sm:-mt-0 w-full text-center max-sm:text-xs max-sm:w-4/5 font-light leading-[109%] tracking-[1%]"
                 variants={fadeUp}
               >
-                Cancer affects millions of lives—but together, awareness,
-                compassion, and early detection can change the story.
+                As we cross a year of work at Carcino, here’s to looking forward
+                to more success and reach. Read the address from our leadership!
                 {/*but in a way everyone can understand. */}
               </motion.span>
               <div className="flex flex-col items-center gap-2">
