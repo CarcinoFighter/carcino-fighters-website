@@ -29,13 +29,13 @@ export function Footer() {
               href="https://www.facebook.com/people/The-Carcino-Foundation/61580643500737/#"
               className="text-[#D5B0FF] hover:text-white transition-colors"
             >
-              <Facebook size={20} fill="currentColor" />
+              <Facebook size={20} strokeWidth={1.5} />
             </a>
             <a
               href="https://www.linkedin.com/company/thecarcinofoundation"
               className="text-[#D5B0FF] hover:text-white transition-colors"
             >
-              <Linkedin size={20} fill="currentColor" />
+              <Linkedin size={20} strokeWidth={1.5} />
             </a>
           </div>
           <p className="font-tttravelsnext text-[#D5B0FF] text-base font-extrabold leading-6">
