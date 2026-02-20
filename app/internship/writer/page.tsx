@@ -86,7 +86,7 @@ export default function RegistrationPage() {
         >
           Become a Writer For Us
         </h1>
-        <p className="text-sm sm:text-xl font-[100] text-white font-dmsans max-w-[33%] text-center">
+        <p className="text-sm sm:text-xl font-[100] text-white font-dmsans max-w-[50%] text-center sm:max-w-[33%]">
           Become part of our growing community working to educate the world
           about cancer prevention and awareness.
         </p>
@@ -366,8 +366,8 @@ export default function RegistrationPage() {
                               });
                             }}
                             className={`aspect-square w-4 border border-primary rounded-sm relative cursor-pointer ${writing.includes(writingOption)
-                                ? "bg-primary"
-                                : ""
+                              ? "bg-primary"
+                              : ""
                               }`}
                           >
                             {writing.includes(writingOption) && (
