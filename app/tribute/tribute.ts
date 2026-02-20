@@ -16,7 +16,7 @@ export const tributes: Tribute[] = [
   },
   {
     name: "BARSHA CHAKRABORTY",
-    year: "30th April 1982- 28th March 2018",
+    year: "30.04.1982 – 28.03.2018",
     text: "",
     image: "/tribute/barshachakraborty.jpeg",
   },
