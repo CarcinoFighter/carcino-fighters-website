@@ -133,6 +133,16 @@ export default function StoryPageClient({
               font-dmsans
               ${expanded ? "" : "max-h-[50vh] sm:max-h-[60vh] overflow-hidden"}
             `}
+          style={
+            !expanded
+              ? {
+                  maskImage:
+                    "linear-gradient(to bottom, black 0%, black 30%, transparent 100%)",
+                  WebkitMaskImage:
+                    "linear-gradient(to bottom, black 0%, black 30%, transparent 100%)",
+                }
+              : undefined
+          }
         >
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
@@ -190,15 +200,6 @@ export default function StoryPageClient({
           >
             {story.content ?? ""}
           </ReactMarkdown>
-
-          {/* Use rgba so the fade blends naturally with the radial orb gradients behind it */}
-          <div
-            className={`absolute bottom-0 left-0 right-0 h-[80%] ${expanded ? "hidden" : ""}`}
-            style={{
-              background:
-                "linear-gradient(to top, rgba(42,41,47,1) 0%, rgba(42,41,47,0.9) 25%, rgba(42,41,47,0.5) 60%, rgba(42,41,47,0) 100%)",
-            }}
-          />
         </article>
 
         <div className="mt-6 flex justify-center">
