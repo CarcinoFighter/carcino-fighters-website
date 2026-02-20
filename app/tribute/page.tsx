@@ -246,7 +246,7 @@ export default function Home() {
                     return (
                       <div
                         key={`${item.name}-${idx}`}
-                        className="block flex-shrink-0 w-[320px] sm:w-[420px] overflow-hidden"
+                        className="block flex-shrink-0 w-[320px] sm:w-[420px] overflow-hidden rounded-[40px]"
                         onMouseEnter={() => {
                           hoveredRef.current = true;
                         }}
@@ -255,7 +255,7 @@ export default function Home() {
                         }}
                       >
                         <motion.div
-                          className="tribute-card group"
+                          className="tribute-card group rounded-[40px] will-change-transform transform-gpu"
                           layout
                           whileHover={{ y: -4, scale: 1.015 }}
                           variants={{
