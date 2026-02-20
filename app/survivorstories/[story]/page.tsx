@@ -63,7 +63,7 @@ export default async function Page({ params }: Props) {
     "@context": "https://schema.org",
     "@type": "MedicalScholarlyArticle",
     headline: storyData.title,
-    description: (storyData.summary || storyData.content || "")
+    description: (storyData.content || "")
       .replace(/[#*_`>\-\[\]!\(\)]/g, "")
       .slice(0, 160),
     url: `https://thecarcinofoundation.org/survivorstories/${storyData.slug}`,

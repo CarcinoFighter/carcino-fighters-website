@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,10 +21,12 @@ type Story = {
   slug: string;
   title: string;
   content: string | null;
-  summary: string | null;
   tags: string[] | null;
   created_at: string;
 };
+
+const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
+const MarkdownPreview = dynamic(() => import("@uiw/react-markdown-preview"), { ssr: false });
 
 export default function SurvivorDashboard() {
   const router = useRouter();
@@ -35,6 +38,8 @@ export default function SurvivorDashboard() {
   const [uploading, setUploading] = useState(false);
   const [storySaving, setStorySaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [colorMode, setColorMode] = useState<"light" | "dark">("light");
+  const [mounted, setMounted] = useState(false);
 
   const [profileForm, setProfileForm] = useState({
     name: "",
@@ -46,15 +51,35 @@ export default function SurvivorDashboard() {
   const [storyForm, setStoryForm] = useState({
     title: "",
     slug: "",
-    summary: "",
     content: "",
     tags: "",
   });
+
+  function contentExcerpt(text?: string | null, len = 120) {
+    if (!text) return "No content yet";
+    const stripped = text.replace(/```[\s\S]*?```/g, "").replace(/\s+/g, " ").trim();
+    if (!stripped) return "No content yet";
+    return stripped.length > len ? `${stripped.slice(0, len)}…` : stripped;
+  }
+
+  useEffect(() => {
+    setMounted(true);
+    const updateColorMode = () => {
+      if (typeof document === "undefined") return;
+      setColorMode(document.documentElement.classList.contains("dark") ? "dark" : "light");
+    };
+    updateColorMode();
+    const observer = new MutationObserver(updateColorMode);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
 
   const sortedStories = useMemo(
     () => stories.slice().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
     [stories]
   );
+
+  const trimmedPreview = useMemo(() => storyForm.content.trim(), [storyForm.content]);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -171,7 +196,6 @@ export default function SurvivorDashboard() {
         id: editingId ?? undefined,
         title: storyForm.title,
         slug: storyForm.slug || undefined,
-        summary: storyForm.summary,
         content: storyForm.content,
         tags: storyForm.tags,
       };
@@ -187,7 +211,7 @@ export default function SurvivorDashboard() {
         return;
       }
 
-      setStoryForm({ title: "", slug: "", summary: "", content: "", tags: "" });
+      setStoryForm({ title: "", slug: "", content: "", tags: "" });
       setEditingId(null);
       await fetchStories();
     } catch (err) {
@@ -349,23 +373,39 @@ export default function SurvivorDashboard() {
                     />
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-white/60">Summary</label>
-                  <Textarea
-                    value={storyForm.summary}
-                    onChange={(e) => setStoryForm((p) => ({ ...p, summary: e.target.value }))}
-                    className="bg-white/10 border-white/10"
-                    placeholder="Short intro shown on cards"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-white/60">Story content (Markdown allowed)</label>
-                  <Textarea
-                    value={storyForm.content}
-                    onChange={(e) => setStoryForm((p) => ({ ...p, content: e.target.value }))}
-                    className="bg-white/10 border-white/10 min-h-[180px]"
-                    required
-                  />
+                <div className="space-y-2">
+                  <label className="text-xs text-white/60">Story content (Markdown)</label>
+                  <div className="rounded-xl border border-white/10 bg-black/40 p-2" data-color-mode={colorMode}>
+                    {mounted ? (
+                      <MDEditor
+                        value={storyForm.content}
+                        onChange={(v) => setStoryForm((p) => ({ ...p, content: v ?? "" }))}
+                        height={320}
+                        preview="edit"
+                        visibleDragbar
+                        textareaProps={{
+                          placeholder: "Write in Markdown. Use # for headings, **bold**, lists, and more.",
+                        }}
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2 text-sm text-white/70">
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/50 border-t-transparent" />
+                        Loading editor...
+                      </div>
+                    )}
+                  </div>
+                  {/* <div className="rounded-lg border border-white/10 bg-white/5 p-3" data-color-mode={colorMode}>
+                    <div className="text-[11px] uppercase tracking-[0.12em] text-white/60 mb-2">Live preview</div>
+                    {mounted ? (
+                      <MarkdownPreview
+                        source={trimmedPreview || "Nothing here yet. Start typing to see the preview."}
+                        className="prose max-w-none prose-invert"
+                        data-color-mode={colorMode}
+                      />
+                    ) : (
+                      <p className="text-sm text-white/70">Loading preview...</p>
+                    )}
+                  </div> */}
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs text-white/60">Tags (comma separated)</label>
@@ -383,7 +423,7 @@ export default function SurvivorDashboard() {
                       variant="ghost"
                       onClick={() => {
                         setEditingId(null);
-                        setStoryForm({ title: "", slug: "", summary: "", content: "", tags: "" });
+                        setStoryForm({ title: "", slug: "", content: "", tags: "" });
                       }}
                     >
                       Cancel edit
@@ -415,7 +455,7 @@ export default function SurvivorDashboard() {
                   <p className="text-xs text-white/60">/{story.slug}</p>
                   <div className="font-semibold">{story.title}</div>
                   <div className="text-xs text-white/60 mt-1">
-                    {story.summary || "No summary yet"}
+                    {contentExcerpt(story.content)}
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -426,7 +466,6 @@ export default function SurvivorDashboard() {
                       setStoryForm({
                         title: story.title,
                         slug: story.slug,
-                        summary: story.summary ?? "",
                         content: story.content ?? "",
                         tags: (story.tags || []).join(", "),
                       });
