@@ -314,7 +314,7 @@ export default function DashboardPage() {
                                 <h2 className="text-2xl font-bold mb-1">{user?.name || user?.username}</h2>
                                 <p className="text-gray-400 text-sm mb-1">{user?.email}</p>
                                 {user?.email?.endsWith("@carcino.work") && user?.position ? (
-                                    <p className="text-purple-400/80 text-xs font-medium uppercase tracking-widest mb-6">
+                                    <p className="text-purple-400/80 text-xs font-medium uppercase mb-6">
                                         {user.position}
                                     </p>
                                 ) : (
@@ -344,7 +344,7 @@ export default function DashboardPage() {
                                 ) : (
                                     <form onSubmit={handleUpdateProfile} className="w-full space-y-4 mb-6 text-left">
                                         <div>
-                                            <label className="text-xs text-gray-500 uppercase tracking-wider mb-1 block">Description</label>
+                                            <label className="text-xs text-gray-500 uppercase mb-1 block">Description</label>
                                             <textarea
                                                 className="w-full bg-[#111] border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-purple-500 min-h-[100px]"
                                                 value={editForm.description}
@@ -353,7 +353,7 @@ export default function DashboardPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-xs text-gray-500 uppercase tracking-wider mb-1 block">New Password (Optional)</label>
+                                            <label className="text-xs text-gray-500 uppercase mb-1 block">New Password (Optional)</label>
                                             <input
                                                 type="password"
                                                 className="w-full bg-[#111] border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-purple-500"

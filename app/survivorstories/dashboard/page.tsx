@@ -234,7 +234,7 @@ export default function SurvivorDashboard() {
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-white/60">Survivor Stories</p>
+            <p className="text-xs uppercase text-white/60">Survivor Stories</p>
             <h1 className="text-3xl font-bold">Creator Dashboard</h1>
           </div>
           <Button

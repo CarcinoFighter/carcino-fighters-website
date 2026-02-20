@@ -201,7 +201,7 @@ export default function Home() {
               <span className="text-3xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-[40%] max-sm:text-3xl max-sm:w-3/5 leading-[109%] text-[#f8f8f8]">
                 Forever in our Hearts
               </span>
-              <span className="font-dmsans text-[#ffffff] text-2xl sm:max-w-[60%] w-full text-center max-sm:text-sm max-sm:w-4/5 font-light leading-[109%] tracking-[-2%]">
+              <span className="font-dmsans text-[#ffffff] text-2xl sm:max-w-[60%] w-full text-center max-sm:text-sm max-sm:w-4/5 font-light leading-[109%]">
                 To the ones who touched our lives. We remember them today,
                 tomorrow and always.
               </span>
