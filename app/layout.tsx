@@ -110,7 +110,7 @@ const tttravelsnext = localFont({
 const dmsans = localFont({
   src: [
     {
-      path: "../public/fonts/googlesans.ttf",
+      path: "../public/fonts/googlesansflex.ttf",
       style: "normal",
     }
   ],
