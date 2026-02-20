@@ -18,6 +18,7 @@ type Story = {
   tags: string[] | null;
   created_at: string;
   image_url?: string | null;
+  colour?: string | null;
 };
 
 type AdminUser = {
@@ -45,7 +46,10 @@ export default function AdminSurvivorStories() {
     content: "",
     tags: "",
     image_url: "",
+    colour: "",
   });
+
+  const presetColours = ["#E39E2E", "#64A04B", "#4145ca", "#9E8DC5", "#7F2D3F", "#818181"];
 
   useEffect(() => {
     setMounted(true);
@@ -139,6 +143,7 @@ export default function AdminSurvivorStories() {
         title: storyForm.title,
         slug: storyForm.slug || undefined,
         image_url: storyForm.image_url || undefined,
+        colour: storyForm.colour || undefined,
         content: storyForm.content,
         tags: storyForm.tags,
       };
@@ -154,7 +159,7 @@ export default function AdminSurvivorStories() {
         return;
       }
 
-      setStoryForm({ title: "", slug: "", image_url: "", content: "", tags: "" });
+      setStoryForm({ title: "", slug: "", image_url: "", content: "", tags: "", colour: "" });
       setEditingId(null);
       await fetchStories();
     } catch (err) {
@@ -314,6 +319,35 @@ export default function AdminSurvivorStories() {
                   placeholder="resilience, hope"
                 />
               </div>
+              <div className="space-y-2">
+                <label className="text-xs text-white/60">Cover colour (optional)</label>
+                <div className="flex flex-wrap gap-2">
+                  {presetColours.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setStoryForm((p) => ({ ...p, colour: c }))}
+                      className={`h-9 w-9 rounded-full border ${
+                        storyForm.colour === c ? "ring-2 ring-offset-2 ring-white/70 ring-offset-[#0a0714]" : "border-white/20"
+                      }`}
+                      style={{ backgroundColor: c }}
+                      aria-label={`Select colour ${c}`}
+                    />
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setStoryForm((p) => ({ ...p, colour: "" }))}
+                    className="text-xs px-3 py-2 rounded-full border border-white/20 text-white/70 hover:border-white/40"
+                  >
+                    Clear
+                  </button>
+                </div>
+                {storyForm.colour ? (
+                  <p className="text-[11px] text-white/60">Selected: {storyForm.colour}</p>
+                ) : (
+                  <p className="text-[11px] text-white/50">Defaults to palette if not set.</p>
+                )}
+              </div>
               <div className="flex gap-3 justify-end">
                 {editingId && (
                   <Button
@@ -321,7 +355,7 @@ export default function AdminSurvivorStories() {
                     variant="ghost"
                     onClick={() => {
                       setEditingId(null);
-                      setStoryForm({ title: "", slug: "", image_url: "", content: "", tags: "" });
+                      setStoryForm({ title: "", slug: "", image_url: "", content: "", tags: "", colour: "" });
                     }}
                   >
                     Cancel edit
@@ -366,6 +400,7 @@ export default function AdminSurvivorStories() {
                         image_url: story.image_url ?? "",
                         content: story.content ?? "",
                         tags: (story.tags || []).join(", "),
+                        colour: story.colour ?? "",
                       });
                     }}
                   >
