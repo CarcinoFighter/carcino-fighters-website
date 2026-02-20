@@ -7,6 +7,7 @@ const COOKIE_NAME = "public_jwt";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY;
 const jwtSecret = process.env.JWT_SECRET;
+const STORY_BUCKET = "survivor-story-images";
 
 const sb = supabaseUrl && supabaseServiceKey ? createClient(supabaseUrl, supabaseServiceKey) : null;
 
@@ -16,6 +17,7 @@ type StoryBody = {
   title?: string;
   slug?: string;
   content?: string | null;
+  image_url?: string | null;
   tags?: string[] | string | null;
 };
 
@@ -69,6 +71,35 @@ async function getSession() {
   }
 }
 
+async function handleUploadImage(req: Request) {
+  if (missingConfig()) {
+    return NextResponse.json({ error: "Supabase credentials not configured" }, { status: 500 });
+  }
+
+  const session = await getSession();
+  if (!session?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const formData = await req.formData();
+  const file = formData.get("image") as File | null;
+  if (!file) return NextResponse.json({ error: "image file is required" }, { status: 400 });
+
+  const ext = (file.name.split(".").pop() || "bin").toLowerCase();
+  const path = `stories/${session.id}/${Date.now()}.${ext}`;
+
+  const arrayBuffer = await file.arrayBuffer();
+  const { error: uploadError } = await sb!
+    .storage
+    .from(STORY_BUCKET)
+    .upload(path, arrayBuffer, { contentType: file.type || "application/octet-stream", upsert: true });
+
+  if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 400 });
+
+  const { data: pub } = sb!.storage.from(STORY_BUCKET).getPublicUrl(path);
+  const image_url = pub?.publicUrl || null;
+
+  return NextResponse.json({ image_url });
+}
+
 function mapStory(row: any) {
   const author = row?.users_public;
   return {
@@ -77,6 +108,7 @@ function mapStory(row: any) {
     title: row.title,
     slug: row.slug,
     content: row.content,
+    image_url: row.image_url,
     tags: row.tags,
     views: row.views,
     likes: row.likes,
@@ -102,7 +134,7 @@ export async function GET(req: Request) {
     const query = sb!
       .from("survivorstories")
       .select(
-        "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+        "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
       )
       .eq("deleted", false)
       .order("created_at", { ascending: false });
@@ -124,6 +156,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const contentType = req.headers.get("content-type") || "";
+    if (contentType.includes("multipart/form-data")) {
+      return handleUploadImage(req);
+    }
+
     if (missingConfig()) return NextResponse.json({ error: "Supabase credentials not configured" }, { status: 500 });
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -149,10 +186,11 @@ export async function POST(req: Request) {
           title: body.title,
           slug: uniqueSlug,
           content: body.content ?? null,
+          image_url: body.image_url ?? null,
           tags: normalizedTags,
         })
         .select(
-          "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+          "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
         )
         .maybeSingle();
 
@@ -176,6 +214,7 @@ export async function POST(req: Request) {
       const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
       if (body.title !== undefined) updates.title = body.title;
       if (body.content !== undefined) updates.content = body.content;
+      if (body.image_url !== undefined) updates.image_url = body.image_url;
       if (body.tags !== undefined) updates.tags = normalizedTags;
 
       if (body.slug !== undefined) {
@@ -188,7 +227,7 @@ export async function POST(req: Request) {
         .update(updates)
         .eq("id", body.id)
         .select(
-          "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+          "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
         )
         .maybeSingle();
 
