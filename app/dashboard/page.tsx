@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Plus } from "lucide-react";
 // @ts-ignore
 import DarkVeil from "@/components/DarkVeil";
 import { createClient } from "@supabase/supabase-js";
@@ -24,6 +24,14 @@ type Doc = {
     slug: string;
     title: string;
     content: string;
+    created_at: string;
+};
+
+type Blog = {
+    id: string;
+    slug: string;
+    title: string;
+    content: string | null;
     created_at: string;
 };
 
@@ -92,6 +100,7 @@ export default function DashboardPage() {
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
     const [docs, setDocs] = useState<Doc[]>([]);
+    const [blogs, setBlogs] = useState<Blog[]>([]);
     const [loading, setLoading] = useState(true);
     const [loggingOut, setLoggingOut] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -204,6 +213,12 @@ export default function DashboardPage() {
                 const docsData = await docsRes.json().catch(() => ({}));
                 if (docsRes.ok && docsData.docs) {
                     setDocs(docsData.docs);
+                }
+
+                const blogsRes = await fetch("/api/blogs?mine=true");
+                const blogsData = await blogsRes.json().catch(() => ({}));
+                if (blogsRes.ok && blogsData.blogs) {
+                    setBlogs(blogsData.blogs);
                 }
 
             } catch (err) {
@@ -408,7 +423,6 @@ export default function DashboardPage() {
                 <div className="lg:col-span-8 xl:col-span-9 space-y-6">
                     <div className="flex items-center justify-between mb-2">
                         <h3 className="text-xl font-semibold text-gray-200">Your Articles</h3>
-
                     </div>
 
                     {docs.length === 0 ? (
@@ -465,6 +479,72 @@ export default function DashboardPage() {
                                             className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 text-sm font-medium group/link"
                                         >
                                             View Article
+                                            <ArrowUpRight className="w-4 h-4 transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5" />
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+
+                    <div className="flex items-center justify-between mb-2 pt-8">
+                        <h3 className="text-xl font-semibold text-gray-200">Your Blogs</h3>
+                        <Link
+                            href="/blogs/dashboard"
+                            className="bg-white/5 hover:bg-white/10 text-white text-xs font-medium py-2 px-4 rounded-xl transition-all duration-300 flex items-center gap-2 border border-white/10 hover:border-purple-500/50"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Add Blog
+                        </Link>
+                    </div>
+
+                    {blogs.length === 0 ? (
+                        <div className="relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[30px] rounded-[40px] p-12 text-center group">
+                            <div className="liquidGlass-effect pointer-events-none"></div>
+                            <div className="cardGlass-tint pointer-events-none"></div>
+                            <div className="glass-noise"></div>
+                            <div className="cardGlass-borders pointer-events-none"></div>
+                            <div className="cardGlass-shine pointer-events-none"></div>
+                            <p className="relative z-10 text-gray-400 font-medium font-dmsans">You haven't written any blogs yet.</p>
+                        </div>
+                    ) : (
+                        blogs.map((blog) => (
+                            <div
+                                key={blog.id}
+                                className="group relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[30px] rounded-[40px] p-6 sm:p-8 flex flex-col md:flex-row gap-8 hover:bg-white/5 transition-all duration-300"
+                            >
+                                <div className="liquidGlass-effect pointer-events-none"></div>
+                                <div className="cardGlass-tint pointer-events-none"></div>
+                                <div className="glass-noise"></div>
+                                <div className="cardGlass-borders pointer-events-none"></div>
+                                <div className="cardGlass-shine pointer-events-none"></div>
+
+                                <div className="relative z-10 w-full flex flex-col md:flex-row gap-8">
+                                    <div className="w-full md:w-48 h-48 md:h-auto shrink-0 relative rounded-2xl overflow-hidden bg-[#1A1A1A]">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 to-cyan-900/40" />
+                                        <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-blue-500/20 blur-2xl rounded-full" />
+                                    </div>
+
+                                    <div className="flex-1 flex flex-col justify-center">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <span className="px-3 py-1 rounded-full bg-white/5 border border-white/5 text-xs font-medium text-gray-300">
+                                                Blog Post
+                                            </span>
+                                        </div>
+
+                                        <h3 className="text-2xl font-bold mb-3 group-hover:text-blue-300 transition-colors">
+                                            {blog.title}
+                                        </h3>
+
+                                        <p className="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
+                                            {blog.content?.replace(/```[\s\S]*?```/g, "").replace(/\s+/g, " ").trim().substring(0, 150) || "No content preview available."}...
+                                        </p>
+
+                                        <Link
+                                            href={`/blogs/${blog.slug}`}
+                                            className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm font-medium group/link"
+                                        >
+                                            View Blog
                                             <ArrowUpRight className="w-4 h-4 transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5" />
                                         </Link>
                                     </div>
