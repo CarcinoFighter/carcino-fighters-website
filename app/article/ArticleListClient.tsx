@@ -116,7 +116,7 @@ export function ArticleListClient({ articles }: ArticleListClientProps) {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search articles..."
-                    className="bg-transparent border-none focus-visible:ring-0 text-white !text-[20px] placeholder:!text-[20px] placeholder:text-[#898989]/70 w-full h-14 shadow-none tracking-tighter !font-light"
+                    className="bg-transparent border-none focus-visible:ring-0 text-white !text-[20px] placeholder:!text-[20px] placeholder:text-[#898989]/70 w-full h-14 shadow-none !font-light"
                   />
                 </div>
               </div>

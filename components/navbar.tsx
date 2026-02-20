@@ -99,7 +99,7 @@ export function Navbar() {
                     onClick={() => router.push(tab.href)}
                     className={cn(
                       navigationMenuTriggerStyle(),
-                      "font-dmsans tracking-tight font-medium transition-colors hover:!bg-white/5",
+                      "font-dmsans font-medium transition-colors hover:!bg-white/5",
                       selectedTab === tab.label ? "z-10 text-white" : ""
                     )}
                   >

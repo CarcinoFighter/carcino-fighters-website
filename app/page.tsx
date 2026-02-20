@@ -318,7 +318,7 @@ export default function Home() {
                 textColor="#fafafa"
               />
               <motion.span
-                className="font-dmsans text-[#c6c6c6] text-2xl sm:max-w-[50%] sm:-mt-0 w-full text-center max-sm:text-xs max-sm:w-4/5 font-light leading-[109%] tracking-[1%]"
+                className="font-dmsans text-[#c6c6c6] text-2xl sm:max-w-[50%] sm:-mt-0 w-full text-center max-sm:text-xs max-sm:w-4/5 font-light leading-[109%]"
                 variants={fadeUp}
               >
                 Cancer affects millions of lives—but together, awareness,

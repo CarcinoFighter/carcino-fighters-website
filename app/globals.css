@@ -14,6 +14,7 @@
   --font-instrumentserifitalic: var(--font-InstrumentSerif-Italic), serif;
   --font-tttravelsnext: var(--font-tttravelsnext), serif;
   --font-dmsans: var(--font-dmsans), sans-serif;
+  --tracking-dmsans: 0.01em;
   --font-inter: var(--font-inter), serif;
   --color-background: hsla(var(--background));
   --color-foreground: hsla(var(--foreground));
@@ -102,11 +103,9 @@
     }
 
     100% {
-      background-image: radial-gradient(
-        circle at 0% 100%,
-        #00000000,
-        #00000000
-      );
+      background-image: radial-gradient(circle at 0% 100%,
+          #00000000,
+          #00000000);
     }
   }
 
@@ -140,6 +139,7 @@
 
   /* Gentle float for icons */
   @keyframes floaty {
+
     0%,
     100% {
       transform: translateY(0);
@@ -168,25 +168,21 @@
   .skeleton {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.06) 25%,
-      rgba(255, 255, 255, 0.12) 37%,
-      rgba(255, 255, 255, 0.06) 63%
-    );
+    background: linear-gradient(90deg,
+        rgba(255, 255, 255, 0.06) 25%,
+        rgba(255, 255, 255, 0.12) 37%,
+        rgba(255, 255, 255, 0.06) 63%);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s infinite;
   }
 
   /* Gradient shine text helper */
   .shine-text {
-    background-image: linear-gradient(
-      110deg,
-      rgba(255, 255, 255, 0.18) 0%,
-      rgba(255, 255, 255, 0.85) 20%,
-      rgba(255, 255, 255, 0.25) 40%,
-      rgba(255, 255, 255, 0.18) 60%
-    );
+    background-image: linear-gradient(110deg,
+        rgba(255, 255, 255, 0.18) 0%,
+        rgba(255, 255, 255, 0.85) 20%,
+        rgba(255, 255, 255, 0.25) 40%,
+        rgba(255, 255, 255, 0.18) 60%);
     background-size: 200% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -209,8 +205,7 @@
     }
 
     to {
-      transform: rotate(360deg) translateX(100px) translateZ(30px)
-        rotate(-360deg);
+      transform: rotate(360deg) translateX(100px) translateZ(30px) rotate(-360deg);
     }
   }
 
@@ -277,7 +272,10 @@
     @apply border-border;
   }
 
-  html {
+  html {}
+
+  .font-dmsans {
+    letter-spacing: var(--tracking-dmsans);
   }
 
   /* Global scrollbar hiding */
@@ -360,18 +358,14 @@
   box-shadow: inset 0.1px 0.1px 2.5px rgba(255, 255, 255, 1);
 
   /* fade stops inward from top-left */
-  mask-image: radial-gradient(
-    farthest-corner at top left,
-    rgba(0, 0, 0, 1) 0px,
-    rgba(0, 0, 0, 1) 4px,
-    rgba(0, 0, 0, 0) 20px
-  );
-  -webkit-mask-image: radial-gradient(
-    farthest-corner at top left,
-    rgba(0, 0, 0, 1) 0px,
-    rgba(0, 0, 0, 1) 4px,
-    rgba(0, 0, 0, 0) 20px
-  );
+  mask-image: radial-gradient(farthest-corner at top left,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
+  -webkit-mask-image: radial-gradient(farthest-corner at top left,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
 
   /* clip so it doesn’t bleed beyond edge */
   clip-path: inset(0 5px 0 0 round 55px 0 0 0);
@@ -393,18 +387,14 @@
   box-shadow: inset -0.1px -0.1px 2.5px rgba(255, 255, 255, 1);
 
   /* fade stops inward from bottom-right */
-  mask-image: radial-gradient(
-    farthest-corner at bottom right,
-    rgba(0, 0, 0, 1) 0px,
-    rgba(0, 0, 0, 1) 4px,
-    rgba(0, 0, 0, 0) 20px
-  );
-  -webkit-mask-image: radial-gradient(
-    farthest-corner at bottom right,
-    rgba(0, 0, 0, 1) 0px,
-    rgba(0, 0, 0, 1) 4px,
-    rgba(0, 0, 0, 0) 20px
-  );
+  mask-image: radial-gradient(farthest-corner at bottom right,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
+  -webkit-mask-image: radial-gradient(farthest-corner at bottom right,
+      rgba(0, 0, 0, 1) 0px,
+      rgba(0, 0, 0, 1) 4px,
+      rgba(0, 0, 0, 0) 20px);
 
   /* clip to prevent bleed */
   clip-path: inset(0 0 0 5px round 0 0 55px 0);
@@ -432,19 +422,15 @@
   /* Vertical borders remain solid for most of length, dissolving to 0% opacity exactly at the 40px junction */
   /* Each border segment has its own fade direction: Top-right, Bottom-left diagonal logic */
   mask-image:
-    linear-gradient(
-      to right,
+    linear-gradient(to right,
       black calc(100% - 80px),
-      transparent calc(100% - 40px)
-    ),
+      transparent calc(100% - 40px)),
     /* Top: fade right */
     linear-gradient(to bottom, transparent 40px, black 80px),
     /* Right: fade top */
-    linear-gradient(
-        to left,
-        black calc(100% - 80px),
-        transparent calc(100% - 20px)
-      ),
+    linear-gradient(to left,
+      black calc(100% - 80px),
+      transparent calc(100% - 20px)),
     /* Bottom: fade left */
     linear-gradient(to top, transparent 40px, black 80px);
   /* Left: fade bottom */
@@ -460,17 +446,13 @@
     center left;
   mask-repeat: no-repeat;
   -webkit-mask-image:
-    linear-gradient(
-      to right,
+    linear-gradient(to right,
       black calc(100% - 80px),
-      transparent calc(100% - 20px)
-    ),
+      transparent calc(100% - 20px)),
     linear-gradient(to bottom, transparent 40px, black 80px),
-    linear-gradient(
-      to left,
+    linear-gradient(to left,
       black calc(100% - 80px),
-      transparent calc(100% - 20px)
-    ),
+      transparent calc(100% - 20px)),
     linear-gradient(to top, transparent 40px, black 80px);
   -webkit-mask-size:
     100% 80px,
@@ -485,20 +467,18 @@
   -webkit-mask-repeat: no-repeat;
 
   /* Precise corner gaps */
-  clip-path: polygon(
-    40px 0,
-    calc(100% - 40px) 0,
-    calc(100% - 40px) 40px,
-    100% 40px,
-    100% calc(100% - 40px),
-    calc(100% - 40px) calc(100% - 40px),
-    calc(100% - 40px) 100%,
-    40px 100%,
-    40px calc(100% - 40px),
-    0 calc(100% - 40px),
-    0 40px,
-    40px 40px
-  );
+  clip-path: polygon(40px 0,
+      calc(100% - 40px) 0,
+      calc(100% - 40px) 40px,
+      100% 40px,
+      100% calc(100% - 40px),
+      calc(100% - 40px) calc(100% - 40px),
+      calc(100% - 40px) 100%,
+      40px 100%,
+      40px calc(100% - 40px),
+      0 calc(100% - 40px),
+      0 40px,
+      40px 40px);
 }
 
 .cardGlass-shine {
@@ -536,33 +516,25 @@
 
   /* Sharper circular mask combined with angular fade for smooth blending */
   mask-image:
-    radial-gradient(
-      circle 42px at 0% 0%,
+    radial-gradient(circle 42px at 0% 0%,
       rgba(0, 0, 0, 1) 0px,
       rgba(0, 0, 0, 1) 40px,
-      rgba(0, 0, 0, 0) 42px
-    ),
-    conic-gradient(
-      from 90deg at 0% 0%,
+      rgba(0, 0, 0, 0) 42px),
+    conic-gradient(from 90deg at 0% 0%,
       transparent 0deg,
       black 10deg,
       black 80deg,
-      transparent 90deg
-    );
+      transparent 90deg);
   -webkit-mask-image:
-    radial-gradient(
-      circle 42px at 0% 0%,
+    radial-gradient(circle 42px at 0% 0%,
       rgba(0, 0, 0, 1) 0px,
       rgba(0, 0, 0, 1) 40px,
-      rgba(0, 0, 0, 0) 42px
-    ),
-    conic-gradient(
-      from 90deg at 0% 0%,
+      rgba(0, 0, 0, 0) 42px),
+    conic-gradient(from 90deg at 0% 0%,
       transparent 0deg,
       black 10deg,
       black 80deg,
-      transparent 90deg
-    );
+      transparent 90deg);
   mask-composite: intersect;
   -webkit-mask-composite: source-in;
   /* For Safari */
@@ -587,33 +559,25 @@
 
   /* Sharper circular mask combined with angular fade for smooth blending */
   mask-image:
-    radial-gradient(
-      circle 42px at 100% 100%,
+    radial-gradient(circle 42px at 100% 100%,
       rgba(0, 0, 0, 1) 0px,
       rgba(0, 0, 0, 1) 40px,
-      rgba(0, 0, 0, 0) 42px
-    ),
-    conic-gradient(
-      from 270deg at 100% 100%,
+      rgba(0, 0, 0, 0) 42px),
+    conic-gradient(from 270deg at 100% 100%,
       transparent 0deg,
       black 10deg,
       black 80deg,
-      rgba(0, 0, 0, 0.5) 90deg
-    );
+      rgba(0, 0, 0, 0.5) 90deg);
   -webkit-mask-image:
-    radial-gradient(
-      circle 42px at 100% 100%,
+    radial-gradient(circle 42px at 100% 100%,
       rgba(0, 0, 0, 1) 0px,
       rgba(0, 0, 0, 1) 40px,
-      rgba(0, 0, 0, 0) 42px
-    ),
-    conic-gradient(
-      from 270deg at 100% 100%,
+      rgba(0, 0, 0, 0) 42px),
+    conic-gradient(from 270deg at 100% 100%,
       transparent 0deg,
       black 10deg,
       black 80deg,
-      rgba(0, 0, 0, 0.5) 90deg
-    );
+      rgba(0, 0, 0, 0.5) 90deg);
   mask-composite: intersect;
   -webkit-mask-composite: source-in;
   /* For Safari */
