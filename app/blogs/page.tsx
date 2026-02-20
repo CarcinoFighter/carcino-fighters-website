@@ -191,7 +191,7 @@ export default function BlogsPage() {
                       className="block group"
                     >
                       <motion.div
-                        className="relative overflow-hidden rounded-[40px] md:rounded-[60px] p-[1px] bg-white/5 hover:bg-white/10 transition-colors duration-500"
+                        className="relative overflow-hidden rounded-[44px] p-[1px] bg-white/5 hover:bg-white/10 transition-colors duration-500"
                         layout
                         whileHover={{ scale: 1.01 }}
                         variants={{
@@ -203,7 +203,7 @@ export default function BlogsPage() {
                           },
                         }}
                       >
-                        <div className="relative overflow-hidden rounded-[40px] md:rounded-[60px] p-6 sm:p-10 flex flex-col sm:flex-row items-center gap-8 isolate min-h-[220px]">
+                        <div className="relative overflow-hidden rounded-[44px] p-6 sm:p-10 flex flex-col sm:flex-row items-center gap-8 isolate min-h-[220px]">
                           {/* Card Glass Internal Layers */}
                           <div className="cardGlass-tint pointer-events-none" />
                           <div className="glass-noise pointer-events-none" />
@@ -215,7 +215,7 @@ export default function BlogsPage() {
                             <span className="text-white/40 text-[12px] sm:text-sm font-dmsans mb-2 block font-normal tracking-wide">
                               by {entry.authorName || "The Carcino Foundation"}
                             </span>
-                            <h3 className="text-xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-4 leading-tight font-tttravelsnext tracking-tight group-hover:text-purple-300 transition-colors duration-300">
+                            <h3 className="text-xl sm:text-3xl md:text-3xl font-bold text-white mb-2 sm:mb-4 leading-tight font-tttravelsnext tracking-tight group-hover:text-purple-300 transition-colors duration-300">
                               {entry.title}
                             </h3>
                             <p className="text-white/50 text-sm sm:text-base md:text-lg font-dmsans mb-4 sm:mb-6 line-clamp-2 max-w-2xl font-light leading-relaxed">
@@ -227,13 +227,13 @@ export default function BlogsPage() {
                           </div>
 
                           {/* Right Side: Dummy Image */}
-                          <div className="w-full sm:w-64 h-48 sm:h-44 shrink-0 relative rounded-[30px] sm:rounded-[40px] overflow-hidden bg-white/5 border border-white/10 group-hover:border-white/20 transition-all duration-500 z-10">
+                          <div className="w-full sm:w-64 h-48 sm:h-44 shrink-0 relative rounded-[44px] overflow-hidden bg-white/5 border border-white/10 group-hover:border-white/20 transition-all duration-500 z-10">
                             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent z-10" />
                             <Image
-                              src={`https://images.unsplash.com/photo-1532187863486-abf9d3a0a9c1?q=80&w=2070&auto=format&fit=crop`}
+                              src={`/logo.png`}
                               alt="Blog illustration"
                               fill
-                              className="object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-700 grayscale group-hover:grayscale-0"
+                              className="object-contain opacity-40 group-hover:opacity-100 transition-opacity duration-700 grayscale group-hover:grayscale-0 p-10"
                               unoptimized
                             />
                           </div>

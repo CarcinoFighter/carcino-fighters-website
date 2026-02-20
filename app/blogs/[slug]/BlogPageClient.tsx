@@ -12,10 +12,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Footer } from "@/components/footer";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import type { BlogEntry, BlogSummary } from "@/lib/blogsRepository";
+import { motion } from "framer-motion";
+
+const colors = [
+  "#E39E2E",
+  "#64A04B",
+  "#4145ca",
+  "#9E8DC5",
+  "#7F2D3F",
+  "#818181",
+];
 
 interface BlogPageClientProps {
   entry: BlogEntry;
   related: BlogSummary[];
+  cardColor: string;
 }
 
 function MDImage({ src, alt }: { src?: string; alt?: string }) {
@@ -42,26 +53,76 @@ function MDImage({ src, alt }: { src?: string; alt?: string }) {
   );
 }
 
-export default function BlogPageClient({ entry, related }: BlogPageClientProps) {
+const easeSoft = [0.33, 1, 0.68, 1] as const;
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.65, ease: easeSoft },
+  },
+};
+
+export default function BlogPageClient({ entry, related, cardColor }: BlogPageClientProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground bg-[#2A292F] relative overflow-hidden">
+      <div
+        style={{
+          position: "absolute",
+          left: -800,
+          top: -700,
+          width: 1600,
+          height: 1600,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, #D5B0FF26 0%, transparent 60%)`,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+      <div
+        className="max-md:hidden"
+        style={{
+          position: "absolute",
+          right: -900,
+          top: -300,
+          width: 1800,
+          height: 1800,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, #D5B0FF26 0%, transparent 50%)`,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          right: -600,
+          bottom: -1200,
+          width: 1800,
+          height: 1800,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, #471F7733 0%, transparent 60%)`,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
       <ScrollProgress className="hidden md:block" />
-      <main className="max-w-4xl mx-auto p-6">
-        <header className="mb-8 text-center">
-          <h1 className="text-4xl md:text-6xl font-wintersolace font-bold leading-tight">
+      <main className="max-w-[80%] md:max-w-5xl mx-auto p-6 relative z-10 mt-32 items-center justify-center self-center">
+        <header className="mb-8 text-center px-4">
+          <h1
+            className="text-5xl leading-[0.9] sm:text-6xl sm:leading-[0.9] lg:text-7xl lg:leading-[0.9] whitespace-pre-wrap text-center font-wintersolace font-bold bg-gradient-to-r from-[#70429b] from-8% to-[#dfcbf0] to-60% bg-clip-text text-transparent py-4"
+          >
             {entry.title}
           </h1>
-          <div className="mt-4 flex items-center justify-center gap-4 text-sm">
-            <Avatar className="w-12 h-12">
-              <AvatarImage src={entry.avatarUrl || "/logo.png"} />
-              <AvatarFallback>{(entry.authorName || "?").slice(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div className="text-left">
-              <div className="font-semibold">{entry.authorName ?? "Unknown"}</div>
-              {entry.authorBio && <div className="text-xs text-muted-foreground">{entry.authorBio}</div>}
-            </div>
+          <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2 py-6 text-center font-inter text-white/70">
+            <span className="text-xs sm:text-sm">{entry.authorName || "The Carcino Foundation"}</span>
+            <span className="text-xs sm:text-sm px-1 opacity-50">|</span>
+            <span className="text-xs sm:text-sm opacity-60">
+              {entry.authorBio || "Researcher at The Carcino Foundation"}
+            </span>
           </div>
         </header>
 
@@ -70,11 +131,19 @@ export default function BlogPageClient({ entry, related }: BlogPageClientProps) 
               prose
               prose-sm sm:prose-base lg:prose-lg
               relative
-              max-w-full sm:max-w-4xl
+              max-w-full sm:max-w-5xl
               dark:prose-invert
               font-dmsans
-              ${expanded ? "" : "max-h-[50vh] sm:max-h-[60vh] overflow-hidden"}
+              ${expanded ? "" : "max-h-[60vh] sm:max-h-[80vh] overflow-hidden"}
             `}
+          style={
+            !expanded
+              ? {
+                maskImage: "linear-gradient(to bottom, black 0%, black 30%, transparent 100%)",
+                WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 30%, transparent 100%)",
+              }
+              : undefined
+          }
         >
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
@@ -83,47 +152,114 @@ export default function BlogPageClient({ entry, related }: BlogPageClientProps) 
               h1: (props) => <h1 className="text-3xl font-bold mt-8 mb-4" {...props} />,
               h2: (props) => <h2 className="text-2xl font-bold mt-8 mb-4" {...props} />,
               h3: (props) => <h3 className="text-xl font-bold mt-6 mb-3" {...props} />,
-              p: (props) => <p className="mb-4 last:mb-0 leading-relaxed" {...props} />,
+              p: (props) => <p className="mb-4 last:mb-0 leading-relaxed text-white/80" {...props} />,
               a: (props) => <a className="text-primary hover:text-primary/80 underline" {...props} />,
-              ul: (props) => <ul className="list-disc list-inside my-4" {...props} />,
-              ol: (props) => <ol className="list-decimal pl-6 my-4 space-y-1" {...props} />,
-              blockquote: (props) => <blockquote className="border-l-4 border-primary/30 pl-4 italic my-4" {...props} />,
-              code: (props) => <code className="bg-muted text-muted-foreground px-1.5 py-0.5 rounded" {...props} />,
-              pre: (props) => <pre className="bg-muted p-4 rounded-lg overflow-x-auto my-4" {...props} />,
+              ul: (props) => <ul className="list-disc list-inside my-4 text-white/70" {...props} />,
+              ol: (props) => <ol className="list-decimal pl-6 my-4 space-y-1 text-white/70" {...props} />,
+              blockquote: (props) => <blockquote className="border-l-4 border-primary/30 pl-4 italic my-4 text-white/60" {...props} />,
+              code: (props) => <code className="bg-white/5 text-white/90 px-1.5 py-0.5 rounded" {...props} />,
+              pre: (props) => <pre className="bg-white/5 p-4 rounded-lg overflow-x-auto my-4 border border-white/10" {...props} />,
               img: ({ src, alt }) => <MDImage src={typeof src === "string" ? src : undefined} alt={alt} />,
             }}
           >
             {entry.content ?? ""}
           </ReactMarkdown>
-
-          <div className={`absolute bottom-0 left-0 right-0 h-[80%] bg-gradient-to-t from-background to-transparent ${expanded ? "hidden" : ""}`} />
         </article>
 
         <div className="mt-6 flex justify-center">
-          <Button variant="secondary" onClick={() => setExpanded((s) => !s)}>
-            {expanded ? "Show less" : "Read more"}
-            <ArrowDown className={`transition-transform ml-2 ${expanded ? "rotate-180" : ""}`} />
-          </Button>
+          <motion.div
+            variants={fadeUp}
+            whileHover={{ y: -2, scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            className="inline-flex"
+          >
+            <Button
+              variant="ghost"
+              onClick={() => setExpanded((s) => !s)}
+              className="relative px-7 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%] text-white"
+            >
+              <div className="relative z-10 flex items-center gap-2">
+                {expanded ? "Show less" : "Read more"}
+                <ArrowDown className={`transition-transform ml-2 ${expanded ? "rotate-180" : ""}`} />
+              </div>
+
+              {/* Liquid glass layers */}
+              <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+              <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
+              <div className="liquidGlass-shine relative w-[102.5%] h-[100%] !top-[-0.1px] !left-[-2.3px]"></div>
+              <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+            </Button>
+          </motion.div>
         </div>
 
         <section className="mt-16">
-          <h2 className="text-2xl font-semibold mb-4">More blogs</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {related.map((r) => (
-              <Link
-                key={r.id}
-                href={r.slug ? `/blogs/${r.slug}` : `/blogs/${r.id}`}
-                className="block p-4 rounded-lg bg-muted/20 hover:bg-muted/30"
-              >
-                <div className="font-bold uppercase text-sm">{r.title}</div>
-                <div className="text-xs text-muted-foreground mt-2">by {r.authorName ?? "Unknown"}</div>
-              </Link>
-            ))}
+          <h2 className="sm:text-3xl text-4xl font-instrumentserifitalic text-[#CDA8E8] text-center mb-8">
+            More Blogs
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {related.map((r, i) => {
+              const colorsleft: string[] = colors.filter((element) => element !== cardColor);
+              const relatedCardColor = colorsleft[i % colorsleft.length];
+
+              const getTitleFontSize = (title: string) => {
+                const words = title.split(/\s+/);
+                const maxWordLength = Math.max(...words.map((w) => w.length));
+                if (maxWordLength > 12) return "text-[14px] sm:text-[18px]";
+                if (maxWordLength >= 9) return "text-[18px] sm:text-[22px]";
+                if (title.length > 35) return "text-[16px] sm:text-[20px]";
+                if (title.length >= 15) return "text-[18px] sm:text-[24px]";
+                return "text-[22px] sm:text-[30px]";
+              };
+
+              return (
+                <Link
+                  key={r.id}
+                  href={r.slug ? `/blogs/${r.slug}` : `/blogs/${r.id}`}
+                  className="block h-full"
+                >
+                  <motion.div
+                    className="h-full"
+                    whileHover={{ y: -4, scale: 1.015 }}
+                    transition={{ duration: 0.3, ease: easeSoft }}
+                  >
+                    <div
+                      style={{
+                        backgroundColor: relatedCardColor,
+                      }}
+                      className="
+                        relative
+                        group/card
+                        vision-pro-ui-hoverable
+                        w-full h-[180px]
+                        flex flex-col justify-center
+                        rounded-[32px]
+                        overflow-hidden isolation-isolate liquid-glass !shadow-none
+                        select-none bg-cover
+                      "
+                    >
+                      <div
+                        className="storyGlass-tint pointer-events-none"
+                        style={{ backgroundColor: relatedCardColor }}
+                      />
+                      <div className="cardGlass-borders pointer-events-none" />
+                      <div className="cardGlass-shine pointer-events-none" />
+                      <div className="liquidGlass-text pointer-events-none" />
+
+                      <div className="relative z-10 flex flex-col items-center gap-2 p-4 w-full justify-center">
+                        <h3 className={`${getTitleFontSize(r.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}>
+                          {r.title}
+                        </h3>
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
+              );
+            })}
           </div>
         </section>
 
-        <div className="mt-12">
-          <Link href="/blogs" className="text-primary underline">
+        <div className="mt-12 flex justify-center">
+          <Link href="/blogs" className="text-[#CDA8E8] hover:text-white transition-colors underline-offset-4 font-dmsans">
             ← Back to Blogs
           </Link>
         </div>
