@@ -67,7 +67,7 @@ export function Navbar() {
     { label: "Home", href: "/" },
     { label: "About", href: "/leadership" },
     { label: "Articles", href: "/article" },
-    { label: "Survivor Stories", href: "/survivorstories" },
+    { label: "Survivors", href: "/survivorstories" },
   ];
   const selectedTab = tabs.find((tab) =>
     tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href),
@@ -285,7 +285,7 @@ export function Navbar() {
               )}
             >
               <Award size={22} />
-              Survivor Stories
+              Survivors
             </Link>
 
             <div className="h-px bg-border my-2" />
