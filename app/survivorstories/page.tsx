@@ -27,7 +27,6 @@ interface SurvivorStory {
   title: string;
   authorName: string | null;
   content: string | null;
-  summary: string | null;
   tags?: string[] | null;
 }
 
@@ -309,9 +308,7 @@ export default function Home() {
                               </h3>
 
                               <p className="text-[12px] sm:text-[14px] text-center text-[#FFF9D0] group-hover/card:text-white transition-colors duration-300 font-dmsans w-[80%] font-light leading-none">
-                                {excerptFromContent(
-                                  story.summary ?? story.content,
-                                ) ??
+                                {excerptFromContent(story.content) ??
                                   story.authorName ??
                                   "Unknown Author"}
                               </p>

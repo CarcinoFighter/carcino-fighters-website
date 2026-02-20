@@ -25,7 +25,7 @@ function SignInInner() {
         [rawRedirect]
     );
 
-    const [username, setUsername] = useState("");
+    const [identifier, setIdentifier] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -42,7 +42,7 @@ function SignInInner() {
             const res = await fetch("/api/public-auth", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "login", username, password }),
+                body: JSON.stringify({ action: "login", identifier, password }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
@@ -83,9 +83,9 @@ function SignInInner() {
                             <Input
                                 type="text"
                                 className="bg-[#3C364C]"
-                                value={username}
-                                placeholder="Username"
-                                onChange={(e) => setUsername(e.target.value)}
+                                value={identifier}
+                                placeholder="Email or username"
+                                onChange={(e) => setIdentifier(e.target.value)}
                                 required
                             />
                             <div className="relative flex gap-2 items-center">

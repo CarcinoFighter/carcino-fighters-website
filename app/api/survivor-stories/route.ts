@@ -16,7 +16,6 @@ type StoryBody = {
   title?: string;
   slug?: string;
   content?: string | null;
-  summary?: string | null;
   tags?: string[] | string | null;
 };
 
@@ -78,7 +77,6 @@ function mapStory(row: any) {
     title: row.title,
     slug: row.slug,
     content: row.content,
-    summary: row.summary,
     tags: row.tags,
     views: row.views,
     likes: row.likes,
@@ -104,7 +102,7 @@ export async function GET(req: Request) {
     const query = sb!
       .from("survivorstories")
       .select(
-        "id, user_id, title, slug, content, summary, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+        "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
       )
       .eq("deleted", false)
       .order("created_at", { ascending: false });
@@ -151,11 +149,10 @@ export async function POST(req: Request) {
           title: body.title,
           slug: uniqueSlug,
           content: body.content ?? null,
-          summary: body.summary ?? null,
           tags: normalizedTags,
         })
         .select(
-          "id, user_id, title, slug, content, summary, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+          "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
         )
         .maybeSingle();
 
@@ -179,7 +176,6 @@ export async function POST(req: Request) {
       const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
       if (body.title !== undefined) updates.title = body.title;
       if (body.content !== undefined) updates.content = body.content;
-      if (body.summary !== undefined) updates.summary = body.summary;
       if (body.tags !== undefined) updates.tags = normalizedTags;
 
       if (body.slug !== undefined) {
@@ -192,7 +188,7 @@ export async function POST(req: Request) {
         .update(updates)
         .eq("id", body.id)
         .select(
-          "id, user_id, title, slug, content, summary, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+          "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
         )
         .maybeSingle();
 

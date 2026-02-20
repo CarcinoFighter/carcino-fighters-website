@@ -22,6 +22,7 @@ export default function SignUpPage() {
     const [formData, setFormData] = useState({
         name: "",
         username: "",
+        email: "",
         password: "",
         bio: "",
     });
@@ -44,6 +45,7 @@ export default function SignUpPage() {
                     action: "register",
                     name: formData.name,
                     username: formData.username,
+                    email: formData.email,
                     password: formData.password,
                     bio: formData.bio,
                 }),
@@ -103,6 +105,14 @@ export default function SignUpPage() {
                                     required
                                 />
                             </div>
+                            <Input
+                                className="bg-[#3C364C]"
+                                type="email"
+                                value={formData.email}
+                                placeholder="Email"
+                                onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                                required
+                            />
                             <div className="relative flex gap-2 items-center">
                                 <Input
                                     type={type}

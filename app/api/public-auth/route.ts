@@ -8,10 +8,12 @@ import jwt from "jsonwebtoken";
 type AuthBody = {
   action?: "register" | "login" | "update_profile" | "logout";
   username?: string;
+  identifier?: string;
   password?: string;
   name?: string;
   bio?: string;
   avatar_url?: string;
+  email?: string;
 };
 
 const COOKIE_NAME = "public_jwt";
@@ -30,6 +32,7 @@ function serializeUser(row: any) {
   return {
     id: row.id,
     username: row.username,
+    email: row.email,
     name: row.name,
     bio: row.bio,
     avatar_url: row.avatar_url,
@@ -45,7 +48,7 @@ async function getSession() {
     const payload = jwt.verify(token, jwtSecret!) as jwt.JwtPayload & { sub: string };
     const { data: user, error } = await sb!
       .from("users_public")
-      .select("id, username, name, bio, avatar_url, deleted")
+      .select("id, username, email, name, bio, avatar_url, deleted")
       .eq("id", payload.sub)
       .limit(1)
       .maybeSingle();
@@ -142,31 +145,33 @@ export async function POST(req: Request) {
     if (!action) return NextResponse.json({ error: "action is required" }, { status: 400 });
 
     if (action === "register") {
-      const { username, password, name, bio } = body;
-      if (!username || !password) {
-        return NextResponse.json({ error: "username and password are required" }, { status: 400 });
+      const { username, email, password, name, bio } = body;
+      if (!username || !email || !password) {
+        return NextResponse.json({ error: "username, email and password are required" }, { status: 400 });
       }
 
       const lowerUsername = username.toLowerCase();
+      const lowerEmail = email.toLowerCase();
       const { count, error: existingErr } = await sb!
         .from("users_public")
         .select("id", { count: "exact", head: true })
-        .eq("username", lowerUsername);
+        .or(`username.eq.${lowerUsername},email.eq.${lowerEmail}`);
 
       if (existingErr) return NextResponse.json({ error: existingErr.message }, { status: 400 });
-      if (count && count > 0) return NextResponse.json({ error: "Username already exists" }, { status: 409 });
+      if (count && count > 0) return NextResponse.json({ error: "Username or email already exists" }, { status: 409 });
 
       const hashed = await bcrypt.hash(password, 10);
       const { data, error } = await sb!
         .from("users_public")
         .insert({
           username: lowerUsername,
+          email: lowerEmail,
           password: hashed,
           name: name ?? null,
           bio: bio ?? null,
           is_active: true,
         })
-        .select("id, username, name, bio, avatar_url")
+        .select("id, username, email, name, bio, avatar_url")
         .maybeSingle();
 
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -175,14 +180,15 @@ export async function POST(req: Request) {
     }
 
     if (action === "login") {
-      const { username, password } = body;
-      if (!username || !password) return NextResponse.json({ error: "username and password are required" }, { status: 400 });
+      const identifier = body.identifier ?? body.username;
+      const { password } = body;
+      if (!identifier || !password) return NextResponse.json({ error: "identifier and password are required" }, { status: 400 });
 
-      const lowerUsername = username.toLowerCase();
+      const lowerIdentifier = identifier.toLowerCase();
       const { data: userRow, error } = await sb!
         .from("users_public")
-        .select("id, username, name, password, bio, avatar_url, deleted")
-        .eq("username", lowerUsername)
+        .select("id, username, email, name, password, bio, avatar_url, deleted")
+        .or(`username.eq.${lowerIdentifier},email.eq.${lowerIdentifier}`)
         .limit(1)
         .maybeSingle();
 
@@ -215,17 +221,29 @@ export async function POST(req: Request) {
 
       const updates: Record<string, unknown> = {};
       if (body.username !== undefined) updates.username = body.username ? body.username.toLowerCase() : null;
+      if (body.email !== undefined) updates.email = body.email ? body.email.toLowerCase() : null;
       if (body.name !== undefined) updates.name = body.name ?? null;
       if (body.bio !== undefined) updates.bio = body.bio ?? null;
       if (body.avatar_url !== undefined) updates.avatar_url = body.avatar_url ?? null;
       if (body.password) updates.password = await bcrypt.hash(body.password, 10);
       updates.updated_at = new Date().toISOString();
 
+      if (updates.username || updates.email) {
+        const { count, error: existingErr } = await sb!
+          .from("users_public")
+          .select("id", { count: "exact", head: true })
+          .or(`username.eq.${updates.username || ""},email.eq.${updates.email || ""}`)
+          .neq("id", userId);
+
+        if (existingErr) return NextResponse.json({ error: existingErr.message }, { status: 400 });
+        if (count && count > 0) return NextResponse.json({ error: "Username or email already exists" }, { status: 409 });
+      }
+
       const { data, error } = await sb!
         .from("users_public")
         .update(updates)
         .eq("id", userId)
-        .select("id, username, name, bio, avatar_url")
+        .select("id, username, email, name, bio, avatar_url")
         .maybeSingle();
 
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
