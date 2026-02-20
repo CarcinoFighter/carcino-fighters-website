@@ -1,12 +1,13 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { Instagram, Facebook, Linkedin } from "lucide-react";
 
 export function Footer() {
   return (
     <div className="justify-start w-full h-fit lg:px-14 z-10 md:px-10 px-6 pt-4 md:pb-12 pb-4">
       <div className="flex flex-col sm:flex-row text-center sm:text-left justify-between items-center mb-5 md:-mb-6">
-        <h1 className="w-full flex flex-col md:flex-row sm:w-[50%] leading-[80%] font-tttravelsnext font-bold text-[#B185E5] text-3xl sm:text-4xl md:text-5xl lg:text-[6rem] max-sm:text-[#B185E5] max-sm:pb-1 max-sm:text-2xl opacity-40 md:tracking-[-6px] max-md:items-center">
+        <h1 className="w-full flex flex-col md:flex-row sm:w-[50%] leading-[80%] font-tttravelsnext font-bold text-[#B185E5] text-3xl sm:text-4xl md:text-5xl lg:text-[6rem] max-sm:text-[#B185E5] max-sm:pb-1 max-sm:text-2xl opacity-40 md:tracking-[-1px] max-md:items-center">
           <Image
             src="/logo-footer.svg"
             alt="TCF"
@@ -17,6 +18,26 @@ export function Footer() {
           THE CARCINO FOUNDATION
         </h1>
         <div className="w-full sm:w-1/3 flex flex-col sm:items-end mt-6 sm:mt-80">
+          <div className="flex gap-2 mb-4">
+            <a
+              href="https://www.instagram.com/thecarcinofoundation/"
+              className="text-[#D5B0FF] hover:text-white transition-colors"
+            >
+              <Instagram size={20} strokeWidth={1.5} />
+            </a>
+            <a
+              href="https://www.facebook.com/people/The-Carcino-Foundation/61580643500737/#"
+              className="text-[#D5B0FF] hover:text-white transition-colors"
+            >
+              <Facebook size={20} strokeWidth={1.5} />
+            </a>
+            <a
+              href="https://www.linkedin.com/company/thecarcinofoundation"
+              className="text-[#D5B0FF] hover:text-white transition-colors"
+            >
+              <Linkedin size={20} strokeWidth={1.5} />
+            </a>
+          </div>
           <p className="font-tttravelsnext text-[#D5B0FF] text-base font-extrabold leading-6">
             CONTACT
           </p>
@@ -34,6 +55,14 @@ export function Footer() {
             +91 87774 29831
           </a>
         </div>
+      </div>
+      <div className="mb-4 flex justify-center md:justify-start">
+        <Link
+          href="/tributes"
+          className="text-[#D5B0FF] font-dmsans text-sm md:text-base hover:underline"
+        >
+          Our Tribute
+        </Link>
       </div>
       <div className="flex flex-col md:flex-row gap-2 md:gap-4 items-center text-[#D5B0FF] font-dmsans text-sm md:text-base">
         <span>All Rights Reserved.</span>
