@@ -407,10 +407,10 @@ function LeaderCard({ leader, isLoading }: { leader: Leader; isLoading?: boolean
               </div>
 
               <div className="flex flex-col items-center gap-1 w-full text-center mt-4">
-                <h2 className="text-sm md:text-base font-dmsans font-bold text-white tracking-wide leading-tight">
+                <h2 className="text-sm md:text-base font-dmsans font-bold text-white leading-tight">
                   {leader.name}
                 </h2>
-                <p className="text-[10px] md:text-[11px] font-dmsans font-medium text-purple-300 uppercase tracking-widest px-2">
+                <p className="text-[10px] md:text-[11px] font-dmsans font-medium text-purple-300 uppercase px-2">
                   {leader.title}
                 </p>
               </div>

@@ -167,7 +167,7 @@ export default function Home() {
               <span className="text-4xl text-[#f8f8f8] lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-4xl sm:mt-36 mt-40 max-sm:text-4xl max-sm:w-3/5 leading-[109%]">
                 Stories from Survivors
               </span>
-              <span className="font-dmsans text-[#f8f8f8] text-2xl sm:max-w-[40%] sm:-mt-0 w-full text-center max-sm:text-sm max-sm:w-4/5 font-light leading-[109%] tracking-[-2%]">
+              <span className="font-dmsans text-[#f8f8f8] text-2xl sm:max-w-[40%] sm:-mt-0 w-full text-center max-sm:text-sm max-sm:w-4/5 font-light leading-[109%]">
                 A collection of experiences from some of the heroes who won
                 their battles against cancer.
               </span>
