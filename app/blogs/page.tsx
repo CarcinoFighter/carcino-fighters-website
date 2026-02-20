@@ -4,7 +4,7 @@ import * as React from "react";
 import Script from "next/script";
 import Link from "next/link";
 import Image from "next/image";
-import { CardContainer, CardItem } from "@/components/ui/3d-card";
+// import { CardContainer, CardItem } from "@/components/ui/3d-card";
 import { motion, MotionConfig, useScroll } from "framer-motion";
 
 const easeSoft = [0.33, 1, 0.68, 1] as const;
@@ -26,6 +26,7 @@ interface BlogEntry {
   authorName: string | null;
   content: string | null;
   tags?: string[] | null;
+  created_at?: string;
 }
 
 export default function BlogsPage() {
@@ -122,7 +123,7 @@ export default function BlogsPage() {
           >
             <div className="fixed inset-0 will-change-transform blur-sm">
               <Image
-                src={`/sfs_bg.png`}
+                src={`/blogs-bg.png`}
                 height={888}
                 width={1440}
                 alt="background"
@@ -145,7 +146,7 @@ export default function BlogsPage() {
           <div className="z-10 font-dmsans flex flex-col lg:gap-8 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full sm:max-w-[90%] mx-auto h-fit lg:px-40 md:px-10 px-6 pb-6 relative">
             <motion.div
               className={
-                "relative z-10 grid grid-cols-1 md:grid-cols-3 items-stretch gap-6 py-6 w-full"
+                "relative z-10 grid grid-cols-1 items-stretch gap-8 py-12 w-full max-w-5xl mx-auto"
               }
               initial="hidden"
               whileInView="visible"
@@ -175,29 +176,24 @@ export default function BlogsPage() {
                 </div>
               ) : (
                 featuredEntries.map((entry, idx) => {
-                  const colors = ["#E39E2E", "#64A04B", "#2E3192", "#9E8DC5", "#7F2D3F", "#818181"];
-                  const cardColor = colors[idx % colors.length];
-
-                  const getTitleFontSize = (title: string) => {
-                    const words = title.split(/\s+/);
-                    const maxWordLength = Math.max(...words.map((w) => w.length));
-                    if (maxWordLength > 12) return "text-[14px] sm:text-[18px]";
-                    if (maxWordLength >= 9) return "text-[18px] sm:text-[22px]";
-                    if (title.length > 35) return "text-[16px] sm:text-[20px]";
-                    if (title.length >= 15) return "text-[18px] sm:text-[24px]";
-                    return "text-[22px] sm:text-[30px]";
-                  };
+                  const formattedDate = entry.created_at
+                    ? new Date(entry.created_at).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                    : "";
 
                   return (
                     <Link
                       key={entry.id}
                       href={entry.slug ? `/blogs/${entry.slug}` : `/blogs/${entry.id}`}
-                      className="h-full block"
+                      className="block group"
                     >
                       <motion.div
-                        className="h-full"
+                        className="relative overflow-hidden rounded-[44px] p-[1px] bg-white/5 hover:bg-white/10 transition-colors duration-500"
                         layout
-                        whileHover={{ y: -4, scale: 1.015 }}
+                        whileHover={{ scale: 1.01 }}
                         variants={{
                           hidden: { opacity: 0, y: 12 },
                           visible: {
@@ -207,47 +203,41 @@ export default function BlogsPage() {
                           },
                         }}
                       >
-                        <CardContainer className="w-[350px] h-[202px] px-1 rounded-[40px]">
-                          <div
-                            style={{ backgroundColor: cardColor }}
-                            className="
-                              relative z-20
-                              group/card
-                              vision-pro-ui-hoverable
-                              w-full h-full min-h-[200px]
-                              flex flex-col justify-center
-                              rounded-[40px]
-                              overflow-hidden isolation-isolate liquid-glass !shadow-none
-                              select-none bg-gradient-to-br from-black/70 via-black/50 to-black/70
-                            "
-                          >
-                            <div className="storyGlass-tint pointer-events-none" style={{ backgroundColor: cardColor }}></div>
-                            <div className="cardGlass-borders pointer-events-none"></div>
-                            <div className="cardGlass-shine pointer-events-none"></div>
-                            <div className="liquidGlass-text pointer-events-none"></div>
+                        <div className="relative overflow-hidden rounded-[44px] p-6 sm:p-10 flex flex-col sm:flex-row items-center gap-8 isolate min-h-[220px]">
+                          {/* Card Glass Internal Layers */}
+                          <div className="cardGlass-tint pointer-events-none" />
+                          <div className="glass-noise pointer-events-none" />
+                          <div className="cardGlass-borders pointer-events-none" />
+                          <div className="cardGlass-shine pointer-events-none" />
 
-                            <CardItem
-                              translateZ="20"
-                              className="
-                                relative z-10
-                                flex flex-col items-center gap-2
-                                rounded-[40px]
-                                pointer-events-none
-                                w-full h-full py-10
-                              "
-                            >
-                              <h3
-                                className={`${getTitleFontSize(entry.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}
-                              >
-                                {entry.title}
-                              </h3>
-
-                              <p className="text-[12px] sm:text-[14px] text-center text-[#FFF9D0] group-hover/card:text-white transition-colors duration-300 font-dmsans w-[80%] font-light leading-none">
-                                {excerptFromContent(entry.content) ?? entry.authorName ?? "Unknown Author"}
-                              </p>
-                            </CardItem>
+                          {/* Left Side: Metadata */}
+                          <div className="flex-1 flex flex-col justify-center text-left relative z-10 w-full sm:w-auto">
+                            <span className="text-white/40 text-[12px] sm:text-sm font-dmsans mb-2 block font-normal tracking-wide">
+                              by {entry.authorName || "The Carcino Foundation"}
+                            </span>
+                            <h3 className="text-xl sm:text-3xl md:text-3xl font-bold text-white mb-2 sm:mb-4 leading-tight font-tttravelsnext tracking-tight group-hover:text-purple-300 transition-colors duration-300">
+                              {entry.title}
+                            </h3>
+                            <p className="text-white/50 text-sm sm:text-base md:text-lg font-dmsans mb-4 sm:mb-6 line-clamp-2 max-w-2xl font-light leading-relaxed">
+                              {excerptFromContent(entry.content, 180) ?? "Dive into this article to learn more about the latest developments in cancer research."}
+                            </p>
+                            <span className="text-white/40 text-[12px] sm:text-sm font-dmsans font-normal">
+                              {formattedDate || "February 14, 2026"}
+                            </span>
                           </div>
-                        </CardContainer>
+
+                          {/* Right Side: Dummy Image */}
+                          <div className="w-full sm:w-64 h-48 sm:h-44 shrink-0 relative rounded-[44px] overflow-hidden bg-white/5 border border-white/10 group-hover:border-white/20 transition-all duration-500 z-10">
+                            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent z-10" />
+                            <Image
+                              src={`/logo.png`}
+                              alt="Blog illustration"
+                              fill
+                              className="object-contain opacity-40 group-hover:opacity-100 transition-opacity duration-700 grayscale group-hover:grayscale-0 p-10"
+                              unoptimized
+                            />
+                          </div>
+                        </div>
                       </motion.div>
                     </Link>
                   );
