@@ -163,11 +163,11 @@ export default function Home() {
               <div className="fixed inset-x-0 top-0 h-1/5 bg-gradient-to-b from-black to-transparent" />
             </div>
 
-            <div className="flex z-10 flex-col w-full justify-self-center self-center items-center gap-11 top-0">
-              <span className="text-4xl text-[#f8f8f8] lg:text-6xl text-center xl:text-8xl font-wintersolace font-medium max-w-4xl sm:mt-36 mt-40 max-sm:text-3xl max-sm:w-3/5 leading-[109%]">
+            <div className="flex z-10 flex-col w-full justify-self-center self-center items-center gap-7 top-0">
+              <span className="text-4xl text-[#f8f8f8] lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-4xl sm:mt-36 mt-40 max-sm:text-4xl max-sm:w-3/5 leading-[109%]">
                 Stories from Survivors
               </span>
-              <span className="font-dmsans text-[#f8f8f8] text-2xl sm:max-w-[40%] sm:-mt-0 w-full text-center max-sm:text-xs max-sm:w-4/5 font-light leading-[109%] tracking-[-2%]">
+              <span className="font-dmsans text-[#f8f8f8] text-2xl sm:max-w-[40%] sm:-mt-0 w-full text-center max-sm:text-sm max-sm:w-4/5 font-light leading-[109%] tracking-[-2%]">
                 A collection of experiences from some of the heroes who won
                 their battles against cancer.
               </span>
@@ -175,7 +175,7 @@ export default function Home() {
           </div>
 
           {/* Stories */}
-          <div className="z-10 font-giest flex flex-col lg:gap-8 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full sm:max-w-[90%] mx-auto h-fit lg:px-40 md:px-10 px-6 pb-6 relative">
+          <div className="z-10 font-dmsans flex flex-col lg:gap-8 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full sm:max-w-[90%] mx-auto h-fit lg:px-40 md:px-10 px-6 pb-6 relative">
             <motion.div
               className={
                 "relative z-10 grid grid-cols-1 md:grid-cols-3 items-stretch gap-6 py-6 w-full"
@@ -198,12 +198,12 @@ export default function Home() {
                     }}
                     aria-hidden
                   />
-                  <span className="font-space_grotesk text-sm text-muted-foreground">
+                  <span className="text-lg text-muted-foreground">
                     Loading stories...
                   </span>
                 </div>
               ) : stories.length === 0 ? (
-                <div className="col-span-full text-center text-lg text-muted-foreground">
+                <div className="col-span-full text-center text-lg md:text-2xl text-muted-foreground pt-10">
                   No stories found.
                 </div>
               ) : (
@@ -309,8 +309,11 @@ export default function Home() {
                               </h3>
 
                               <p className="text-[12px] sm:text-[14px] text-center text-[#FFF9D0] group-hover/card:text-white transition-colors duration-300 font-dmsans w-[80%] font-light leading-none">
-                                {excerptFromContent(story.summary ?? story.content) ??
-                                  story.authorName ?? "Unknown Author"}
+                                {excerptFromContent(
+                                  story.summary ?? story.content,
+                                ) ??
+                                  story.authorName ??
+                                  "Unknown Author"}
                               </p>
                             </CardItem>
                           </div>
@@ -323,9 +326,6 @@ export default function Home() {
             </motion.div>
           </div>
         </MotionConfig>
-
-        {/* Footer */}
-        <Footer></Footer>
       </div>
     </>
   );
