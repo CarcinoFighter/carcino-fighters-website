@@ -24,7 +24,7 @@ export const tributes: Tribute[] = [
     name: "Nilima Kumar",
     year: "11/11/1968 – 14/08/2012",
     text: "",
-    image: "/tribute/nilimakumar.png",
+    image: "/tribute/nilimakumar.jpeg",
   },
   // {
   //   name: "Jane Smith",
