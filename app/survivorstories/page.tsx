@@ -211,7 +211,7 @@ export default function Home() {
                   const colors = [
                     "#E39E2E",
                     "#64A04B",
-                    "#2E3192",
+                    "#4145ca",
                     "#9E8DC5",
                     "#7F2D3F",
                     "#818181",
@@ -221,8 +221,13 @@ export default function Home() {
                     "/landing/Background.png",
                     "/landing/background_new.png",
                   ];
-                  const cardColor = colors[featuredStories.indexOf(story) % colors.length];
-                  const backgroundImage = story.image_url || defaultImages[featuredStories.indexOf(story) % defaultImages.length];
+                  const cardColor =
+                    colors[featuredStories.indexOf(story) % colors.length];
+                  const backgroundImage =
+                    story.image_url ||
+                    defaultImages[
+                      featuredStories.indexOf(story) % defaultImages.length
+                    ];
 
                   const getTitleFontSize = (title: string) => {
                     const words = title.split(/\s+/);
@@ -297,7 +302,7 @@ export default function Home() {
                                 flex flex-col items-center gap-2
                                 rounded-[40px]
                                 pointer-events-none
-                                w-full h-full py-10
+                                w-full h-full justify-center
                               "
                             >
                               <h3
@@ -306,11 +311,11 @@ export default function Home() {
                                 {story.title}
                               </h3>
 
-                              <p className="text-[12px] sm:text-[14px] text-center text-[#FFF9D0] group-hover/card:text-white transition-colors duration-300 font-dmsans w-[80%] font-light leading-none">
+                              {/* <p className="text-[12px] sm:text-[14px] text-center text-[#FFF9D0] group-hover/card:text-white transition-colors duration-300 font-dmsans w-[80%] font-light leading-none">
                                 {excerptFromContent(story.content) ??
                                   story.authorName ??
                                   "Unknown Author"}
-                              </p>
+                              </p> */}
                             </CardItem>
                           </div>
                         </CardContainer>
