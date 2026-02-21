@@ -33,6 +33,8 @@ export default function AdminPage() {
     name: string | null;
     bio: string | null;
     avatar_url: string | null;
+    is_employee?: boolean;
+    employee_id?: string;
     created_at?: string;
   };
 
@@ -1226,6 +1228,11 @@ export default function AdminPage() {
                                       <Image src={u.avatar_url} alt="avatar" width={40} height={40} className="h-10 w-10 rounded-full object-cover ring-2 ring-white/15" unoptimized />
                                     ) : (
                                       <div className="h-10 w-10 rounded-full bg-white/10" />
+                                    )}
+                                    {u.is_employee && (
+                                      <div className="mt-2 text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/30 px-1.5 py-0.5 rounded text-center font-medium">
+                                        EMPLOYEE
+                                      </div>
                                     )}
                                   </td>
                                   <td className="p-3 align-top">

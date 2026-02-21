@@ -11,9 +11,9 @@ function SignInInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const registered = searchParams.get("registered");
-    const rawRedirect = searchParams.get("redirectTo") || "/blogs/dashboard";
+    const rawRedirect = searchParams.get("redirectTo") || "/dashboard";
     const redirectTarget = useMemo(
-        () => (rawRedirect.startsWith("/") ? rawRedirect : "/blogs/dashboard"),
+        () => (rawRedirect.startsWith("/") ? rawRedirect : "/dashboard"),
         [rawRedirect]
     );
 
@@ -22,6 +22,7 @@ function SignInInner() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isEmployee, setIsEmployee] = useState(false);
 
     const type = showPassword ? "text" : "password";
     const Icon = showPassword ? EyeOff : Eye;
@@ -34,7 +35,7 @@ function SignInInner() {
             const res = await fetch("/api/public-auth", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "login", identifier, password }),
+                body: JSON.stringify({ action: "login", identifier, password, isEmployee }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
@@ -44,8 +45,8 @@ function SignInInner() {
 
             router.replace(redirectTarget);
         } catch (err) {
-                console.error("public login error", err);
-                setError("Login failed");
+            console.error("public login error", err);
+            setError("Login failed");
         } finally {
             setLoading(false);
         }
@@ -112,6 +113,19 @@ function SignInInner() {
                                             <Icon className="h-5 w-5" />
                                         </button>
                                     </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 py-1">
+                                    <input
+                                        id="employee-check"
+                                        type="checkbox"
+                                        className="h-4 w-4 rounded border-white/20 bg-white/5 text-[#7b5dff] focus:ring-[#7b5dff]"
+                                        checked={isEmployee}
+                                        onChange={(e) => setIsEmployee(e.target.checked)}
+                                    />
+                                    <label htmlFor="employee-check" className="text-sm text-white/70 hover:text-white cursor-pointer select-none">
+                                        Sign in as Employee
+                                    </label>
                                 </div>
                                 {error && (
                                     <div className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-100">

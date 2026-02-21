@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
- type PublicUser = {
+type PublicUser = {
   id: string;
   username: string | null;
   name: string | null;
@@ -18,7 +18,7 @@ const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
   avatar_url: string | null;
 };
 
- type BlogEntry = {
+type BlogEntry = {
   id: string;
   slug: string;
   title: string;
@@ -85,7 +85,7 @@ export default function BlogsDashboard() {
         const res = await fetch("/api/public-auth", { method: "GET" });
         const data = await res.json().catch(() => ({}));
         if (!res.ok || !data?.authenticated) {
-          router.replace("/sign-in?redirectTo=/blogs/dashboard");
+          router.replace("/sign-in");
           return;
         }
 
@@ -258,15 +258,24 @@ export default function BlogsDashboard() {
             <p className="text-xs uppercase text-white/60">Blogs</p>
             <h1 className="text-3xl font-bold">Creator Dashboard</h1>
           </div>
-          <Button
-            variant="ghost"
-            onClick={async () => {
-              await fetch("/api/public-auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) });
-              router.replace("/sign-in");
-            }}
-          >
-            Logout
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/dashboard")}
+              className="border-white/10 hover:bg-white/5"
+            >
+              Back to Dashboard
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={async () => {
+                await fetch("/api/public-auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) });
+                router.replace("/sign-in");
+              }}
+            >
+              Logout
+            </Button>
+          </div>
         </div>
 
         {error && (
