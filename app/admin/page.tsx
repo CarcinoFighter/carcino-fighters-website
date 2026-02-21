@@ -264,33 +264,21 @@ export default function AdminPage() {
     try {
       setUploading((s) => ({ ...s, [userId]: true }));
 
-      const ext = file.name.split(".").pop();
-      const path = `authors/${userId}/avatar.${ext}`;
-      await supabase.auth.getUser();
+      const formData = new FormData();
+      formData.append("avatar", file);
+      formData.append("targetUserId", userId);
 
-      const upRes = await supabase.storage.from("profile-picture").upload(path, file, { upsert: true });
-      setLastResponseDebug((p) => `${p || ""}\nUPLOAD_RES:\n${JSON.stringify(upRes, null, 2)}`);
-      if (upRes.error) throw upRes.error;
-
-      // Use server-side API to update metadata to avoid RLS issues on metadata table
-      const metaRes = await fetch("/api/admin", {
+      const res = await fetch("/api/admin", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "update_pfp",
-          targetUserId: userId,
-          object_key: path,
-          content_type: file.type,
-          size: file.size,
-        }),
+        body: formData,
       });
-      const metaData = await metaRes.json().catch(() => ({}));
-      setLastResponseDebug((p) => `${p}\nMETA_RES:\n${JSON.stringify(metaData, null, 2)}`);
-      if (!metaRes.ok) throw new Error(metaData.error || "Failed to update metadata");
 
-      const signed = await supabase.storage.from("profile-picture").createSignedUrl(path, 60 * 60 * 24 * 7);
-      setLastResponseDebug((p) => `${p}\nSIGNED_URL_AFTER_UPLOAD:\n${JSON.stringify(signed, null, 2)}`);
-      const url = signed.data?.signedUrl || null;
+      const data = await res.json().catch(() => ({}));
+      setLastResponseDebug((p) => `${p || ""}\nUPLOAD_RES:\n${JSON.stringify(data, null, 2)}`);
+
+      if (!res.ok) throw new Error(data.error || "Failed to upload image");
+
+      const url = data.avatar_url || null;
 
       setDocs((prev) => prev.map((d) => (d.author_user_id === userId ? { ...d, profilePicture: url || d.profilePicture || null } : d)));
       setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, profilePicture: url || u.profilePicture || null } : u)));
@@ -723,12 +711,12 @@ export default function AdminPage() {
           {/* Center-aligned Premium Header */}
           <div className="flex flex-col items-center text-center gap-4 mb-12">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
               className="space-y-4"
             >
-              <h1 className="text-6xl sm:text-7xl md:text-8xl font-bold leading-tight font-wintersolace text-white py-2">
+              <h1 className="text-6xl sm:text-7xl md:text-8xl leading-tight font-wintersolace text-white py-2">
                 Admin Dashboard
               </h1>
               <p className="text-xl text-white/50 font-dmsans max-w-2xl mx-auto">
@@ -813,7 +801,7 @@ export default function AdminPage() {
                     <div className="relative z-10">
                       <div className="flex items-center justify-between mb-6">
                         <div>
-                          <h2 className="text-xl font-bold font-wintersolace">Pending Submissions</h2>
+                          <h2 className="text-xl font-wintersolace">Pending Submissions</h2>
                           <p className="text-sm text-white/50 mt-1">Review and approve content from authors.</p>
                         </div>
                         <button
