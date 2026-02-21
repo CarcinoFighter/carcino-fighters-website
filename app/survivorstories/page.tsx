@@ -179,7 +179,7 @@ export default function Home() {
                   const colors = [
                     "#E39E2E",
                     "#64A04B",
-                    "#4145cA",
+                    "#5a61f1",
                     "#9E8DC5",
                     "#7F2D3F",
                     "#818181",
