@@ -367,7 +367,10 @@ export default function StoryPageClient({
         )}
 
         <div className="mt-12">
-          <Link href="/survivorstories" className="text-primary underline">
+          <Link
+            href="/survivorstories"
+            className="text-primary underline font-dmsans text-lg"
+          >
             ← Back to Stories
           </Link>
         </div>

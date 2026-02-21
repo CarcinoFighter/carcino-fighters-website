@@ -31,26 +31,17 @@ interface SurvivorStory {
   colour?: string | null;
 }
 
-// interface Position {
-//   x: number;
-//   y: number;
-// }
-
 export default function Home() {
   const [stories, setStories] = React.useState<SurvivorStory[]>([]);
   const [loading, setLoading] = React.useState(true);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const heroRef = React.useRef<HTMLDivElement | null>(null);
 
-  // Parallax: move background slower than scroll within hero section
   const { scrollYProgress } = useScroll({
     container: containerRef,
     target: heroRef,
     offset: ["start start", "end start"],
   });
-
-  // const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
-  // const [opacity, setOpacity] = useState<number>(0);
 
   React.useEffect(() => {
     (async () => {
@@ -72,34 +63,21 @@ export default function Home() {
     if (stories.length === 0) return [];
     return [...stories];
   }, [stories]);
+
   const excerptFromContent = (textInput?: string | null, len = 100) => {
     if (!textInput) return null;
     let text = textInput;
-
-    // Remove common README header markers like "# README" or "README" at start
     text = text.replace(/^[#>\s\-]*readme[:\s\-]*\n?/i, "");
-
-    // Remove fenced code blocks
     text = text.replace(/```[\s\S]*?```/g, "");
-
-    // Remove images
     text = text.replace(/!\[[^\]]*\]\([^\)]+\)/g, "");
-
-    // Convert markdown links [text](url) -> text
     text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1");
-
-    // Remove inline code and HTML tags
     text = text.replace(/`([^`]*)`/g, "$1").replace(/<[^>]+>/g, "");
-
-    // Strip remaining markdown headings/emphasis/formatting characters
     text = text.replace(/^#{1,6}\s*/gm, "").replace(/[*_~]/g, "");
-
-    // Collapse whitespace
     text = text.replace(/\s+/g, " ").trim();
-
     if (!text) return null;
     return text.length > len ? text.slice(0, len) + "…" : text.slice(0, len);
   };
+
   const homePageSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -111,23 +89,17 @@ export default function Home() {
     },
     inLanguage: "en-IN",
   };
+
   React.useEffect(() => {
     if (loading) return;
-
     const cards = document.querySelectorAll<HTMLElement>(".article-card");
     let maxHeight = 0;
-
-    // reset heights first
     cards.forEach((card) => {
       card.style.height = "auto";
     });
-
-    // measure tallest
     cards.forEach((card) => {
       maxHeight = Math.max(maxHeight, card.offsetHeight);
     });
-
-    // apply height
     cards.forEach((card) => {
       card.style.height = `${maxHeight}px`;
     });
@@ -138,13 +110,11 @@ export default function Home() {
       <Script
         id="home-schema"
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(homePageSchema),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homePageSchema) }}
       />
       <div
         ref={containerRef}
-        className=" flex flex-col relative lg:block lg:h-screen w-full overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background hide-scrollbar"
+        className="flex flex-col relative lg:block lg:h-screen w-full overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background hide-scrollbar"
       >
         <MotionConfig transition={{ duration: 1 }}>
           <div
@@ -177,9 +147,7 @@ export default function Home() {
           {/* Stories */}
           <div className="z-10 font-dmsans flex flex-col lg:gap-8 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full sm:max-w-[90%] mx-auto h-fit lg:px-40 md:px-10 px-6 pb-6 relative">
             <motion.div
-              className={
-                "relative z-10 grid grid-cols-1 md:grid-cols-3 items-stretch gap-6 py-6 w-full"
-              }
+              className="relative z-10 grid grid-cols-1 md:grid-cols-3 items-stretch gap-6 py-6 w-full"
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
@@ -211,7 +179,7 @@ export default function Home() {
                   const colors = [
                     "#E39E2E",
                     "#64A04B",
-                    "#4145ca",
+                    "#4145cA",
                     "#9E8DC5",
                     "#7F2D3F",
                     "#818181",
@@ -222,19 +190,17 @@ export default function Home() {
                     "/landing/background_new.png",
                   ];
                   const cardColor = story.colour || colors[idx % colors.length];
-                  const backgroundImage = story.image_url || defaultImages[idx % defaultImages.length];
+                  const backgroundImage =
+                    story.image_url ||
+                    defaultImages[idx % defaultImages.length];
 
                   const getTitleFontSize = (title: string) => {
                     const words = title.split(/\s+/);
                     const maxWordLength = Math.max(
                       ...words.map((w) => w.length),
                     );
-
-                    // Priority 1: Longest word must fit
-                    if (maxWordLength > 12) return "text-[14px] sm:text-[18px]"; // Very long word
-                    if (maxWordLength >= 9) return "text-[18px] sm:text-[22px]"; // Moderately long word
-
-                    // Priority 2: Total length
+                    if (maxWordLength > 12) return "text-[14px] sm:text-[18px]";
+                    if (maxWordLength >= 9) return "text-[18px] sm:text-[22px]";
                     if (title.length > 35) return "text-[16px] sm:text-[20px]";
                     if (title.length >= 15) return "text-[18px] sm:text-[24px]";
                     return "text-[22px] sm:text-[30px]";
@@ -267,8 +233,10 @@ export default function Home() {
                           <div
                             style={{
                               backgroundImage: `url('${backgroundImage}')`,
+                              // Desaturate and darken the card color to avoid harsh saturation
                               backgroundColor: cardColor,
                               backgroundBlendMode: "multiply",
+                              filter: "saturate(0.8) brightness(1)",
                             }}
                             className="
                               relative z-20
@@ -296,21 +264,17 @@ export default function Home() {
                                 relative z-10
                                 flex flex-col items-center gap-2
                                 rounded-[40px]
-                                pointer-events-none
-                                w-full h-full justify-center
+                                w-full h-full
                               "
                             >
-                              <h3
-                                className={`${getTitleFontSize(story.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}
-                              >
-                                {story.title}
-                              </h3>
-
-                              {/* <p className="text-[12px] sm:text-[14px] text-center text-[#FFF9D0] group-hover/card:text-white transition-colors duration-300 font-dmsans w-[80%] font-light leading-none">
-                                {excerptFromContent(story.content) ??
-                                  story.authorName ??
-                                  "Unknown Author"}
-                              </p> */}
+                              {/* translateY-based centering: smooth, no layout shift */}
+                              <div className="w-full h-full flex flex-col items-center justify-center">
+                                <h3
+                                  className={`${getTitleFontSize(story.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[250px] mx-auto w-full text-white translate-y-14 group-hover/card:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]`}
+                                >
+                                  {story.title}
+                                </h3>
+                              </div>
                             </CardItem>
                           </div>
                         </CardContainer>
