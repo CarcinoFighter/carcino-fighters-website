@@ -176,7 +176,14 @@ export async function POST(req: Request) {
 
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-      return NextResponse.json({ user: serializeUser(data) }, { status: 201 });
+      const user = serializeUser(data);
+      if (!user) return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
+
+      const token = jwt.sign({ sub: user.id, username: user.username }, jwtSecret!, { expiresIn: "7d" });
+      const response = NextResponse.json({ user }, { status: 201 });
+      setAuthCookie(response, token);
+
+      return response;
     }
 
     if (action === "login") {

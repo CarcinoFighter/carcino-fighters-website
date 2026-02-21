@@ -98,6 +98,7 @@ function DashboardSkeleton() {
 
 export default function DashboardPage() {
     const router = useRouter();
+    const [isAdmin, setIsAdmin] = useState(false);
     const [user, setUser] = useState<User | null>(null);
     const [docs, setDocs] = useState<Doc[]>([]);
     const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -113,24 +114,36 @@ export default function DashboardPage() {
         try {
             setUploading(true);
             const ext = file.name.split(".").pop();
-            const path = `authors/${user.id}/avatar.${ext}`;
-
+            const path = isAdmin ? `authors/${user.id}/avatar.${ext}` : `users-public/${user.id}/avatar.${ext}`;
 
             const { error: upErr } = await supabase.storage.from("profile-picture").upload(path, file, { upsert: true });
             if (upErr) throw upErr;
 
-
-            const { error: metaErr } = await supabase.from("profile_pictures").upsert(
-                {
-                    user_id: user.id,
-                    object_key: path,
-                    content_type: file.type,
-                    size: file.size,
-                },
-                { onConflict: "user_id" }
-            );
-            if (metaErr) throw metaErr;
-
+            if (isAdmin) {
+                const { error: metaErr } = await supabase.from("profile_pictures").upsert(
+                    {
+                        user_id: user.id,
+                        object_key: path,
+                        content_type: file.type,
+                        size: file.size,
+                    },
+                    { onConflict: "user_id" }
+                );
+                if (metaErr) throw metaErr;
+            } else {
+                // For public users, we might use the public-auth API to update avatar_url
+                const formData = new FormData();
+                formData.append("avatar", file);
+                const res = await fetch("/api/public-auth", {
+                    method: "POST",
+                    body: formData,
+                });
+                if (!res.ok) throw new Error("Failed to update public avatar");
+                const data = await res.json();
+                setUser(prev => prev ? { ...prev, profilePicture: data.avatar_url } : prev);
+                setUploading(false);
+                return;
+            }
 
             const { data: signed } = await supabase.storage.from("profile-picture").createSignedUrl(path, 60 * 60 * 24 * 7);
             const url = signed?.signedUrl || null;
@@ -151,14 +164,15 @@ export default function DashboardPage() {
         setUpdating(true);
         try {
             const body: any = {
-                action: "update_self",
-                description: editForm.description
+                action: isAdmin ? "update_self" : "update_profile",
+                description: editForm.description,
+                bio: editForm.description, // For public-auth
+                password: editForm.password || undefined
             };
-            if (editForm.password) {
-                body.password = editForm.password;
-            }
 
-            const res = await fetch("/api/admin", {
+            const apiUrl = isAdmin ? "/api/admin" : "/api/public-auth";
+
+            const res = await fetch(apiUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
@@ -166,7 +180,15 @@ export default function DashboardPage() {
             const data = await res.json().catch(() => ({}));
 
             if (res.ok && data.user) {
-                setUser((prev) => ({ ...data.user, profilePicture: prev?.profilePicture }));
+                const updatedUser = isAdmin ? data.user : {
+                    id: data.user.id,
+                    username: data.user.username,
+                    email: data.user.email,
+                    name: data.user.name,
+                    description: data.user.bio,
+                    profilePicture: data.user.avatar_url,
+                };
+                setUser((prev) => ({ ...updatedUser, profilePicture: prev?.profilePicture || updatedUser.profilePicture || null }));
                 setIsEditing(false);
                 setEditForm({ description: "", password: "" });
             } else {
@@ -183,38 +205,59 @@ export default function DashboardPage() {
     useEffect(() => {
         const init = async () => {
             try {
-
+                // 1. Try Admin Auth
                 const authRes = await fetch("/api/admin", { method: "GET" });
                 const authData = await authRes.json().catch(() => ({}));
 
-                if (!authRes.ok || !authData.authenticated || !authData.user) {
-                    router.replace("/admin/login");
-                    return;
+                if (authRes.ok && authData.authenticated && authData.user) {
+                    setUser(authData.user);
+                    setIsAdmin(true);
+
+                    // Fetch admin profile picture
+                    const picRes = await fetch("/api/admin", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ action: "get_profile_picture" }),
+                    });
+                    const picData = await picRes.json().catch(() => ({}));
+                    if (picRes.ok && picData.url) {
+                        setUser((prev) => (prev ? { ...prev, profilePicture: picData.url } : prev));
+                    }
+
+                    // Fetch admin docs
+                    const docsRes = await fetch("/api/admin", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ action: "list_docs", forceOwn: true }),
+                    });
+                    const docsData = await docsRes.json().catch(() => ({}));
+                    if (docsRes.ok && docsData.docs) {
+                        setDocs(docsData.docs);
+                    }
+                } else {
+                    // 2. Try Public Auth
+                    const publicRes = await fetch("/api/public-auth", { method: "GET" });
+                    const publicData = await publicRes.json().catch(() => ({}));
+
+                    if (publicRes.ok && publicData.authenticated && publicData.user) {
+                        const pu = publicData.user;
+                        setIsAdmin(false);
+                        setUser({
+                            id: pu.id,
+                            username: pu.username,
+                            email: pu.email,
+                            name: pu.name,
+                            description: pu.bio,
+                            profilePicture: pu.avatar_url,
+                        });
+                    } else {
+                        // Both failed
+                        router.replace("/sign-in");
+                        return;
+                    }
                 }
 
-                setUser(authData.user);
-
-
-                const picRes = await fetch("/api/admin", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "get_profile_picture" }),
-                });
-                const picData = await picRes.json().catch(() => ({}));
-                if (picRes.ok && picData.url) {
-                    setUser((prev) => (prev ? { ...prev, profilePicture: picData.url } : prev));
-                }
-
-                const docsRes = await fetch("/api/admin", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "list_docs", forceOwn: true }),
-                });
-                const docsData = await docsRes.json().catch(() => ({}));
-                if (docsRes.ok && docsData.docs) {
-                    setDocs(docsData.docs);
-                }
-
+                // 3. Fetch Blogs (Always trying public session for now as per system design)
                 const blogsRes = await fetch("/api/blogs?mine=true");
                 const blogsData = await blogsRes.json().catch(() => ({}));
                 if (blogsRes.ok && blogsData.blogs) {
@@ -234,12 +277,18 @@ export default function DashboardPage() {
     async function handleLogout() {
         setLoggingOut(true);
         try {
+            // Try logging out from both just in case, or detect which one
             await fetch("/api/admin", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "logout" }),
             });
-            router.replace("/admin/login");
+            await fetch("/api/public-auth", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "logout" }),
+            });
+            router.replace("/sign-in");
         } catch (err) {
             console.error("Logout error", err);
             setLoggingOut(false);
@@ -421,70 +470,74 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="lg:col-span-8 xl:col-span-9 space-y-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-xl font-semibold text-gray-200">Your Articles</h3>
-                    </div>
-
-                    {docs.length === 0 ? (
-                        <div className="relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[30px] rounded-[40px] p-12 text-center group">
-                            {/* Card Glass Internal Layers */}
-                            <div className="liquidGlass-effect pointer-events-none"></div>
-                            <div className="cardGlass-tint pointer-events-none"></div>
-                            <div className="glass-noise"></div>
-                            <div className="cardGlass-borders pointer-events-none"></div>
-                            <div className="cardGlass-shine pointer-events-none"></div>
-
-                            <p className="relative z-10 text-gray-400 font-medium font-dmsans">You haven't written any articles yet.</p>
-                        </div>
-                    ) : (
-                        docs.map((doc) => (
-                            <div
-                                key={doc.id}
-                                className="group relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[30px] rounded-[40px] p-6 sm:p-8 flex flex-col md:flex-row gap-8 hover:bg-white/5 transition-all duration-300"
-                            >
-                                {/* Card Glass Internal Layers */}
-                                <div className="liquidGlass-effect pointer-events-none"></div>
-                                <div className="cardGlass-tint pointer-events-none"></div>
-                                <div className="glass-noise"></div>
-                                <div className="cardGlass-borders pointer-events-none"></div>
-                                <div className="cardGlass-shine pointer-events-none"></div>
-
-                                <div className="relative z-10 w-full flex flex-col md:flex-row gap-8">
-                                    <div className="w-full md:w-48 h-48 md:h-auto shrink-0 relative rounded-2xl overflow-hidden bg-[#1A1A1A]">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 to-indigo-900/40" />
-                                        <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-purple-500/20 blur-2xl rounded-full" />
-                                        <div className="absolute top-4 left-4 w-full h-full opacity-50">
-
-                                        </div>
-                                    </div>
-
-
-                                    <div className="flex-1 flex flex-col justify-center">
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <span className="px-3 py-1 rounded-full bg-white/5 border border-white/5 text-xs font-medium text-gray-300">
-                                                Information
-                                            </span>
-                                        </div>
-
-                                        <h3 className="text-2xl font-bold mb-3 group-hover:text-purple-300 transition-colors">
-                                            {doc.title}
-                                        </h3>
-
-                                        <p className="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
-                                            {doc.content?.substring(0, 150) || "No content preview available."}...
-                                        </p>
-
-                                        <Link
-                                            href={`/article/${doc.slug}`}
-                                            className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 text-sm font-medium group/link"
-                                        >
-                                            View Article
-                                            <ArrowUpRight className="w-4 h-4 transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5" />
-                                        </Link>
-                                    </div>
-                                </div>
+                    {(isAdmin || docs.length > 0) && (
+                        <>
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-xl font-semibold text-gray-200">Your Articles</h3>
                             </div>
-                        ))
+
+                            {docs.length === 0 ? (
+                                <div className="relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[30px] rounded-[40px] p-12 text-center group">
+                                    {/* Card Glass Internal Layers */}
+                                    <div className="liquidGlass-effect pointer-events-none"></div>
+                                    <div className="cardGlass-tint pointer-events-none"></div>
+                                    <div className="glass-noise"></div>
+                                    <div className="cardGlass-borders pointer-events-none"></div>
+                                    <div className="cardGlass-shine pointer-events-none"></div>
+
+                                    <p className="relative z-10 text-gray-400 font-medium font-dmsans">You haven't written any articles yet.</p>
+                                </div>
+                            ) : (
+                                docs.map((doc) => (
+                                    <div
+                                        key={doc.id}
+                                        className="group relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[30px] rounded-[40px] p-6 sm:p-8 flex flex-col md:flex-row gap-8 hover:bg-white/5 transition-all duration-300"
+                                    >
+                                        {/* Card Glass Internal Layers */}
+                                        <div className="liquidGlass-effect pointer-events-none"></div>
+                                        <div className="cardGlass-tint pointer-events-none"></div>
+                                        <div className="glass-noise"></div>
+                                        <div className="cardGlass-borders pointer-events-none"></div>
+                                        <div className="cardGlass-shine pointer-events-none"></div>
+
+                                        <div className="relative z-10 w-full flex flex-col md:flex-row gap-8">
+                                            <div className="w-full md:w-48 h-48 md:h-auto shrink-0 relative rounded-2xl overflow-hidden bg-[#1A1A1A]">
+                                                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 to-indigo-900/40" />
+                                                <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-purple-500/20 blur-2xl rounded-full" />
+                                                <div className="absolute top-4 left-4 w-full h-full opacity-50">
+
+                                                </div>
+                                            </div>
+
+
+                                            <div className="flex-1 flex flex-col justify-center">
+                                                <div className="flex items-center gap-3 mb-4">
+                                                    <span className="px-3 py-1 rounded-full bg-white/5 border border-white/5 text-xs font-medium text-gray-300">
+                                                        Information
+                                                    </span>
+                                                </div>
+
+                                                <h3 className="text-2xl font-bold mb-3 group-hover:text-purple-300 transition-colors">
+                                                    {doc.title}
+                                                </h3>
+
+                                                <p className="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
+                                                    {doc.content?.substring(0, 150) || "No content preview available."}...
+                                                </p>
+
+                                                <Link
+                                                    href={`/article/${doc.slug}`}
+                                                    className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 text-sm font-medium group/link"
+                                                >
+                                                    View Article
+                                                    <ArrowUpRight className="w-4 h-4 transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5" />
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </>
                     )}
 
                     <div className="flex items-center justify-between mb-2 pt-8">

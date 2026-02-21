@@ -49,7 +49,7 @@ export default function SignUpPage() {
                 return;
             }
 
-            router.push("/sign-in?registered=true");
+            router.push("/dashboard");
         } catch (err) {
             console.error("public sign-up error", err);
             setError("Registration failed");

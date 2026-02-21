@@ -26,6 +26,16 @@ export default function AdminPage() {
     profilePicture?: string | null;
   };
 
+  type PublicUserRow = {
+    id: string;
+    username: string | null;
+    email: string | null;
+    name: string | null;
+    bio: string | null;
+    avatar_url: string | null;
+    created_at?: string;
+  };
+
   type CancerDoc = {
     id: string;
     slug: string;
@@ -65,16 +75,22 @@ export default function AdminPage() {
   const [lastResponseDebug, setLastResponseDebug] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<UserRow | null>(null);
   const [users, setUsers] = useState<UserRow[]>([]);
+  const [employeesOpen, setEmployeesOpen] = useState(false);
+  const [publicUsers, setPublicUsers] = useState<PublicUserRow[]>([]);
+  const [publicUsersOpen, setPublicUsersOpen] = useState(false);
+  const [publicUsersLoading, setPublicUsersLoading] = useState(false);
   const [selfForm, setSelfForm] = useState({ username: "", email: "", name: "", password: "", description: "" });
   const [userEdits, setUserEdits] = useState<Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string }>>({});
+  const [publicUserEdits, setPublicUserEdits] = useState<Record<string, { username: string; email: string; name: string; bio: string; password: string }>>({});
   const [savingSelf, setSavingSelf] = useState(false);
   const [savingUser, setSavingUser] = useState<Record<string, boolean>>({});
+  const [savingPublicUser, setSavingPublicUser] = useState<Record<string, boolean>>({});
   const [selfEditing, setSelfEditing] = useState(false);
   const [verifying, setVerifying] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
   const [userSearch, setUserSearch] = useState("");
+  const [publicUserSearch, setPublicUserSearch] = useState("");
   const [newUser, setNewUser] = useState({ username: "", email: "", name: "", password: "", position: "", description: "" });
-  const [usersOpen, setUsersOpen] = useState(false);
   const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
   const [submissionsLoading, setSubmissionsLoading] = useState(false);
   const [reviewing, setReviewing] = useState<Record<string, boolean>>({});
@@ -127,6 +143,7 @@ export default function AdminPage() {
           tasks.push(fetchSubmissions(submissionsStatus));
           if (data.user?.admin_access) {
             tasks.push(fetchUsers());
+            tasks.push(fetchPublicUsers());
           }
           await Promise.all(tasks);
           setLoading(false);
@@ -372,6 +389,98 @@ export default function AdminPage() {
     }
   }
 
+  async function fetchPublicUsers() {
+    setPublicUsersLoading(true);
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "list_public_users" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && Array.isArray(data.users)) {
+        setPublicUsers(data.users);
+        const initialEdits: Record<string, { username: string; email: string; name: string; bio: string; password: string }> = {};
+        data.users.forEach((u: PublicUserRow) => {
+          initialEdits[u.id] = {
+            username: u.username ?? "",
+            email: u.email ?? "",
+            name: u.name ?? "",
+            bio: u.bio ?? "",
+            password: "",
+          };
+        });
+        setPublicUserEdits(initialEdits);
+      } else if (!res.ok) {
+        setError(data?.error || "Failed to load public users");
+      }
+    } catch (err) {
+      console.error("fetchPublicUsers error", err);
+      setError("Failed to load public users");
+    } finally {
+      setPublicUsersLoading(false);
+    }
+  }
+
+  async function handleUpdatePublicUser(userId: string) {
+    setSavingPublicUser((s) => ({ ...s, [userId]: true }));
+    setError("");
+    const edit = publicUserEdits[userId];
+    if (!edit) {
+      setSavingPublicUser((s) => ({ ...s, [userId]: false }));
+      return;
+    }
+    try {
+      const body: Record<string, unknown> = {
+        action: "update_public_user",
+        targetUserId: userId,
+        username: edit.username,
+        email: edit.email,
+        name: edit.name,
+        bio: edit.bio,
+      };
+      if (edit.password) body.password = edit.password;
+
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error || "Update failed");
+      } else {
+        await fetchPublicUsers();
+      }
+    } catch (err) {
+      console.error("update public user error", err);
+      setError("Update failed");
+    } finally {
+      setSavingPublicUser((s) => ({ ...s, [userId]: false }));
+    }
+  }
+
+  async function handleDeletePublicUser(userId: string) {
+    setError("");
+    if (!confirm("Delete this public user?")) return;
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete_public_user", targetUserId: userId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error || "Delete failed");
+      } else {
+        await fetchPublicUsers();
+      }
+    } catch (err) {
+      setError("Delete failed");
+    }
+  }
+
+
   async function handleUpdateSelf(e: FormEvent) {
     e.preventDefault();
     setSavingSelf(true);
@@ -517,6 +626,16 @@ export default function AdminPage() {
         .some((v) => String(v).toLowerCase().includes(term))
     );
   }, [userSearch, users]);
+
+  const filteredPublicUsers = useMemo(() => {
+    const term = publicUserSearch.toLowerCase().trim();
+    if (!term) return publicUsers;
+    return publicUsers.filter((u) =>
+      [u.name, u.username, u.email, u.bio]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(term))
+    );
+  }, [publicUserSearch, publicUsers]);
 
   if (verifying) {
     return (
@@ -789,256 +908,402 @@ export default function AdminPage() {
             )}
 
             {currentUser?.admin_access && (
-              <div className={`${cardClass} p-6`}>
-                <button
-                  className="w-full flex items-center justify-between text-left"
-                  onClick={() => setUsersOpen((s) => !s)}
-                  aria-expanded={usersOpen}
-                >
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`transition-transform ${usersOpen ? "rotate-90" : ""}`}
-                      aria-hidden
-                    >
-                      &gt;
-                    </span>
-                    <h2 className="font-semibold text-lg">Users</h2>
-                  </div>
-                  <span className="text-sm text-white/70">{usersOpen ? "Hide" : "Show"}</span>
-                </button>
+              <>
+                <div className={`${cardClass} p-6`}>
+                  <button
+                    className="w-full flex items-center justify-between text-left"
+                    onClick={() => setEmployeesOpen((s) => !s)}
+                    aria-expanded={employeesOpen}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`transition-transform ${employeesOpen ? "rotate-90" : ""}`}
+                        aria-hidden
+                      >
+                        &gt;
+                      </span>
+                      <h2 className="font-semibold text-lg">Employees</h2>
+                    </div>
+                    <span className="text-sm text-white/70">{employeesOpen ? "Hide" : "Show"}</span>
+                  </button>
 
-                {usersOpen && (
-                  <div className="mt-3 space-y-3">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <input
-                        className={inputClass}
-                        placeholder="Search users..."
-                        value={userSearch}
-                        onChange={(e) => setUserSearch(e.target.value)}
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          className={ghostButton}
-                          onClick={fetchUsers}
-                          disabled={loading}
-                        >
-                          Refresh
-                        </button>
+                  {employeesOpen && (
+                    <div className="mt-3 space-y-3">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <input
+                          className={inputClass}
+                          placeholder="Search users..."
+                          value={userSearch}
+                          onChange={(e) => setUserSearch(e.target.value)}
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            className={ghostButton}
+                            onClick={fetchUsers}
+                            disabled={loading}
+                          >
+                            Refresh
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="w-full overflow-auto">
+                        <table className="w-full text-sm border border-white/10 rounded-2xl overflow-hidden bg-white/5 text-white/80">
+                          <thead className="bg-white/10 text-white">
+                            <tr>
+                              <th className="p-3 text-left">Avatar</th>
+                              <th className="p-3 text-left">Name</th>
+                              <th className="p-3 text-left">Username</th>
+                              <th className="p-3 text-left">Email</th>
+                              <th className="p-3 text-left">Position</th>
+                              <th className="p-3 text-left">Description</th>
+                              <th className="p-3 text-left">Admin</th>
+                              <th className="p-3 text-left">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr className="border-t border-white/10 bg-white/5">
+                              <td className="p-3 align-top">
+                                <div className="h-12 w-12 rounded-full bg-white/10" />
+                              </td>
+                              <td className="p-3 align-top">
+                                <input
+                                  className={inputClass}
+                                  placeholder="Name"
+                                  value={newUser.name}
+                                  onChange={(e) => setNewUser((s) => ({ ...s, name: e.target.value }))}
+                                />
+                              </td>
+                              <td className="p-3 align-top">
+                                <input
+                                  className={inputClass}
+                                  placeholder="Username"
+                                  value={newUser.username}
+                                  onChange={(e) => setNewUser((s) => ({ ...s, username: e.target.value }))}
+                                />
+                              </td>
+                              <td className="p-3 align-top">
+                                <input
+                                  className={inputClass}
+                                  placeholder="Email"
+                                  value={newUser.email}
+                                  onChange={(e) => setNewUser((s) => ({ ...s, email: e.target.value }))}
+                                />
+                              </td>
+                              <td className="p-3 align-top">
+                                <input
+                                  className={inputClass}
+                                  placeholder="Position"
+                                  value={newUser.position}
+                                  onChange={(e) => setNewUser((s) => ({ ...s, position: e.target.value }))}
+                                />
+                              </td>
+                              <td className="p-3 align-top">
+                                <textarea
+                                  className={`${inputClass} min-h-[60px] text-xs`}
+                                  placeholder="Description"
+                                  value={newUser.description}
+                                  onChange={(e) => setNewUser((s) => ({ ...s, description: e.target.value }))}
+                                />
+                              </td>
+                              <td className="p-3 align-top text-sm text-white/60">—</td>
+                              <td className="p-3 align-top">
+                                <div className="flex flex-col gap-2">
+                                  <input
+                                    type="password"
+                                    className={inputClass}
+                                    placeholder="Password"
+                                    value={newUser.password}
+                                    onChange={(e) => setNewUser((s) => ({ ...s, password: e.target.value }))}
+                                  />
+                                  <button
+                                    className={primaryButton}
+                                    onClick={handleCreateUser}
+                                    disabled={loading}
+                                  >
+                                    Add employee
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                            {filteredUsers.map((u) => {
+                              const edit = userEdits[u.id] ?? {
+                                username: u.username ?? "",
+                                email: u.email ?? "",
+                                name: u.name ?? "",
+                                password: "",
+                                admin_access: Boolean(u.admin_access),
+                                position: u.position ?? "",
+                              };
+                              return (
+                                <tr key={u.id} className="border-t border-white/10">
+                                  <td className="p-3 align-top">
+                                    <div className="flex items-center gap-3">
+                                      {u.profilePicture ? (
+                                        <Image src={u.profilePicture} alt="avatar" width={48} height={48} className="h-12 w-12 rounded-full object-cover ring-2 ring-white/15" unoptimized />
+                                      ) : (
+                                        <div className="h-12 w-12 rounded-full bg-white/10" />
+                                      )}
+                                      <div className="flex flex-col gap-1 text-xs text-white/70">
+                                        <label htmlFor={`upload-${u.id}`} className="underline underline-offset-4 hover:text-white hover:cursor-pointer">Change photo</label>
+                                        <input
+                                          id={`upload-${u.id}`}
+                                          type="file"
+                                          accept="image/*"
+                                          className="hidden"
+                                          onChange={(e) => {
+                                            const f = e.target.files?.[0];
+                                            if (f) handleUpload(f, u.id);
+                                          }}
+                                        />
+                                        {uploading[u.id] && (
+                                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/50 border-t-transparent" aria-label="Uploading" />
+                                        )}
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="p-3 align-top">
+                                    <input
+                                      className={inputClass}
+                                      placeholder="Name"
+                                      value={edit.name}
+                                      onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, name: e.target.value } }))}
+                                    />
+                                  </td>
+                                  <td className="p-3 align-top">
+                                    <input
+                                      className={inputClass}
+                                      placeholder="Username"
+                                      value={edit.username}
+                                      onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, username: e.target.value } }))}
+                                    />
+                                  </td>
+                                  <td className="p-3 align-top">
+                                    <input
+                                      className={inputClass}
+                                      placeholder="Email"
+                                      value={edit.email}
+                                      onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, email: e.target.value } }))}
+                                    />
+                                  </td>
+                                  <td className="p-3 align-top">
+                                    <input
+                                      className={inputClass}
+                                      placeholder="Position"
+                                      value={edit.position}
+                                      onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, position: e.target.value } }))}
+                                    />
+                                  </td>
+                                  <td className="p-3 align-top">
+                                    <textarea
+                                      className={`${inputClass} min-h-[60px] text-xs`}
+                                      placeholder="Description"
+                                      value={edit.description}
+                                      onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, description: e.target.value } }))}
+                                    />
+                                  </td>
+                                  <td className="p-3 align-top">
+                                    <label className="flex items-center gap-2 text-sm text-white/80">
+                                      <input
+                                        type="checkbox"
+                                        className="h-4 w-4 accent-[#6D54B5]"
+                                        checked={edit.admin_access}
+                                        onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, admin_access: e.target.checked } }))}
+                                      />
+                                      Admin
+                                    </label>
+                                  </td>
+                                  <td className="p-3 align-top whitespace-nowrap text-white/90">
+                                    <div className="flex gap-2 flex-wrap">
+                                      <button
+                                        className={primaryButton}
+                                        onClick={() => handleUpdateUser(u.id)}
+                                        disabled={savingUser[u.id]}
+                                      >
+                                        {savingUser[u.id] ? "Saving..." : "Save"}
+                                      </button>
+                                      <button
+                                        className={ghostButton}
+                                        onClick={() => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, password: "" } }))}
+                                      >
+                                        Clear password
+                                      </button>
+                                      <button
+                                        className="text-sm text-red-300 underline underline-offset-4 hover:text-red-200"
+                                        onClick={() => handleDeleteUser(u.id)}
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                    <div className="mt-2">
+                                      <input
+                                        type="password"
+                                        className={inputClass}
+                                        placeholder="New password"
+                                        value={edit.password}
+                                        onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, password: e.target.value } }))}
+                                      />
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                            {filteredUsers.length === 0 && (
+                              <tr>
+                                <td className="p-3 text-sm text-muted-foreground" colSpan={8}>No employees found.</td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
+                  )}
+                </div>
 
-                    <div className="w-full overflow-auto">
-                      <table className="w-full text-sm border border-white/10 rounded-2xl overflow-hidden bg-white/5 text-white/80">
-                        <thead className="bg-white/10 text-white">
-                          <tr>
-                            <th className="p-3 text-left">Avatar</th>
-                            <th className="p-3 text-left">Name</th>
-                            <th className="p-3 text-left">Username</th>
-                            <th className="p-3 text-left">Email</th>
-                            <th className="p-3 text-left">Position</th>
-                            <th className="p-3 text-left">Description</th>
-                            <th className="p-3 text-left">Admin</th>
-                            <th className="p-3 text-left">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="border-t border-white/10 bg-white/5">
-                            <td className="p-3 align-top">
-                              <div className="h-12 w-12 rounded-full bg-white/10" />
-                            </td>
-                            <td className="p-3 align-top">
-                              <input
-                                className={inputClass}
-                                placeholder="Name"
-                                value={newUser.name}
-                                onChange={(e) => setNewUser((s) => ({ ...s, name: e.target.value }))}
-                              />
-                            </td>
-                            <td className="p-3 align-top">
-                              <input
-                                className={inputClass}
-                                placeholder="Username"
-                                value={newUser.username}
-                                onChange={(e) => setNewUser((s) => ({ ...s, username: e.target.value }))}
-                              />
-                            </td>
-                            <td className="p-3 align-top">
-                              <input
-                                className={inputClass}
-                                placeholder="Email"
-                                value={newUser.email}
-                                onChange={(e) => setNewUser((s) => ({ ...s, email: e.target.value }))}
-                              />
-                            </td>
-                            <td className="p-3 align-top">
-                              <input
-                                className={inputClass}
-                                placeholder="Position"
-                                value={newUser.position}
-                                onChange={(e) => setNewUser((s) => ({ ...s, position: e.target.value }))}
-                              />
-                            </td>
-                            <td className="p-3 align-top">
-                              <textarea
-                                className={`${inputClass} min-h-[60px] text-xs`}
-                                placeholder="Description"
-                                value={newUser.description}
-                                onChange={(e) => setNewUser((s) => ({ ...s, description: e.target.value }))}
-                              />
-                            </td>
-                            <td className="p-3 align-top text-sm text-white/60">—</td>
-                            <td className="p-3 align-top">
-                              <div className="flex flex-col gap-2">
-                                <input
-                                  type="password"
-                                  className={inputClass}
-                                  placeholder="Password"
-                                  value={newUser.password}
-                                  onChange={(e) => setNewUser((s) => ({ ...s, password: e.target.value }))}
-                                />
-                                <button
-                                  className={primaryButton}
-                                  onClick={handleCreateUser}
-                                  disabled={loading}
-                                >
-                                  Add user
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                          {filteredUsers.map((u) => {
-                            const edit = userEdits[u.id] ?? {
-                              username: u.username ?? "",
-                              email: u.email ?? "",
-                              name: u.name ?? "",
-                              password: "",
-                              admin_access: Boolean(u.admin_access),
-                              position: u.position ?? "",
-                            };
-                            return (
-                              <tr key={u.id} className="border-t border-white/10">
-                                <td className="p-3 align-top">
-                                  <div className="flex items-center gap-3">
-                                    {u.profilePicture ? (
-                                      <Image src={u.profilePicture} alt="avatar" width={48} height={48} className="h-12 w-12 rounded-full object-cover ring-2 ring-white/15" unoptimized />
-                                    ) : (
-                                      <div className="h-12 w-12 rounded-full bg-white/10" />
-                                    )}
-                                    <div className="flex flex-col gap-1 text-xs text-white/70">
-                                      <label htmlFor={`upload-${u.id}`} className="underline underline-offset-4 hover:text-white hover:cursor-pointer">Change photo</label>
-                                      <input
-                                        id={`upload-${u.id}`}
-                                        type="file"
-                                        accept="image/*"
-                                        className="hidden"
-                                        onChange={(e) => {
-                                          const f = e.target.files?.[0];
-                                          if (f) handleUpload(f, u.id);
-                                        }}
-                                      />
-                                      {uploading[u.id] && (
-                                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/50 border-t-transparent" aria-label="Uploading" />
-                                      )}
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="p-3 align-top">
-                                  <input
-                                    className={inputClass}
-                                    placeholder="Name"
-                                    value={edit.name}
-                                    onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, name: e.target.value } }))}
-                                  />
-                                </td>
-                                <td className="p-3 align-top">
-                                  <input
-                                    className={inputClass}
-                                    placeholder="Username"
-                                    value={edit.username}
-                                    onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, username: e.target.value } }))}
-                                  />
-                                </td>
-                                <td className="p-3 align-top">
-                                  <input
-                                    className={inputClass}
-                                    placeholder="Email"
-                                    value={edit.email}
-                                    onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, email: e.target.value } }))}
-                                  />
-                                </td>
-                                <td className="p-3 align-top">
-                                  <input
-                                    className={inputClass}
-                                    placeholder="Position"
-                                    value={edit.position}
-                                    onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, position: e.target.value } }))}
-                                  />
-                                </td>
-                                <td className="p-3 align-top">
-                                  <textarea
-                                    className={`${inputClass} min-h-[60px] text-xs`}
-                                    placeholder="Description"
-                                    value={edit.description}
-                                    onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, description: e.target.value } }))}
-                                  />
-                                </td>
-                                <td className="p-3 align-top">
-                                  <label className="flex items-center gap-2 text-sm text-white/80">
-                                    <input
-                                      type="checkbox"
-                                      className="h-4 w-4 accent-[#6D54B5]"
-                                      checked={edit.admin_access}
-                                      onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, admin_access: e.target.checked } }))}
-                                    />
-                                    Admin
-                                  </label>
-                                </td>
-                                <td className="p-3 align-top whitespace-nowrap text-white/90">
-                                  <div className="flex gap-2 flex-wrap">
-                                    <button
-                                      className={primaryButton}
-                                      onClick={() => handleUpdateUser(u.id)}
-                                      disabled={savingUser[u.id]}
-                                    >
-                                      {savingUser[u.id] ? "Saving..." : "Save"}
-                                    </button>
-                                    <button
-                                      className={ghostButton}
-                                      onClick={() => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, password: "" } }))}
-                                    >
-                                      Clear password
-                                    </button>
-                                    <button
-                                      className="text-sm text-red-300 underline underline-offset-4 hover:text-red-200"
-                                      onClick={() => handleDeleteUser(u.id)}
-                                    >
-                                      Delete
-                                    </button>
-                                  </div>
-                                  <div className="mt-2">
-                                    <input
-                                      type="password"
-                                      className={inputClass}
-                                      placeholder="New password"
-                                      value={edit.password}
-                                      onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, password: e.target.value } }))}
-                                    />
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                          {filteredUsers.length === 0 && (
-                            <tr>
-                              <td className="p-3 text-sm text-muted-foreground" colSpan={8}>No users found.</td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
+                <div className={`${cardClass} p-6`}>
+                  <button
+                    className="w-full flex items-center justify-between text-left"
+                    onClick={() => setPublicUsersOpen((s) => !s)}
+                    aria-expanded={publicUsersOpen}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`transition-transform ${publicUsersOpen ? "rotate-90" : ""}`}
+                        aria-hidden
+                      >
+                        &gt;
+                      </span>
+                      <h2 className="font-semibold text-lg">Public Users</h2>
                     </div>
-                  </div>
-                )}
-              </div>
+                    <span className="text-sm text-white/70">{publicUsersOpen ? "Hide" : "Show"}</span>
+                  </button>
+
+                  {publicUsersOpen && (
+                    <div className="mt-3 space-y-3">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <input
+                          className={inputClass}
+                          placeholder="Search public users..."
+                          value={publicUserSearch}
+                          onChange={(e) => setPublicUserSearch(e.target.value)}
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            className={ghostButton}
+                            onClick={fetchPublicUsers}
+                            disabled={publicUsersLoading}
+                          >
+                            {publicUsersLoading ? "Refreshing..." : "Refresh"}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="w-full overflow-auto">
+                        <table className="w-full text-sm border border-white/10 rounded-2xl overflow-hidden bg-white/5 text-white/80">
+                          <thead className="bg-white/10 text-white">
+                            <tr>
+                              <th className="p-3 text-left">Avatar</th>
+                              <th className="p-3 text-left">Name</th>
+                              <th className="p-3 text-left">Username</th>
+                              <th className="p-3 text-left">Email</th>
+                              <th className="p-3 text-left">Bio</th>
+                              <th className="p-3 text-left">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredPublicUsers.map((u) => {
+                              const edit = publicUserEdits[u.id] ?? {
+                                username: u.username ?? "",
+                                email: u.email ?? "",
+                                name: u.name ?? "",
+                                bio: u.bio ?? "",
+                                password: "",
+                              };
+                              return (
+                                <tr key={u.id} className="border-t border-white/10">
+                                  <td className="p-3 align-top">
+                                    {u.avatar_url ? (
+                                      <Image src={u.avatar_url} alt="avatar" width={40} height={40} className="h-10 w-10 rounded-full object-cover ring-2 ring-white/15" unoptimized />
+                                    ) : (
+                                      <div className="h-10 w-10 rounded-full bg-white/10" />
+                                    )}
+                                  </td>
+                                  <td className="p-3 align-top">
+                                    <input
+                                      className={inputClass}
+                                      placeholder="Name"
+                                      value={edit.name}
+                                      onChange={(e) => setPublicUserEdits((s) => ({ ...s, [u.id]: { ...edit, name: e.target.value } }))}
+                                    />
+                                  </td>
+                                  <td className="p-3 align-top">
+                                    <input
+                                      className={inputClass}
+                                      placeholder="Username"
+                                      value={edit.username}
+                                      onChange={(e) => setPublicUserEdits((s) => ({ ...s, [u.id]: { ...edit, username: e.target.value } }))}
+                                    />
+                                  </td>
+                                  <td className="p-3 align-top">
+                                    <input
+                                      className={inputClass}
+                                      placeholder="Email"
+                                      value={edit.email}
+                                      onChange={(e) => setPublicUserEdits((s) => ({ ...s, [u.id]: { ...edit, email: e.target.value } }))}
+                                    />
+                                  </td>
+                                  <td className="p-3 align-top">
+                                    <textarea
+                                      className={`${inputClass} min-h-[60px] text-xs`}
+                                      placeholder="Bio"
+                                      value={edit.bio}
+                                      onChange={(e) => setPublicUserEdits((s) => ({ ...s, [u.id]: { ...edit, bio: e.target.value } }))}
+                                    />
+                                  </td>
+                                  <td className="p-3 align-top">
+                                    <div className="flex flex-col gap-2">
+                                      <div className="flex gap-2 flex-wrap">
+                                        <button
+                                          className={primaryButton}
+                                          onClick={() => handleUpdatePublicUser(u.id)}
+                                          disabled={savingPublicUser[u.id]}
+                                        >
+                                          {savingPublicUser[u.id] ? "Saving..." : "Save"}
+                                        </button>
+                                        <button
+                                          className="text-sm text-red-300 underline underline-offset-4 hover:text-red-200"
+                                          onClick={() => handleDeletePublicUser(u.id)}
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                      <input
+                                        type="password"
+                                        className={inputClass}
+                                        placeholder="New password"
+                                        value={edit.password}
+                                        onChange={(e) => setPublicUserEdits((s) => ({ ...s, [u.id]: { ...edit, password: e.target.value } }))}
+                                      />
+                                      <div className="text-[10px] text-white/40">
+                                        {u.created_at ? `Joined: ${new Date(u.created_at).toLocaleDateString()}` : ""}
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                            {filteredPublicUsers.length === 0 && (
+                              <tr>
+                                <td className="p-3 text-sm text-muted-foreground" colSpan={6}>No public users found.</td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </section>
 

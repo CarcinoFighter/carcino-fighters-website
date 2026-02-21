@@ -58,9 +58,20 @@ export function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   React.useEffect(() => {
+    // 1. Try Admin
     fetch("/api/admin", { method: "GET" })
       .then((res) => res.json())
-      .then((data) => setIsAuthenticated(!!data?.authenticated))
+      .then((data) => {
+        if (data?.authenticated) {
+          setIsAuthenticated(true);
+        } else {
+          // 2. Try Public
+          fetch("/api/public-auth", { method: "GET" })
+            .then((res) => res.json())
+            .then((pData) => setIsAuthenticated(!!pData?.authenticated))
+            .catch(() => setIsAuthenticated(false));
+        }
+      })
       .catch(() => setIsAuthenticated(false));
   }, [pathname]); // Re-check on route change
 
@@ -68,8 +79,8 @@ export function Navbar() {
     { label: "Home", href: "/" },
     { label: "About", href: "/leadership" },
     { label: "Articles", href: "/article" },
-    { label: "Survivors", href: "/survivorstories" },
     { label: "Blogs", href: "/blogs" },
+    { label: "Survivors", href: "/survivorstories" },
   ];
   const selectedTab = tabs.find((tab) =>
     tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href),
@@ -229,11 +240,10 @@ export function Navbar() {
 
         {/* Compact Menu Box */}
         <div
-          className={`fixed top-20 right-5 w-56 backdrop-blur-2xl z-30 rounded-2xl border border-white/10 shadow-xl transform transition-all duration-300 ${
-            isMobileMenuOpen
-              ? "opacity-100 translate-y-0 pointer-events-auto"
-              : "opacity-0 -translate-y-4 pointer-events-none"
-          }`}
+          className={`fixed top-20 right-5 w-56 backdrop-blur-2xl z-30 rounded-2xl border border-white/10 shadow-xl transform transition-all duration-300 ${isMobileMenuOpen
+            ? "opacity-100 translate-y-0 pointer-events-auto"
+            : "opacity-0 -translate-y-4 pointer-events-none"
+            }`}
         >
           {/* Menu content */}
           <nav className="flex flex-col p-4 gap-1 relative z-10">
@@ -278,23 +288,10 @@ export function Navbar() {
             </Link>
             <Link
               onClick={() => setMobileMenuOpen(false)}
-              href="/survivorstories"
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-dmsans text-base",
-                pathname.startsWith("/article")
-                  ? "bg-primary/20 text-primary font-semibold"
-                  : "hover:bg-white/5",
-              )}
-            >
-              <Award size={22} />
-              Survivors
-            </Link>
-            <Link
-              onClick={() => setMobileMenuOpen(false)}
               href="/blogs"
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-dmsans text-base",
-                pathname.startsWith("/article")
+                pathname.startsWith("/blogs")
                   ? "bg-primary/20 text-primary font-semibold"
                   : "hover:bg-white/5",
               )}
@@ -302,7 +299,19 @@ export function Navbar() {
               <Newspaper size={22} />
               Blogs
             </Link>
-
+            <Link
+              onClick={() => setMobileMenuOpen(false)}
+              href="/survivorstories"
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-dmsans text-base",
+                pathname.startsWith("/survivorstories")
+                  ? "bg-primary/20 text-primary font-semibold"
+                  : "hover:bg-white/5",
+              )}
+            >
+              <Award size={22} />
+              Survivors
+            </Link>
             <div className="h-px bg-border my-2" />
 
             <Link
