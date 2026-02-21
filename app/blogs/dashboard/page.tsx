@@ -6,9 +6,13 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
+import { ArrowUpRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
+const MarkdownPreview = dynamic(() => import("@uiw/react-markdown-preview"), { ssr: false });
 
 type PublicUser = {
   id: string;
@@ -251,234 +255,294 @@ export default function BlogsDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white px-6 md:px-12 pb-14 pt-16 font-dmsans">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase text-white/60">Blogs</p>
-            <h1 className="text-3xl font-bold">Creator Dashboard</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={() => router.push("/dashboard")}
-              className="border-white/10 hover:bg-white/5"
-            >
-              Back to Dashboard
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={async () => {
-                await fetch("/api/public-auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) });
-                router.replace("/sign-in");
-              }}
-            >
-              Logout
-            </Button>
-          </div>
-        </div>
+    <div className="min-h-screen bg-[#2A292F] text-white pb-14 font-dmsans overflow-x-hidden relative">
+      {/* Background Gradients (Consistent with article page) */}
+      <div
+        style={{
+          position: "absolute",
+          left: -800,
+          top: -700,
+          width: 1600,
+          height: 1600,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, #D5B0FF26 0%, transparent 60%)`,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+      <div
+        className="max-md:hidden"
+        style={{
+          position: "absolute",
+          right: -900,
+          top: -300,
+          width: 1800,
+          height: 1800,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, #D5B0FF26 0%, transparent 50%)`,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          right: -600,
+          bottom: -1200,
+          width: 1800,
+          height: 1800,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, #471F7733 0%, transparent 60%)`,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
 
+      {/* Hero Section */}
+      <div className="flex bg-transparent flex-col mb-10 items-center justify-center w-full relative h-[40vh] min-h-[300px]">
+        <div className="flex z-10 flex-col w-full items-center gap-7 px-6 text-center text-white">
+          <h1 className="text-4xl lg:text-7xl font-wintersolace font-bold text-white mt-32 leading-[109%]">
+            Add Your Blog
+          </h1>
+          <p className="font-dmsans text-white/70 text-xl md:text-2xl max-w-2xl font-light leading-relaxed">
+            Help us out in this mission with a word from you. It makes a huge difference.
+          </p>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-6 space-y-12 relative z-10">
         {error && (
-          <div className="rounded-lg border border-red-400/30 bg-red-900/20 px-4 py-3 text-sm text-red-200">
+          <div className="rounded-2xl border border-red-400/30 bg-red-900/20 px-6 py-4 text-sm text-red-200 backdrop-blur-md">
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="bg-white/5 border-white/10 col-span-1">
-            <CardHeader>
-              <CardTitle className="text-lg">Profile</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-full bg-white/10 overflow-hidden">
-                  {user?.avatar_url ? (
-                    <img src={user.avatar_url} alt="avatar" className="h-full w-full object-cover" />
-                  ) : null}
+        {/* Unified Editor Card with CardGlass Effect */}
+        <div className="relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[30px] rounded-[40px] p-1 group">
+          {/* Card Glass Layers */}
+          <div className="liquidGlass-effect pointer-events-none" />
+          <div className="cardGlass-tint pointer-events-none" />
+          <div className="glass-noise" />
+          <div className="cardGlass-borders pointer-events-none" />
+          <div className="cardGlass-shine pointer-events-none" />
+
+          <div className="relative z-10 p-6 sm:p-10">
+            <h2 className="text-2xl font-bold mb-8 font-dmsans bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+              {editingId ? "Edit Post" : "Write a New Post"}
+            </h2>
+
+            <form className="space-y-6" onSubmit={handlePostSubmit}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs uppercase tracking-widest text-white/40 font-medium ml-1">Title</label>
+                  <Input
+                    value={postForm.title}
+                    onChange={(e) => setPostForm((p) => ({ ...p, title: e.target.value }))}
+                    className="bg-white/5 border-white/10 focus:border-purple-500/50 rounded-2xl h-12"
+                    placeholder="Enter an engaging title..."
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs text-white/60">Avatar</label>
+                  <label className="text-xs uppercase tracking-widest text-white/40 font-medium ml-1">Custom Slug (Optional)</label>
                   <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleAvatarUpload(file);
-                    }}
-                    disabled={uploading}
+                    value={postForm.slug}
+                    onChange={(e) => setPostForm((p) => ({ ...p, slug: e.target.value }))}
+                    className="bg-white/5 border-white/10 focus:border-purple-500/50 rounded-2xl h-12"
+                    placeholder="blog-post-url"
                   />
                 </div>
               </div>
-              <form className="space-y-3" onSubmit={handleProfileSave}>
-                <div className="space-y-1">
-                  <label className="text-xs text-white/60">Full name</label>
-                  <Input
-                    value={profileForm.name}
-                    onChange={(e) => setProfileForm((p) => ({ ...p, name: e.target.value }))}
-                    className="bg-white/10 border-white/10"
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-white/60">Username</label>
-                  <Input
-                    value={profileForm.username}
-                    onChange={(e) => setProfileForm((p) => ({ ...p, username: e.target.value }))}
-                    className="bg-white/10 border-white/10"
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-white/60">Bio</label>
-                  <Textarea
-                    value={profileForm.bio}
-                    onChange={(e) => setProfileForm((p) => ({ ...p, bio: e.target.value }))}
-                    className="bg-white/10 border-white/10"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-white/60">New password</label>
-                  <Input
-                    type="password"
-                    value={profileForm.password}
-                    onChange={(e) => setProfileForm((p) => ({ ...p, password: e.target.value }))}
-                    className="bg-white/10 border-white/10"
-                    placeholder="Leave blank to keep current"
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={savingProfile}>
-                  {savingProfile ? "Saving..." : "Save profile"}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
 
-          <Card className="bg-white/5 border-white/10 col-span-1 lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="text-lg">{editingId ? "Edit post" : "Write a new post"}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form className="space-y-3" onSubmit={handlePostSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-xs text-white/60">Title</label>
-                    <Input
-                      value={postForm.title}
-                      onChange={(e) => setPostForm((p) => ({ ...p, title: e.target.value }))}
-                      className="bg-white/10 border-white/10"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs text-white/60">Custom slug (optional)</label>
-                    <Input
-                      value={postForm.slug}
-                      onChange={(e) => setPostForm((p) => ({ ...p, slug: e.target.value }))}
-                      className="bg-white/10 border-white/10"
-                      placeholder="blog-post"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs text-white/60">Content (Markdown)</label>
-                  <div className="rounded-xl border border-white/10 bg-black/40 p-2" data-color-mode={colorMode}>
+              <div className="space-y-4">
+                <label className="text-xs uppercase tracking-widest text-white/40 font-medium ml-1">Content & Preview</label>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[500px]">
+                  {/* Editor Side */}
+                  <div className="rounded-[30px] border border-white/10 bg-transparent p-3 overflow-hidden" data-color-mode={colorMode}>
                     {mounted ? (
                       <MDEditor
                         value={postForm.content}
                         onChange={(v) => setPostForm((p) => ({ ...p, content: v ?? "" }))}
-                        height={320}
+                        height={500}
                         preview="edit"
-                        visibleDragbar
+                        hideToolbar={false}
+                        visibleDragbar={false}
                         textareaProps={{
-                          placeholder: "Write in Markdown. Use # for headings, **bold**, lists, and more.",
+                          placeholder: "Begin your story here...",
                         }}
                       />
                     ) : (
-                      <div className="flex items-center gap-2 text-sm text-white/70">
-                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/50 border-t-transparent" />
-                        Loading editor...
+                      <div className="flex items-center justify-center p-20 text-sm text-white/40">
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white mr-3" />
+                        Initializing Editor...
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Preview Side */}
+                  <div className="rounded-[30px] border border-white/10 bg-transparent p-6 overflow-y-auto max-h-[526px] custom-scrollbar relative">
+                    <div className="absolute top-4 right-6 text-[10px] uppercase tracking-widest text-white/20 font-bold z-20">Live Preview</div>
+                    {mounted ? (
+                      <MarkdownPreview
+                        source={postForm.content || "*Nothing to preview yet...*"}
+                        className="prose max-w-none dark:prose-invert bg-transparent"
+                        data-color-mode={colorMode}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-sm text-white/20">
+                        Loading Preview...
                       </div>
                     )}
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-white/60">Tags (comma separated)</label>
+              </div>
+
+              <div className="flex flex-col md:flex-row items-end gap-6">
+                <div className="flex-1 space-y-2 w-full">
+                  <label className="text-xs uppercase tracking-widest text-white/40 font-medium ml-1">Tags (comma separated)</label>
                   <Input
                     value={postForm.tags}
                     onChange={(e) => setPostForm((p) => ({ ...p, tags: e.target.value }))}
-                    className="bg-white/10 border-white/10"
-                    placeholder="research, update"
+                    className="bg-white/5 border-white/10 focus:border-purple-500/50 rounded-2xl h-12"
+                    placeholder="e.g. Health, Journey, Research"
                   />
                 </div>
-                <div className="flex gap-3 justify-end">
+                <div className="flex gap-3 h-12">
                   {editingId && (
                     <Button
                       type="button"
                       variant="ghost"
+                      className="rounded-2xl px-6 hover:bg-white/5"
                       onClick={() => {
                         setEditingId(null);
                         setPostForm({ title: "", slug: "", content: "", tags: "" });
                       }}
                     >
-                      Cancel edit
+                      Cancel
                     </Button>
                   )}
-                  <Button type="submit" disabled={postSaving}>
-                    {postSaving ? "Saving..." : editingId ? "Update post" : "Publish post"}
-                  </Button>
+                  <motion.div
+                    whileHover={{ y: -2, scale: 1.04 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="inline-flex"
+                  >
+                    <Button
+                      type="submit"
+                      disabled={postSaving}
+                      variant="ghost"
+                      className="relative px-4 py-3 md:px-[22px] md:py-[22px] rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300 font-normal hover:bg-transparent"
+                    >
+                      <span className="relative z-10 flex items-center gap-2 text-[#e0e0e0] text-[12px] sm:text-[18px] font-light">
+                        {postSaving ? "Saving..." : editingId ? "Update Post" : "Publish Post"}
+                      </span>
+
+                      {/* Liquid glass layers */}
+                      <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+                      <div className="liquidGlass-shine relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
+                      <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+                    </Button>
+                  </motion.div>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
+              </div>
+            </form>
+          </div>
         </div>
 
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader>
-            <CardTitle className="text-lg">Your posts</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        {/* Existing Posts Section */}
+        <div className="space-y-6 pt-8">
+          <h2 className="text-2xl font-bold font-dmsans text-white/90 px-4">Your Published Stories</h2>
+
+          <div className="grid grid-cols-1 gap-6">
             {sortedPosts.length === 0 && (
-              <div className="text-sm text-white/70">No posts yet. Start by writing one above.</div>
+              <div className="relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[30px] rounded-[40px] p-16 text-center">
+                <div className="cardGlass-tint pointer-events-none" />
+                <p className="relative z-10 text-white/40 font-medium">You haven't shared any stories yet. The world is waiting!</p>
+              </div>
             )}
             {sortedPosts.map((post) => (
               <div
                 key={post.id}
-                className="border border-white/10 rounded-lg p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
+                className="group relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[20px] rounded-[40px] p-[1px] hover:bg-white/5 transition-all duration-500"
               >
-                <div>
-                  <p className="text-xs text-white/60">/{post.slug}</p>
-                  <div className="font-semibold">{post.title}</div>
-                  <div className="text-xs text-white/60 mt-1">
-                    {contentExcerpt(post.content)}
+                <div className="cardGlass-tint pointer-events-none" />
+                <div className="relative z-10 p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="space-y-2 max-w-2xl">
+                    <p className="text-[10px] uppercase tracking-widest text-purple-400 font-bold">/{post.slug}</p>
+                    <h3 className="text-xl font-bold text-white group-hover:text-purple-300 transition-colors">{post.title}</h3>
+                    <p className="text-sm text-white/50 line-clamp-2 leading-relaxed">
+                      {contentExcerpt(post.content, 180)}
+                    </p>
                   </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      setEditingId(post.id);
-                      setPostForm({
-                        title: post.title,
-                        slug: post.slug,
-                        content: post.content ?? "",
-                        tags: (post.tags || []).join(", "),
-                      });
-                    }}
-                  >
-                    Edit
-                  </Button>
-                  <Button variant="destructive" onClick={() => handleDelete(post.id)}>
-                    Delete
-                  </Button>
-                  <Button variant="secondary" onClick={() => router.push(`/blogs/${post.slug}`)}>
-                    View
-                  </Button>
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      variant="ghost"
+                      className="rounded-xl hover:bg-purple-500/10 hover:text-purple-300"
+                      onClick={() => {
+                        setEditingId(post.id);
+                        setPostForm({
+                          title: post.title,
+                          slug: post.slug,
+                          content: post.content ?? "",
+                          tags: (post.tags || []).join(", "),
+                        });
+                        window.scrollTo({ top: 400, behavior: 'smooth' });
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="rounded-xl text-red-400 hover:bg-red-900/10 hover:text-red-300"
+                      onClick={() => handleDelete(post.id)}
+                    >
+                      Delete
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="rounded-xl border-white/10 bg-white/5 hover:bg-white/10"
+                      onClick={() => router.push(`/blogs/${post.slug}`)}
+                    >
+                      <ArrowUpRight className="w-4 h-4 mr-1" />
+                      View
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
+      <style jsx global>{`
+        .w-md-editor {
+          background-color: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+        .w-md-editor-toolbar {
+          background-color: rgba(255, 255, 255, 0.05) !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 20px 20px 0 0 !important;
+        }
+        .w-md-editor-content {
+          background-color: transparent !important;
+        }
+        .w-md-editor-text {
+          background-color: transparent !important;
+        }
+        .w-md-editor-text-input {
+          background-color: transparent !important;
+          color: white !important;
+        }
+        .w-md-editor-preview {
+          background-color: transparent !important;
+        }
+        .wmde-markdown {
+          background-color: transparent !important;
+        }
+        .wmde-markdown-var {
+          background-color: transparent !important;
+        }
+      `}</style>
     </div>
   );
 }

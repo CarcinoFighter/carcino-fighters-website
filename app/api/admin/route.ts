@@ -25,6 +25,7 @@ type AuthBody = {
 	| "delete_user"
 	| "get_leadership"
 	| "logout"
+	| "update_pfp"
 	| "list_public_users"
 	| "update_public_user"
 	| "delete_public_user";
@@ -1209,6 +1210,35 @@ export async function POST(req: Request) {
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
+			return NextResponse.json({ ok: true });
+		}
+
+		if (action === "update_pfp") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+			const { targetUserId, object_key, content_type, size } = body as any;
+			if (!targetUserId || !object_key) {
+				return NextResponse.json({ error: "targetUserId and object_key are required" }, { status: 400 });
+			}
+
+			// Admins can update anyone, others only themselves
+			if (!session.user.admin_access && targetUserId !== session.user.id) {
+				return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+			}
+
+			// Delete existing record
+			await client.from("profile_pictures").delete().eq("user_id", targetUserId);
+
+			// Insert new record
+			const { error } = await client.from("profile_pictures").insert({
+				user_id: targetUserId,
+				object_key,
+				content_type: content_type || "image/png",
+				size: size || 0,
+			});
+
+			if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 			return NextResponse.json({ ok: true });
 		}
 
