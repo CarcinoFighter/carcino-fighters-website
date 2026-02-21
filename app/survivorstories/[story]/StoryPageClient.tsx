@@ -313,7 +313,7 @@ export default function StoryPageClient({
                           vision-pro-ui-hoverable
                           w-full h-[180px]
                           flex flex-col justify-center
-                          rounded-[32px]
+                          rounded-[45px]
                           overflow-hidden isolation-isolate liquid-glass !shadow-none
                           select-none bg-cover
                         "
