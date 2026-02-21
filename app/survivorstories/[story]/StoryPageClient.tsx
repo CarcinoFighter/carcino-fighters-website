@@ -161,6 +161,9 @@ export default function StoryPageClient({
       <ScrollProgress className="hidden md:block" />
       <main className="max-w-[80%] md:max-w-5xl mx-auto p-6 relative z-10 mt-32 items-center justify-center self-center">
         <header className="mb-8 text-center">
+          <div className="sm:hidden mb-6 flex justify-center">
+            <Image src="/logo.png" alt="Logo" width={54} height={54} />
+          </div>
           <h1
             className="text-4xl md:text-6xl font-wintersolace font-bold leading-tight"
             style={{ color: cardColor }}

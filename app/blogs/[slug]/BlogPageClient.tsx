@@ -112,6 +112,9 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
       <ScrollProgress className="hidden md:block" />
       <main className="max-w-[80%] md:max-w-5xl mx-auto p-6 relative z-10 mt-32 items-center justify-center self-center">
         <header className="mb-8 text-center px-4">
+          <div className="sm:hidden mb-6 flex justify-center">
+            <Image src="/logo.png" alt="Logo" width={54} height={54} />
+          </div>
           <h1
             className="text-5xl leading-[0.9] sm:text-6xl sm:leading-[0.9] lg:text-7xl lg:leading-[0.9] whitespace-pre-wrap text-center font-wintersolace font-bold bg-gradient-to-r from-[#70429b] from-8% to-[#dfcbf0] to-60% bg-clip-text text-transparent py-4"
           >
