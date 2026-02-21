@@ -15,7 +15,7 @@ import StoryPageClient from "./StoryPageClient";
 const CARD_COLORS = [
   "#E39E2E",
   "#64A04B",
-  "#2E3192",
+  "#5a61f1",
   "#9E8DC5",
   "#7F2D3F",
   "#818181",

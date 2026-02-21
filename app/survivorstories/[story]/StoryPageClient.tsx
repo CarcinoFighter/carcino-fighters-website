@@ -20,7 +20,7 @@ import type {
 const colors = [
   "#E39E2E",
   "#64A04B",
-  "#4145ca",
+  "#5a61f1",
   "#9E8DC5",
   "#7F2D3F",
   "#818181",
@@ -71,9 +71,7 @@ function pickRelated(
   all: (SurvivorStorySummary & { image_url?: string | null })[],
   currentId: string,
 ) {
-  // Exclude the currently viewed story
   const others = all.filter((s) => s.id !== currentId);
-  // If 3 or fewer, show all of them; otherwise pick 3 at random
   if (others.length <= 3) return others;
   const shuffled = [...others].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, 3);
@@ -89,7 +87,6 @@ export default function StoryPageClient({
     (SurvivorStorySummary & { image_url?: string | null })[]
   >(() => pickRelated(relatedProp, story.id));
 
-  // Fetch full story data (including image_url) the same way the main menu does
   React.useEffect(() => {
     (async () => {
       try {
@@ -108,6 +105,16 @@ export default function StoryPageClient({
       }
     })();
   }, []);
+
+  const getTitleFontSize = (title: string) => {
+    const words = title.split(/\s+/);
+    const maxWordLength = Math.max(...words.map((w) => w.length));
+    if (maxWordLength > 12) return "text-[14px] sm:text-[18px]";
+    if (maxWordLength >= 9) return "text-[18px] sm:text-[22px]";
+    if (title.length > 35) return "text-[16px] sm:text-[20px]";
+    if (title.length >= 15) return "text-[18px] sm:text-[24px]";
+    return "text-[22px] sm:text-[30px]";
+  };
 
   return (
     <div className="min-h-screen text-foreground bg-[#2A292F] relative overflow-hidden">
@@ -160,24 +167,6 @@ export default function StoryPageClient({
           >
             {story.title}
           </h1>
-          {/* <div className="mt-4 flex items-center justify-center gap-4 text-sm">
-            <Avatar className="w-12 h-12">
-              <AvatarImage src={story.avatarUrl || "/logo.png"} />
-              <AvatarFallback>
-                {(story.authorName || "?").slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="text-left">
-              <div className="font-semibold">
-                {story.authorName ?? "Unknown"}
-              </div>
-              {story.authorBio && (
-                <div className="text-xs text-muted-foreground">
-                  {story.authorBio}
-                </div>
-              )}
-            </div>
-          </div> */}
         </header>
 
         <article
@@ -277,11 +266,9 @@ export default function StoryPageClient({
                   className={`transition-transform ml-2 ${expanded ? "rotate-180" : ""}`}
                 />
               </div>
-
-              {/* Liquid glass layers */}
               <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
               <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
-              <div className="liquidGlass-shine  relative w-[102.5%] h-[100%] !top-[-0.1px] !left-[-2.3px]"></div>
+              <div className="liquidGlass-shine relative w-[102.5%] h-[100%] !top-[-0.1px] !left-[-2.3px]"></div>
               <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
             </Button>
           </motion.div>
@@ -294,21 +281,9 @@ export default function StoryPageClient({
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {related.map((r, i) => {
-                const colorsleft: string[] = colors.filter((element) => {
-                  return element !== cardColor;
-                });
+                const colorsleft = colors.filter((c) => c !== cardColor);
                 const relatedCardColor = colorsleft[i % colorsleft.length];
                 const backgroundImage = r.image_url || "/sfs_bg.png";
-
-                const getTitleFontSize = (title: string) => {
-                  const words = title.split(/\s+/);
-                  const maxWordLength = Math.max(...words.map((w) => w.length));
-                  if (maxWordLength > 12) return "text-[14px] sm:text-[18px]";
-                  if (maxWordLength >= 9) return "text-[18px] sm:text-[22px]";
-                  if (title.length > 35) return "text-[16px] sm:text-[20px]";
-                  if (title.length >= 15) return "text-[18px] sm:text-[24px]";
-                  return "text-[22px] sm:text-[30px]";
-                };
 
                 return (
                   <Link
@@ -330,6 +305,7 @@ export default function StoryPageClient({
                           backgroundImage: `url('${backgroundImage}')`,
                           backgroundColor: relatedCardColor,
                           backgroundBlendMode: "multiply",
+                          filter: "saturate(0.8) brightness(1)",
                         }}
                         className="
                           relative
@@ -350,9 +326,10 @@ export default function StoryPageClient({
                         <div className="cardGlass-shine pointer-events-none" />
                         <div className="liquidGlass-text pointer-events-none" />
 
-                        <div className="relative z-10 flex flex-col items-center gap-2 p-4 w-full justify-center">
+                        {/* Same translateY animation as main page */}
+                        <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">
                           <h3
-                            className={`${getTitleFontSize(r.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}
+                            className={`${getTitleFontSize(r.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[250px] mx-auto w-full text-white translate-y-12 group-hover/card:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]`}
                           >
                             {r.title}
                           </h3>
