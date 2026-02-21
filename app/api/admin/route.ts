@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { Buffer } from "node:buffer";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -285,6 +286,92 @@ async function applySubmissionToDocs(client: SupabaseClient<any, any, any>, subm
 	return { applied, submission: updatedSubmission };
 }
 
+
+
+async function handleUploadAvatar(req: Request) {
+	try {
+		if (!supabaseUrl || !supabaseServiceKey) {
+			return NextResponse.json({ error: "Supabase credentials not configured" }, { status: 500 });
+		}
+		const session = await getAuthenticatedUser();
+		if (!session) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
+		const formData = await req.formData();
+		const file = formData.get("avatar");
+		let targetUserId = formData.get("targetUserId") as string || session.user.id;
+
+		// If the targetUserId is a public user ID (which it might be if the frontend uses the public session state),
+		// we need to resolve it to the employee ID in the "users" table because profile_pictures references "users".
+		const client = await ensureClient();
+
+		if (targetUserId !== session.user.id) {
+			// Check if targetUserId is a users_public ID, and if so, find the corresponding employee ID
+			const { data: publicUser } = await client
+				.from("users_public")
+				.select("email")
+				.eq("id", targetUserId)
+				.maybeSingle();
+
+			if (publicUser?.email) {
+				const { data: empUser } = await client
+					.from("users")
+					.select("id")
+					.eq("email", publicUser.email.toLowerCase())
+					.maybeSingle();
+
+				if (empUser) {
+					targetUserId = empUser.id;
+				}
+			}
+		}
+
+		if (!session.user.admin_access && targetUserId !== session.user.id) {
+			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+		}
+
+		if (!(file instanceof File)) {
+			return NextResponse.json({ error: "avatar file is required" }, { status: 400 });
+		}
+
+		const arrayBuffer = await file.arrayBuffer();
+		const buffer = Buffer.from(arrayBuffer);
+		const ext = file.name.split(".").pop() || "jpg";
+		const path = `authors/${targetUserId}/avatar.${ext}`;
+
+		const uploadRes = await client
+			.storage
+			.from("profile-picture")
+			.upload(path, buffer, { upsert: true, contentType: file.type || "image/jpeg" });
+
+		if (uploadRes.error) {
+			return NextResponse.json({ error: uploadRes.error.message }, { status: 400 });
+		}
+
+		// Update profile_pictures table
+		await client.from("profile_pictures").delete().eq("user_id", targetUserId);
+		const { error: pfpError } = await client.from("profile_pictures").insert({
+			user_id: targetUserId,
+			object_key: path,
+			content_type: file.type || "image/jpeg",
+			size: file.size || 0,
+		});
+
+		if (pfpError) {
+			return NextResponse.json({ error: pfpError.message }, { status: 500 });
+		}
+
+		const pub = await client.storage.from("profile-picture").createSignedUrl(path, 60 * 60 * 24 * 7);
+		const avatar_url = pub.data?.signedUrl ?? null;
+
+		return NextResponse.json({ avatar_url });
+	} catch (e: unknown) {
+		const message = e instanceof Error ? e.message : String(e);
+		return NextResponse.json({ error: message }, { status: 500 });
+	}
+}
+
 export async function GET() {
 	try {
 		if (!jwtSecret) {
@@ -318,6 +405,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
 	try {
+		const contentType = req.headers.get("content-type") || "";
+		if (contentType.includes("multipart/form-data")) {
+			return handleUploadAvatar(req);
+		}
+
 		if (!supabaseUrl || !supabaseServiceKey) {
 			return NextResponse.json({ error: "Supabase credentials not configured" }, { status: 500 });
 		}

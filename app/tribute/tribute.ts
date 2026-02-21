@@ -23,15 +23,15 @@ export const tributes: Tribute[] = [
   {
     name: "NILIMA KUMAR",
     year: "11/11/1968 – 14/08/2012",
-    text: "",
+    text: "I pay my tribute to my mother, who fought cancer before me and whose blessings carried me through it, guiding every life I now serve.",
     image: "/tribute/nilimakumar.jpeg",
   },
-  // {
-  //   name: "Jane Smith",
-  //   year: "1965–2021",
-  //   text: "A constant source of inspiration, kindness, and wisdom.",
-  //   image: "/tribute/janesmith.png",
-  // },
+  {
+    name: "PRATIMA SAHA ROY",
+    year: "1947–2016",
+    text: "As I referred to her 'Dida' was an amazing person always by my side.",
+    image: "/tribute/pratimasaharoy.jpeg",
+  },
   // {
   //   name: "Jane Foster",
   //   year: "1965–2021",
