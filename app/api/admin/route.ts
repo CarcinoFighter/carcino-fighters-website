@@ -166,8 +166,59 @@ async function validateSessionFromToken(token: string) {
 }
 
 async function getAuthenticatedUser() {
-	const token = (await cookies()).get(COOKIE_NAME)?.value;
+	const cookieStore = await cookies();
+	let token = cookieStore.get("jwt")?.value;
+	let isPublicJwt = false;
+
+	if (!token) {
+		token = cookieStore.get("public_jwt")?.value;
+		isPublicJwt = true;
+	}
+
 	if (!token) return null;
+
+	if (isPublicJwt) {
+		if (!jwtSecret) throw new Error("JWT secret not configured");
+		try {
+			const payload = jwt.verify(token, jwtSecret) as jwt.JwtPayload & { sub: string };
+			const client = await ensureClient();
+
+			// For public_jwt, we first find the user in users_public
+			const { data: publicUser } = await client
+				.from("users_public")
+				.select("id, email, username, deleted")
+				.eq("id", payload.sub)
+				.maybeSingle();
+
+			if (!publicUser || publicUser.deleted) return null;
+
+			// Then check if they are an employee in the "users" table
+			const { data: userRow } = await client
+				.from("users")
+				.select("id, username, email, name, admin_access, description, position")
+				.eq("email", publicUser.email.toLowerCase())
+				.limit(1)
+				.maybeSingle();
+
+			if (!userRow) return null; // Not an employee, but have a public session. Admin API is restricted.
+
+			return {
+				token,
+				user: {
+					id: userRow.id,
+					username: userRow.username,
+					email: userRow.email,
+					name: userRow.name,
+					admin_access: Boolean(userRow.admin_access),
+					description: userRow.description,
+					position: userRow.position,
+				},
+			};
+		} catch (e) {
+			return null;
+		}
+	}
+
 	return validateSessionFromToken(token);
 }
 
@@ -1034,15 +1085,60 @@ export async function POST(req: Request) {
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-			const { data, error } = await client
+			const { data: publicUsers, error } = await client
 				.from("users_public")
 				.select("id, username, email, name, bio, avatar_url, created_at")
 				.eq("deleted", false)
 				.order("created_at", { ascending: false });
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+			if (!publicUsers) return NextResponse.json({ users: [] });
 
-			return NextResponse.json({ users: data });
+			// Fetch all employees to check for merges
+			const emails = publicUsers.map(u => u.email.toLowerCase());
+			const { data: employees } = await client
+				.from("users")
+				.select("id, email, name, position, description")
+				.in("email", emails);
+
+			const employeeMap = new Map();
+			employees?.forEach(e => employeeMap.set(e.email.toLowerCase(), e));
+
+			// Fetch profile photos for these employees
+			const employeeIds = employees?.map(e => e.id) || [];
+			const photoMap = new Map();
+			if (employeeIds.length) {
+				const { data: photos } = await client
+					.from("profile_pictures")
+					.select("user_id, object_key")
+					.in("user_id", employeeIds);
+
+				if (photos) {
+					await Promise.all(photos.map(async p => {
+						try {
+							const signed = await client.storage.from("profile-picture").createSignedUrl(p.object_key, 60 * 60 * 24 * 7);
+							if (signed.data?.signedUrl) photoMap.set(p.user_id, signed.data.signedUrl);
+						} catch (e) { }
+					}));
+				}
+			}
+
+			const mergedUsers = publicUsers.map(u => {
+				const emp = employeeMap.get(u.email.toLowerCase());
+				if (emp) {
+					return {
+						...u,
+						name: emp.name || u.name,
+						bio: emp.description || u.bio,
+						avatar_url: photoMap.get(emp.id) || u.avatar_url,
+						is_employee: true,
+						employee_id: emp.id
+					};
+				}
+				return { ...u, is_employee: false };
+			});
+
+			return NextResponse.json({ users: mergedUsers });
 		}
 
 		if (action === "update_public_user") {
@@ -1061,7 +1157,7 @@ export async function POST(req: Request) {
 			if (password) updates.password = await bcrypt.hash(password, 10);
 			updates.updated_at = new Date().toISOString();
 
-			const { data, error } = await client
+			const { data: updatedPublic, error } = await client
 				.from("users_public")
 				.update(updates)
 				.eq("id", targetUserId)
@@ -1070,7 +1166,31 @@ export async function POST(req: Request) {
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-			return NextResponse.json({ user: data });
+			// If this public user is also an employee, sync the changes to the "users" table
+			if (updatedPublic?.email) {
+				const { data: employee } = await client
+					.from("users")
+					.select("id")
+					.eq("email", updatedPublic.email.toLowerCase())
+					.maybeSingle();
+
+				if (employee) {
+					const empUpdates: Record<string, unknown> = {};
+					if (username !== undefined) empUpdates.username = username || null;
+					if (name !== undefined) empUpdates.name = name ?? null;
+					if (bio !== undefined) empUpdates.description = bio ?? null;
+					if (password) empUpdates.password = await bcrypt.hash(password, 10);
+
+					if (Object.keys(empUpdates).length > 0) {
+						await client
+							.from("users")
+							.update(empUpdates)
+							.eq("id", employee.id);
+					}
+				}
+			}
+
+			return NextResponse.json({ user: updatedPublic });
 		}
 
 		if (action === "delete_public_user") {
