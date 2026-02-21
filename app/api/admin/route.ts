@@ -24,7 +24,10 @@ type AuthBody = {
 	| "review_doc_submission"
 	| "delete_user"
 	| "get_leadership"
-	| "logout";
+	| "logout"
+	| "list_public_users"
+	| "update_public_user"
+	| "delete_public_user";
 	username?: string;
 	email?: string;
 	password?: string;
@@ -44,6 +47,7 @@ type AuthBody = {
 	reviewerNote?: string;
 	status?: "pending" | "approved" | "rejected";
 	description?: string;
+	bio?: string;
 	forceOwn?: boolean;
 };
 
@@ -799,6 +803,7 @@ export async function POST(req: Request) {
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
+
 			const submissionId = body?.submissionId;
 			const decision = body?.decision;
 			const reviewerNote = body?.reviewerNote ?? null;
@@ -1024,9 +1029,72 @@ export async function POST(req: Request) {
 			return NextResponse.json({ users: usersWithPictures });
 		}
 
-		return NextResponse.json({ error: "unknown action" }, { status: 400 });
+		if (action === "list_public_users") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+			const { data, error } = await client
+				.from("users_public")
+				.select("id, username, email, name, bio, avatar_url, created_at")
+				.eq("deleted", false)
+				.order("created_at", { ascending: false });
+
+			if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+			return NextResponse.json({ users: data });
+		}
+
+		if (action === "update_public_user") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+			const { targetUserId, username, email, name, bio, password } = body ?? {};
+			if (!targetUserId) return NextResponse.json({ error: "targetUserId is required" }, { status: 400 });
+
+			const updates: Record<string, unknown> = {};
+			if (username !== undefined) updates.username = username ? username.toLowerCase() : null;
+			if (email !== undefined) updates.email = email ? email.toLowerCase() : null;
+			if (name !== undefined) updates.name = name ?? null;
+			if (bio !== undefined) updates.bio = bio ?? null;
+			if (password) updates.password = await bcrypt.hash(password, 10);
+			updates.updated_at = new Date().toISOString();
+
+			const { data, error } = await client
+				.from("users_public")
+				.update(updates)
+				.eq("id", targetUserId)
+				.select("id, username, email, name, bio, avatar_url")
+				.maybeSingle();
+
+			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+			return NextResponse.json({ user: data });
+		}
+
+		if (action === "delete_public_user") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+			const { targetUserId } = body ?? {};
+			if (!targetUserId) return NextResponse.json({ error: "targetUserId is required" }, { status: 400 });
+
+			// We do a soft delete like the public-auth might (based on the "deleted" check in list_public_users)
+			const { error } = await client
+				.from("users_public")
+				.update({ deleted: true, updated_at: new Date().toISOString() })
+				.eq("id", targetUserId);
+
+			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+			return NextResponse.json({ ok: true });
+		}
+
+		return NextResponse.json({ error: "Unknown action" }, { status: 400 });
 	} catch (e: unknown) {
-		const message = e instanceof Error ? e.message : typeof e === "string" ? e : JSON.stringify(e);
+		const message = e instanceof Error ? e.message : typeof e === "string" ? e : "Unknown error";
 		vlog("post.error", { message, raw: e });
 		return NextResponse.json({ error: message }, { status: 500 });
 	}
