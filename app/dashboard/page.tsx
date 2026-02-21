@@ -130,8 +130,17 @@ export default function DashboardPage() {
                     { onConflict: "user_id" }
                 );
                 if (metaErr) throw metaErr;
+
+                // Clear cache on server or generate signed URL
+                const { data: signed } = await supabase.storage.from("profile-picture").createSignedUrl(path, 60 * 60 * 24 * 7);
+                const url = signed?.signedUrl || null;
+                if (url) {
+                    setUser((prev) => (prev ? { ...prev, profilePicture: url } : prev));
+                }
+                setUploading(false);
+                return;
             } else {
-                // For public users, we might use the public-auth API to update avatar_url
+                // For public users, we use the public-auth API to update avatar_url
                 const formData = new FormData();
                 formData.append("avatar", file);
                 const res = await fetch("/api/public-auth", {
@@ -143,13 +152,6 @@ export default function DashboardPage() {
                 setUser(prev => prev ? { ...prev, profilePicture: data.avatar_url } : prev);
                 setUploading(false);
                 return;
-            }
-
-            const { data: signed } = await supabase.storage.from("profile-picture").createSignedUrl(path, 60 * 60 * 24 * 7);
-            const url = signed?.signedUrl || null;
-
-            if (url) {
-                setUser((prev) => (prev ? { ...prev, profilePicture: url } : prev));
             }
         } catch (err) {
             console.error("Upload error", err);
@@ -205,59 +207,41 @@ export default function DashboardPage() {
     useEffect(() => {
         const init = async () => {
             try {
-                // 1. Try Admin Auth
-                const authRes = await fetch("/api/admin", { method: "GET" });
-                const authData = await authRes.json().catch(() => ({}));
+                // Primary Auth Check via public-auth (now handles employee recognition)
+                const publicRes = await fetch("/api/public-auth", { method: "GET" });
+                const publicData = await publicRes.json().catch(() => ({}));
 
-                if (authRes.ok && authData.authenticated && authData.user) {
-                    setUser(authData.user);
-                    setIsAdmin(true);
-
-                    // Fetch admin profile picture
-                    const picRes = await fetch("/api/admin", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ action: "get_profile_picture" }),
+                if (publicRes.ok && publicData.authenticated && publicData.user) {
+                    const pu = publicData.user;
+                    setIsAdmin(pu.is_employee || false);
+                    setUser({
+                        id: pu.id,
+                        username: pu.username,
+                        email: pu.email,
+                        name: pu.name,
+                        description: pu.bio,
+                        profilePicture: pu.avatar_url,
+                        position: pu.position,
                     });
-                    const picData = await picRes.json().catch(() => ({}));
-                    if (picRes.ok && picData.url) {
-                        setUser((prev) => (prev ? { ...prev, profilePicture: picData.url } : prev));
-                    }
 
-                    // Fetch admin docs
-                    const docsRes = await fetch("/api/admin", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ action: "list_docs", forceOwn: true }),
-                    });
-                    const docsData = await docsRes.json().catch(() => ({}));
-                    if (docsRes.ok && docsData.docs) {
-                        setDocs(docsData.docs);
+                    // If employee, fetch articles
+                    if (pu.is_employee) {
+                        const docsRes = await fetch("/api/admin", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ action: "list_docs", forceOwn: true }),
+                        });
+                        const docsData = await docsRes.json().catch(() => ({}));
+                        if (docsRes.ok && docsData.docs) {
+                            setDocs(docsData.docs);
+                        }
                     }
                 } else {
-                    // 2. Try Public Auth
-                    const publicRes = await fetch("/api/public-auth", { method: "GET" });
-                    const publicData = await publicRes.json().catch(() => ({}));
-
-                    if (publicRes.ok && publicData.authenticated && publicData.user) {
-                        const pu = publicData.user;
-                        setIsAdmin(false);
-                        setUser({
-                            id: pu.id,
-                            username: pu.username,
-                            email: pu.email,
-                            name: pu.name,
-                            description: pu.bio,
-                            profilePicture: pu.avatar_url,
-                        });
-                    } else {
-                        // Both failed
-                        router.replace("/sign-in");
-                        return;
-                    }
+                    router.replace("/sign-in");
+                    return;
                 }
 
-                // 3. Fetch Blogs (Always trying public session for now as per system design)
+                // Fetch Blogs (always for own content)
                 const blogsRes = await fetch("/api/blogs?mine=true");
                 const blogsData = await blogsRes.json().catch(() => ({}));
                 if (blogsRes.ok && blogsData.blogs) {
@@ -324,8 +308,8 @@ export default function DashboardPage() {
                             <div className="cardGlass-borders pointer-events-none"></div>
                             <div className="cardGlass-shine pointer-events-none"></div>
 
-                            {/* Admin Purple Sheen */}
-                            {user?.email?.endsWith("@carcino.work") && (
+                            {/* Admin/Employee Sheen */}
+                            {isAdmin && (
                                 <div className="absolute inset-0 z-20 border border-purple-500/30 rounded-[40px] pointer-events-none shadow-[0_0_50px_rgba(168,85,247,0.15)]" />
                             )}
 
@@ -377,7 +361,7 @@ export default function DashboardPage() {
 
                                 <h2 className="text-2xl font-bold mb-1">{user?.name || user?.username}</h2>
                                 <p className="text-gray-400 text-sm mb-1">{user?.email}</p>
-                                {user?.email?.endsWith("@carcino.work") && user?.position ? (
+                                {isAdmin && user?.position ? (
                                     <p className="text-purple-400/80 text-xs font-medium uppercase mb-6">
                                         {user.position}
                                     </p>
@@ -445,7 +429,7 @@ export default function DashboardPage() {
                                     </form>
                                 )}
 
-                                {user?.email?.endsWith("@carcino.work") && !isEditing && (
+                                {isAdmin && !isEditing && (
                                     <Link
                                         href="/admin"
                                         className="w-full bg-white/5 hover:bg-white/10 text-white text-sm font-medium py-3 rounded-xl mb-4 transition-all duration-300 flex items-center justify-center gap-2 border border-white/10 hover:border-purple-500/50 group/admin"

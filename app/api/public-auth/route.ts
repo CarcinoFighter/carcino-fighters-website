@@ -14,6 +14,7 @@ type AuthBody = {
   bio?: string;
   avatar_url?: string;
   email?: string;
+  isEmployee?: boolean;
 };
 
 const COOKIE_NAME = "public_jwt";
@@ -27,16 +28,52 @@ function missingConfig() {
   return !supabaseUrl || !supabaseServiceKey || !sb || !jwtSecret;
 }
 
-function serializeUser(row: any) {
+async function serializeUser(row: any) {
   if (!row) return null;
-  return {
+  const user = {
     id: row.id,
     username: row.username,
     email: row.email,
     name: row.name,
     bio: row.bio,
     avatar_url: row.avatar_url,
+    is_employee: false,
+    position: null as string | null,
   };
+
+  // Check if this user is an employee
+  if (sb && row.email) {
+    const { data: employee } = await sb
+      .from("users") // Original users table is now Employees
+      .select("id, name, position, description")
+      .eq("email", row.email.toLowerCase())
+      .limit(1)
+      .maybeSingle();
+
+    if (employee) {
+      user.is_employee = true;
+      user.position = employee.position;
+      // Prefer employee name and description/bio if available
+      if (employee.name) user.name = employee.name;
+      if (employee.description) user.bio = employee.description;
+
+      // Fetch employee pfp
+      const { data: picData } = await sb
+        .from("profile_pictures")
+        .select("object_key")
+        .eq("user_id", employee.id)
+        .maybeSingle();
+
+      if (picData?.object_key) {
+        const { data: signed } = await sb.storage
+          .from("profile-picture")
+          .createSignedUrl(picData.object_key, 60 * 60 * 24 * 7);
+        if (signed?.signedUrl) user.avatar_url = signed.signedUrl;
+      }
+    }
+  }
+
+  return user;
 }
 
 async function getSession() {
@@ -54,7 +91,7 @@ async function getSession() {
       .maybeSingle();
 
     if (error || !user || user.deleted) return null;
-    return { token, user: serializeUser(user) };
+    return { token, user: await serializeUser(user) };
   } catch (e) {
     return null;
   }
@@ -176,7 +213,7 @@ export async function POST(req: Request) {
 
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-      const user = serializeUser(data);
+      const user = await serializeUser(data);
       if (!user) return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
 
       const token = jwt.sign({ sub: user.id, username: user.username }, jwtSecret!, { expiresIn: "7d" });
@@ -187,28 +224,83 @@ export async function POST(req: Request) {
     }
 
     if (action === "login") {
+      const { isEmployee } = body;
       const identifier = body.identifier ?? body.username;
       const { password } = body;
       if (!identifier || !password) return NextResponse.json({ error: "identifier and password are required" }, { status: 400 });
 
       const lowerIdentifier = identifier.toLowerCase();
-      const { data: userRow, error } = await sb!
-        .from("users_public")
-        .select("id, username, email, name, password, bio, avatar_url, deleted")
-        .or(`username.eq.${lowerIdentifier},email.eq.${lowerIdentifier}`)
-        .limit(1)
-        .maybeSingle();
+      let userRow: any = null;
 
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-      if (!userRow || userRow.deleted) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+      if (isEmployee) {
+        // Authenticate as employee first
+        const { data: emp, error: empErr } = await sb!
+          .from("users")
+          .select("id, username, email, name, password, description, avatar_url")
+          .or(`username.eq.${lowerIdentifier},email.eq.${lowerIdentifier}`)
+          .limit(1)
+          .maybeSingle();
 
-      const valid = await bcrypt.compare(password, userRow.password ?? "");
-      if (!valid) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+        if (empErr) return NextResponse.json({ error: empErr.message }, { status: 400 });
+        if (!emp) return NextResponse.json({ error: "Invalid employee credentials" }, { status: 401 });
+
+        const valid = await bcrypt.compare(password, emp.password ?? "");
+        if (!valid) return NextResponse.json({ error: "Invalid employee credentials" }, { status: 401 });
+
+        // Ensure they have a public profile
+        const { data: existingPub } = await sb!
+          .from("users_public")
+          .select("id, username, email, name, password, bio, avatar_url, deleted")
+          .eq("email", emp.email.toLowerCase())
+          .limit(1)
+          .maybeSingle();
+
+        if (existingPub) {
+          if (existingPub.deleted) {
+            // Restore deleted public profile if employee logs in
+            await sb!.from("users_public").update({ deleted: false, updated_at: new Date().toISOString() }).eq("id", existingPub.id);
+            existingPub.deleted = false;
+          }
+          userRow = existingPub;
+        } else {
+          // Sync employee to public table
+          const { data: newPub, error: syncErr } = await sb!
+            .from("users_public")
+            .insert({
+              username: emp.username?.toLowerCase() || emp.email.split("@")[0].toLowerCase(),
+              email: emp.email.toLowerCase(),
+              password: emp.password, // already hashed
+              name: emp.name,
+              bio: emp.description,
+              is_active: true,
+            })
+            .select("id, username, email, name, password, bio, avatar_url, deleted")
+            .maybeSingle();
+
+          if (syncErr) return NextResponse.json({ error: `Sync Failed: ${syncErr.message}` }, { status: 500 });
+          userRow = newPub;
+        }
+      } else {
+        // Standard public login
+        const { data, error } = await sb!
+          .from("users_public")
+          .select("id, username, email, name, password, bio, avatar_url, deleted")
+          .or(`username.eq.${lowerIdentifier},email.eq.${lowerIdentifier}`)
+          .limit(1)
+          .maybeSingle();
+
+        if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+        if (!data || data.deleted) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+
+        const valid = await bcrypt.compare(password, data.password ?? "");
+        if (!valid) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+        userRow = data;
+      }
 
       const token = jwt.sign({ sub: userRow.id, username: userRow.username }, jwtSecret!, { expiresIn: "7d" });
       const response = NextResponse.json({
         token,
-        user: serializeUser(userRow),
+        user: await serializeUser(userRow),
       });
 
       setAuthCookie(response, token);
@@ -255,7 +347,7 @@ export async function POST(req: Request) {
 
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-      return NextResponse.json({ user: serializeUser(data) });
+      return NextResponse.json({ user: await serializeUser(data) });
     }
 
     if (action === "logout") {
