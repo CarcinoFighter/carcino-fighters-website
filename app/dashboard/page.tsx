@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,6 +9,7 @@ import { ArrowUpRight, Plus } from "lucide-react";
 // @ts-ignore
 import DarkVeil from "@/components/DarkVeil";
 import { createClient } from "@supabase/supabase-js";
+import { ProfilePictureEditor } from "@/components/admin/pfp-cropper";
 
 type User = {
     id: string;
@@ -108,6 +110,7 @@ export default function DashboardPage() {
     const [updating, setUpdating] = useState(false);
     const [editForm, setEditForm] = useState({ description: "", password: "" });
     const [uploading, setUploading] = useState(false);
+    const [croppingImage, setCroppingImage] = useState<string | null>(null);
 
     async function handleUpload(file: File) {
         if (!user || !user.id) return;
@@ -120,16 +123,22 @@ export default function DashboardPage() {
             if (upErr) throw upErr;
 
             if (isAdmin) {
-                const { error: metaErr } = await supabase.from("profile_pictures").upsert(
-                    {
-                        user_id: user.id,
+                // Use server-side API to update metadata to avoid RLS issues on metadata table
+                const metaRes = await fetch("/api/admin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "update_pfp",
+                        targetUserId: user.id,
                         object_key: path,
                         content_type: file.type,
                         size: file.size,
-                    },
-                    { onConflict: "user_id" }
-                );
-                if (metaErr) throw metaErr;
+                    }),
+                });
+                if (!metaRes.ok) {
+                    const metaData = await metaRes.json().catch(() => ({}));
+                    throw new Error(metaData.error || "Failed to update metadata");
+                }
 
                 // Clear cache on server or generate signed URL
                 const { data: signed } = await supabase.storage.from("profile-picture").createSignedUrl(path, 60 * 60 * 24 * 7);
@@ -346,7 +355,13 @@ export default function DashboardPage() {
                                                     className="hidden"
                                                     onChange={(e) => {
                                                         const f = e.target.files?.[0];
-                                                        if (f) handleUpload(f);
+                                                        if (f) {
+                                                            const reader = new FileReader();
+                                                            reader.onload = (ev) => {
+                                                                setCroppingImage(ev.target?.result as string);
+                                                            };
+                                                            reader.readAsDataURL(f);
+                                                        }
                                                     }}
                                                 />
                                             </label>
@@ -591,6 +606,18 @@ export default function DashboardPage() {
                     )}
                 </div>
             </div>
+            <AnimatePresence>
+                {croppingImage && (
+                    <ProfilePictureEditor
+                        imageSrc={croppingImage}
+                        onCrop={(file) => {
+                            handleUpload(file);
+                            setCroppingImage(null);
+                        }}
+                        onCancel={() => setCroppingImage(null)}
+                    />
+                )}
+            </AnimatePresence>
         </div >
     );
 }
