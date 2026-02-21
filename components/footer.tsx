@@ -58,7 +58,7 @@ export function Footer() {
       </div>
       <div className="mb-4 flex justify-center md:justify-start">
         <Link
-          href="/tributes"
+          href="tribute"
           className="text-[#D5B0FF] font-dmsans text-sm md:text-base hover:underline"
         >
           Our Tribute
