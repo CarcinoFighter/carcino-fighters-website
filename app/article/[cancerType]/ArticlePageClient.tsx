@@ -77,20 +77,33 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                 {article.title}
               </h1>
 
-              <div className="
-  flex flex-wrap items-center justify-center
-  gap-1 sm:gap-2
-  py-6 sm:py-10
-  text-center font-inter
-">
-                <span className="text-xs sm:text-sm">{authorLabel}</span>
-                {positionLabel && (
-                  <>
-                    <span className="text-xs sm:text-sm text-foreground/50">|</span>
-                    <span className="text-xs sm:text-sm text-foreground/50">
-                      {positionLabel}
-                    </span>
-                  </>
+              <div className="flex flex-col items-center justify-center gap-2 py-6 sm:py-10 text-center font-inter">
+                {(article.authors && article.authors.length > 0) ? (
+                  article.authors.map((author, idx) => (
+                    <div key={idx} className="flex items-center justify-center gap-1 sm:gap-2">
+                      <span className="text-xs sm:text-sm">{author.name}</span>
+                      {author.position && (
+                        <>
+                          <span className="text-xs sm:text-sm text-foreground/50">|</span>
+                          <span className="text-xs sm:text-sm text-foreground/50">
+                            {author.position}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex items-center justify-center gap-1 sm:gap-2">
+                    <span className="text-xs sm:text-sm">{authorLabel}</span>
+                    {positionLabel && (
+                      <>
+                        <span className="text-xs sm:text-sm text-foreground/50">|</span>
+                        <span className="text-xs sm:text-sm text-foreground/50">
+                          {positionLabel}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -168,7 +181,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   from-[#b793d8] from-8%
   to-[#ffffff] to-60%
   bg-clip-text text-transparent ">
-                About the Author
+                About the {(article.authors && article.authors.length > 1) ? "Authors" : "Author"}
               </h2>
               <div className="relative text-left flex flex-col sm:flex-row gap-6  p-5 rounded-[40px] overflow-hidden ">
 
@@ -180,22 +193,46 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                 <div className="cardGlass-shine pointer-events-none"></div>
 
 
-                <Avatar className="w-20 h-20 relative z-10 mx-auto sm:mx-0">
-                  <AvatarImage src={article.profilePicture || "/logo.png"} />
-                  <AvatarFallback>{authorLabel.slice(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
+                <div className="flex flex-col gap-6 relative z-10 w-full">
+                  {(article.authors && article.authors.length > 0) ? (
+                    article.authors.map((author, idx) => (
+                      <div key={idx} className="flex flex-col sm:flex-row gap-6 items-center sm:items-start w-full">
+                        <Avatar className="w-20 h-20 shrink-0">
+                          <AvatarImage src={author.profilePicture || "/logo.png"} />
+                          <AvatarFallback>{author.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
 
-                <div className="max-w-[500px] flex flex-col gap-1 p-2 relative z-10 items-center sm:items-start">
-                  <h3 className="text-[26px] uppercase font-tttravelsnext leading-[20px] font-bold text-center sm:text-left">
-                    {authorLabel}
-                  </h3>
-
-                  <p className="uppercase text-[13px] leading-[30px]  text-[#C1C1C1]">{positionLabel}</p>
+                        <div className="flex flex-col sm:flex-row gap-6 w-full">
+                          <div className="flex-1 flex flex-col gap-1 items-center sm:items-start text-center sm:text-left">
+                            <h3 className="text-[26px] uppercase font-tttravelsnext leading-[20px] font-bold">
+                              {author.name}
+                            </h3>
+                            <p className="uppercase text-[13px] leading-[30px] text-[#C1C1C1]">{author.position}</p>
+                          </div>
+                          <p className="flex-[1.5] text-sm text-[#CDA8E8] leading-[20px] sm:pr-15 text-center sm:text-left">
+                            {author.description}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+                      <Avatar className="w-20 h-20">
+                        <AvatarImage src={article.profilePicture || "/logo.png"} />
+                        <AvatarFallback>{authorLabel.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="max-w-[500px] flex flex-col gap-1 p-2 items-center sm:items-start">
+                        <h3 className="text-[26px] uppercase font-tttravelsnext leading-[20px] font-bold text-center sm:text-left">
+                          {authorLabel}
+                        </h3>
+                        <p className="uppercase text-[13px] leading-[30px]  text-[#C1C1C1]">{positionLabel}</p>
+                      </div>
+                      <p className="text-sm text-[#CDA8E8] leading-[15px] p-5 relative z-10 sm:pr-15 ">
+                        {article.authorDescription || "Researcher at The Carcino Foundation."}
+                      </p>
+                    </div>
+                  )}
                 </div>
-
-                <p className="text-sm text-[#CDA8E8] leading-[15px] p-5 relative z-10 sm:pr-15 ">
-                  {article.authorDescription || "Researcher at The Carcino Foundation."}
-                </p>
               </div>
 
             </div>

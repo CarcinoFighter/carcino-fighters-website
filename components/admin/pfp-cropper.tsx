@@ -12,6 +12,8 @@ interface ProfilePictureEditorProps {
 
 export function ProfilePictureEditor({ imageSrc, onCrop, onCancel }: ProfilePictureEditorProps) {
     const [zoom, setZoom] = useState(1.2);
+    const [minZoom, setMinZoom] = useState(0.1);
+    const [maxZoom, setMaxZoom] = useState(4);
     const containerRef = useRef<HTMLDivElement>(null);
     const imageRef = useRef<HTMLImageElement>(null);
 
@@ -115,7 +117,7 @@ export function ProfilePictureEditor({ imageSrc, onCrop, onCancel }: ProfilePict
                         ref={containerRef}
                         onWheel={(e) => {
                             const delta = e.deltaY * -0.001;
-                            const newZoom = Math.min(Math.max(zoom + delta, 0.1), 4);
+                            const newZoom = Math.min(Math.max(zoom + delta, minZoom), maxZoom);
                             setZoom(newZoom);
                         }}
                         className="aspect-square w-full relative bg-black/20 rounded-[32px] overflow-hidden mb-8 shadow-inner border border-white/5 group touch-none"
@@ -125,6 +127,14 @@ export function ProfilePictureEditor({ imageSrc, onCrop, onCancel }: ProfilePict
                                 ref={imageRef}
                                 src={imageSrc}
                                 alt="Crop preview"
+                                onLoad={(e) => {
+                                    const { naturalWidth } = e.currentTarget;
+                                    const maskSize = 256;
+                                    const calculatedMinZoom = maskSize / naturalWidth;
+                                    setMinZoom(calculatedMinZoom);
+                                    setMaxZoom(Math.max(4, calculatedMinZoom * 4));
+                                    setZoom(calculatedMinZoom);
+                                }}
                                 style={{ x, y, scale: zoom }}
                                 drag
                                 dragMomentum={false}
@@ -172,14 +182,14 @@ export function ProfilePictureEditor({ imageSrc, onCrop, onCancel }: ProfilePict
                             <div className="flex-1 h-1.5 bg-white/5 rounded-full relative overflow-hidden group/slider">
                                 <input
                                     type="range"
-                                    min="0.1"
-                                    max="4"
+                                    min={minZoom}
+                                    max={maxZoom}
                                     step="0.01"
                                     value={zoom}
                                     onChange={(e) => setZoom(parseFloat(e.target.value))}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
-                                <div className="absolute left-0 top-0 h-full bg-purple-500 transition-all" style={{ width: `${((zoom - 0.1) / 3.9) * 100}%` }} />
+                                <div className="absolute left-0 top-0 h-full bg-purple-500 transition-all" style={{ width: `${((zoom - minZoom) / (maxZoom - minZoom)) * 100}%` }} />
                             </div>
                             <ZoomIn size={14} className="text-white/20" />
                         </div>
