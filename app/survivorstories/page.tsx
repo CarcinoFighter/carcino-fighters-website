@@ -229,7 +229,7 @@ export default function Home() {
                           },
                         }}
                       >
-                        <CardContainer className="w-[350px] h-[202px] px-1 rounded-[40px]">
+                        <CardContainer className="w-[350px] h-[202px] rounded-[40px]">
                           <div
                             style={{
                               backgroundImage: `url('${backgroundImage}')`,
@@ -244,7 +244,7 @@ export default function Home() {
                               vision-pro-ui-hoverable
                               w-full h-full min-h-[200px]
                               flex flex-col justify-center
-                              rounded-[40px]
+                              rounded-[45px]
                               overflow-hidden isolation-isolate liquid-glass !shadow-none
                               select-none bg-cover
                             "
