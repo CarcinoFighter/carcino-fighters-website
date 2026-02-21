@@ -116,42 +116,23 @@ export default function DashboardPage() {
         if (!user || !user.id) return;
         try {
             setUploading(true);
-            const ext = file.name.split(".").pop();
-            const path = isAdmin ? `authors/${user.id}/avatar.${ext}` : `users-public/${user.id}/avatar.${ext}`;
 
-            const { error: upErr } = await supabase.storage.from("profile-picture").upload(path, file, { upsert: true });
-            if (upErr) throw upErr;
+            const formData = new FormData();
+            formData.append("avatar", file);
 
             if (isAdmin) {
-                // Use server-side API to update metadata to avoid RLS issues on metadata table
-                const metaRes = await fetch("/api/admin", {
+                formData.append("targetUserId", user.id);
+                const res = await fetch("/api/admin", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        action: "update_pfp",
-                        targetUserId: user.id,
-                        object_key: path,
-                        content_type: file.type,
-                        size: file.size,
-                    }),
+                    body: formData,
                 });
-                if (!metaRes.ok) {
-                    const metaData = await metaRes.json().catch(() => ({}));
-                    throw new Error(metaData.error || "Failed to update metadata");
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.error || "Failed to update admin avatar");
                 }
-
-                // Clear cache on server or generate signed URL
-                const { data: signed } = await supabase.storage.from("profile-picture").createSignedUrl(path, 60 * 60 * 24 * 7);
-                const url = signed?.signedUrl || null;
-                if (url) {
-                    setUser((prev) => (prev ? { ...prev, profilePicture: url } : prev));
-                }
-                setUploading(false);
-                return;
+                const data = await res.json();
+                setUser((prev) => (prev ? { ...prev, profilePicture: data.avatar_url } : prev));
             } else {
-                // For public users, we use the public-auth API to update avatar_url
-                const formData = new FormData();
-                formData.append("avatar", file);
                 const res = await fetch("/api/public-auth", {
                     method: "POST",
                     body: formData,
@@ -159,8 +140,6 @@ export default function DashboardPage() {
                 if (!res.ok) throw new Error("Failed to update public avatar");
                 const data = await res.json();
                 setUser(prev => prev ? { ...prev, profilePicture: data.avatar_url } : prev);
-                setUploading(false);
-                return;
             }
         } catch (err) {
             console.error("Upload error", err);
