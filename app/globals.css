@@ -292,7 +292,7 @@
 
   /* Keep body styles but remove redundant scrollbar stuff if covered by * */
   body {
-    @apply bg-white dark:bg-black max-h-dvh max-w-dvw text-foreground;
+    @apply bg-white dark:bg-black max-h-dvh max-w-dvw text-foreground font-dmsans;
     overflow: auto;
   }
 }

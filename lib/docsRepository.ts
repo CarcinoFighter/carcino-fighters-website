@@ -20,6 +20,13 @@ function resolveApiUrl(path: string) {
   }
 }
 
+export interface IndividualAuthor {
+  name: string;
+  position: string;
+  description: string;
+  profilePicture: string | null;
+}
+
 export interface Article {
   id: string;
   slug: string;
@@ -30,9 +37,12 @@ export interface Article {
   authorDescription?: string | null;
   author_user_id?: string | null;
   avatar_url?: string | null;
+  authors?: IndividualAuthor[];
 }
 
-export interface ArticleWithAvatar extends Article { profilePicture?: string | null }
+export interface ArticleWithAvatar extends Article {
+  profilePicture?: string | null;
+}
 
 export interface ArticleSummary {
   id: string;
@@ -127,18 +137,46 @@ async function getDocBySlugWithAvatarUncached(slug: string): Promise<ArticleWith
       }
     }
 
-    let profilePicture: string | null = null;
+    let authors: IndividualAuthor[] = [];
 
-    try {
-      const picMap = await getAvatarUrls([doc.author_user_id || doc.id]);
-      profilePicture = picMap[doc.author_user_id || doc.id] ?? null;
-    } catch (e) {
-      console.warn('Avatar fetch error', e);
+    if (author && author.toLowerCase().includes(" and ")) {
+      const authorNames = author.split(/\s+and\s+/i);
+      const { data: authorRows, error: authorsErr } = await supabase
+        .from('users')
+        .select('id, name, username, email, position, description, avatar_url')
+        .in('name', authorNames);
+
+      if (!authorsErr && authorRows) {
+        const authorIds = authorRows.map(r => r.id);
+        const picMap = await getAvatarUrls(authorIds);
+
+        authors = authorRows.map(row => ({
+          name: row.name ?? row.username ?? row.email ?? "Unknown Author",
+          position: row.position ?? "Researcher",
+          description: row.description ?? "Researcher at The Carcino Foundation.",
+          profilePicture: picMap[row.id] ?? row.avatar_url ?? null
+        }));
+      }
+    } else {
+      let profilePicture: string | null = null;
+      if (doc.author_user_id) {
+        try {
+          const picMap = await getAvatarUrls([doc.author_user_id]);
+          profilePicture = picMap[doc.author_user_id] ?? null;
+        } catch (e) {
+          console.warn('Avatar fetch error', e);
+        }
+      }
+
+      authors = [{
+        name: author ?? "Unknown Author",
+        position: position ?? "",
+        description: authorDescription ?? "Researcher at The Carcino Foundation.",
+        profilePicture: profilePicture || avatarUrlFallback || null
+      }];
     }
 
-    const finalPfp = profilePicture || avatarUrlFallback || null;
-
-    return { ...doc, author, position, authorDescription, profilePicture: finalPfp } as ArticleWithAvatar;
+    return { ...doc, author, position, authorDescription, profilePicture: authors[0]?.profilePicture ?? null, authors } as ArticleWithAvatar;
   } catch (error) {
     console.error('Error in getDocBySlugWithAvatar:', error);
     return null;
