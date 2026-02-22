@@ -61,7 +61,7 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-screen bg-none text-white flex items-center justify-center px-4 pt-[60px] md:pt-6 font-dmsans">
-      <div className="fixed inset-0 pointer-events-none -z-10 bg-black mt-[8%] scale-150">
+      <div className="fixed inset-0 pointer-events-none -z-10 bg-black mt-[12%] scale-[175%]">
         <DarkVeil
           hueShift={0}
           noiseIntensity={0.16}
@@ -72,8 +72,8 @@ export default function SignUpPage() {
           resolutionScale={1}
         />
       </div>
-      <div className="w-full max-w-[90%] md:max-w-[60%] mx-auto mt-6 backdrop-blur-2xl">
-        <div className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr] items-center">
+      <div className="w-full max-w-[90%] md:max-w-[60%] mx-auto mt-6 rounded-[55px] bg-black/40">
+        <div className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr] items-center ">
           <div className="relative overflow-hidden px-6 md:px-16 py-8 md:py-8 ">
             <div className="liquidGlass-effect pointer-events-none"></div>
             <div className="cardGlass-tint pointer-events-none"></div>
@@ -87,7 +87,7 @@ export default function SignUpPage() {
                 <p className="text-center text-base md:text-lg text-white/70">
                   Join the community
                 </p>
-                <h1 className="text-4xl font-semibold text-center pb-3">
+                <h1 className="text-4xl font-semibold text-center py-2 font-wintersolace">
                   Create an account
                 </h1>
                 <div className="text-center text-base md:text-lg text-white/70">
