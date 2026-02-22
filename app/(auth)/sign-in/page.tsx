@@ -67,7 +67,7 @@ function SignInInner() {
           width: 1600,
           height: 1600,
           borderRadius: "50%",
-          background: `radial-gradient(circle, #30164f 0%, #30164F6B 33%, #30164F2E 60%, #30164F00 100%)`,
+          background: `radial-gradient(circle, #30164f 0%, #30164F6B 33%, #30164F2E 50%, transparent 100%)`,
           pointerEvents: "none",
           zIndex: 0,
         }}
@@ -81,7 +81,7 @@ function SignInInner() {
           width: 1600,
           height: 1600,
           borderRadius: "50%",
-          background: `radial-gradient(circle, #30164f 0%, #30164F6B 33%, #30164F2E 60%, #30164F00 100%)`,
+          background: `radial-gradient(circle, #30164f 0%, #30164F6B 33%, #30164F2E 50%, transparent 100%)`,
           pointerEvents: "none",
           zIndex: 0,
         }}
