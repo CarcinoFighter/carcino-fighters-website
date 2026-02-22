@@ -1,6 +1,6 @@
 "use client"
 
-import { motion, MotionProps, useScroll } from "motion/react"
+import { motion, MotionProps, useScroll } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 

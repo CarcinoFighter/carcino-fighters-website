@@ -9,7 +9,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.
 const jwtSecret = process.env.JWT_SECRET;
 const STORY_BUCKET = "survivor-story-images";
 
-const sb = supabaseUrl && supabaseServiceKey ? createClient(supabaseUrl, supabaseServiceKey) : null;
+const sb = (supabaseUrl && supabaseServiceKey ? createClient(supabaseUrl, supabaseServiceKey) : null) as any;
 
 type StoryBody = {
   action?: "create" | "update" | "delete";
@@ -65,13 +65,13 @@ async function getAdminSession() {
     const payload = jwt.verify(token, jwtSecret) as jwt.JwtPayload & { sub: string };
     const tokenHash = await hashToken(token);
 
-    const { data: sessionRow, error: sessionErr } = await sb!
+    const { data: sessionRow, error: sessionErr } = await (sb!
       .from("login_sessions")
       .select("user_id, expires_at")
       .eq("token_hash", tokenHash)
       .order("created_at", { ascending: false })
       .limit(1)
-      .maybeSingle();
+      .maybeSingle() as any);
 
     if (sessionErr || !sessionRow) return null;
     if (sessionRow.expires_at && new Date(sessionRow.expires_at).getTime() < Date.now()) return null;
@@ -201,7 +201,7 @@ export async function POST(req: Request) {
     const normalizedTags = Array.isArray(body.tags)
       ? body.tags
       : typeof body.tags === "string" && body.tags.length
-        ? body.tags.split(",").map((t) => t.trim()).filter(Boolean)
+        ? body.tags.split(",").map((t: any) => t.trim()).filter(Boolean)
         : null;
 
     if (action === "create") {
