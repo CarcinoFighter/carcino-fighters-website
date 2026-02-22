@@ -708,7 +708,7 @@ export default function AdminPage() {
         }}
       />
 
-      <div className="relative z-10 px-4 py-10 pt-[72px]">
+      <div className="relative z-10 px-4 py-10 pt-24 md:pt-36">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Center-aligned Premium Header */}
           <div className="flex flex-col items-center text-center gap-4 mb-12">
@@ -718,10 +718,10 @@ export default function AdminPage() {
               transition={{ duration: 0.5 }}
               className="space-y-4"
             >
-              <h1 className="text-6xl sm:text-7xl md:text-8xl leading-tight font-wintersolace text-white py-2">
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl leading-tight font-wintersolace text-white py-4">
                 Admin Dashboard
               </h1>
-              <p className="text-xl text-white/50 font-dmsans max-w-2xl mx-auto">
+              <p className="text-lg md:text-xl text-white/50 font-dmsans max-w-2xl mx-auto">
                 The place where <span className="text-white font-semibold">YOU</span> can bring a change through research and storytelling.
               </p>
             </motion.div>
