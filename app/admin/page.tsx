@@ -1,11 +1,12 @@
 "use client";
 import Image from "next/image";
-import React, { useEffect, useMemo, useState, type FormEvent } from "react";
+import React, { useEffect, useMemo, useState, useRef, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
 import { ProfilePictureEditor } from "@/components/admin/pfp-cropper";
 import { CancerDocsPanel } from "@/components/admin/cancer-docs-panel";
+import { DynamicBackgroundHues } from "@/components/ui/dynamic-background-hues";
 // Supabase client remains for storage (avatars). Data CRUD now goes through secured API.
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -106,6 +107,7 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<"action-centre" | "articles" | "survivors" | "system">("articles");
   const [systemCheckResults, setSystemCheckResults] = useState<any>(null);
   const [systemCheckLoading, setSystemCheckLoading] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const cardClass = "rounded-[44px] border border-white/10 bg-white/0 backdrop-blur shadow-2xl";
   const inputClass = "bg-white/5 border border-white/10 rounded-2xl px-3 py-2 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-[#6D54B5]";
@@ -665,48 +667,8 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="relative min-h-screen min-w-screen overflow-hidden bg-[#2A292F] text-white">
-      {/* Blog-style Radial Gradients */}
-      <div
-        style={{
-          position: "absolute",
-          left: -800,
-          top: -700,
-          width: 1600,
-          height: 1600,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, #D5B0FF26 0%, transparent 60%)`,
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
-      <div
-        className="max-md:hidden"
-        style={{
-          position: "absolute",
-          right: -900,
-          top: -300,
-          width: 1800,
-          height: 1800,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, #D5B0FF26 0%, transparent 50%)`,
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          right: -600,
-          bottom: -1200,
-          width: 1800,
-          height: 1800,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, #471F7733 0%, transparent 60%)`,
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
+    <div ref={containerRef} className="relative min-h-screen min-w-screen overflow-hidden bg-[#2A292F] text-white">
+      <DynamicBackgroundHues containerRef={containerRef} />
 
       <div className="relative z-10 px-4 py-10 pt-24 md:pt-36">
         <div className="max-w-6xl mx-auto space-y-8">

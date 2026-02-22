@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ImgHTMLAttributes } from "react";
+import { useState, useRef, type ImgHTMLAttributes } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
@@ -12,6 +12,7 @@ import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { Footer } from "@/components/footer";
+import { DynamicBackgroundHues } from "@/components/ui/dynamic-background-hues";
 import type { ArticleWithAvatar, ArticleSummary } from "@/lib/docsRepository";
 
 interface ArticlePageClientProps {
@@ -50,10 +51,22 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   // const firstCardRef = useRef<HTMLDivElement | null>(null);
   const authorLabel = article.author ?? "Unknown Author";
   const positionLabel = article.position ?? "";
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Re-use the fadeUp variant from blogs for the button
+  const fadeUp = {
+    hidden: { opacity: 0, y: 28 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.65, ease: easeSoft },
+    },
+  };
 
   return (
-    <div>
-      <div className="w-full px-5 sm:px-20 sm:pt-[80px] relative gap-6 bg-background font-giest min-h-screen overflow-x-hidden">
+    <div ref={containerRef} className="relative w-full bg-[#2A292F] font-giest min-h-screen overflow-hidden">
+      <DynamicBackgroundHues containerRef={containerRef} />
+      <div className="w-full px-5 sm:px-20 sm:pt-[80px] relative gap-6 z-10">
         <ScrollProgress className="hidden md:block" />
         <div className="relative pt-10 flex flex-col justify-center ">
           <motion.div
@@ -126,7 +139,14 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   font-dmsans
   ${readmore ? "" : "max-h-[50vh] sm:max-h-[60vh] overflow-hidden"}
 `}
-
+                style={
+                  !readmore
+                    ? {
+                      maskImage: "linear-gradient(to bottom, black 0%, black 20%, transparent 100%)",
+                      WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 20%, transparent 100%)",
+                    }
+                    : undefined
+                }
               >
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
@@ -158,21 +178,33 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                 >
                   {article.content}
                 </ReactMarkdown>
-
-                <div className={`absolute bottom-0 left-0 right-0 h-[80%]
-                  bg-gradient-to-t from-background to-transparent
-                  ${readmore ? "hidden" : ""}`} />
               </article>
 
-              <Button
-                variant="secondary"
-                aria-expanded={readmore}
-                onClick={() => setReadmore((s) => !s)}
-                className="mx-auto w-fit my-10 rounded-full bg-primary/44 backdrop-blur-xs flex justify-center"
-              >
-                {readmore ? "Show less" : "Read more"}
-                <ArrowDown className={`transition-transform ${readmore ? "rotate-180" : ""}`} />
-              </Button>
+              <div className="mt-6 flex justify-center w-full">
+                <motion.div
+                  variants={fadeUp}
+                  whileHover={{ y: -2, scale: 1.04 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="inline-flex"
+                >
+                  <Button
+                    variant="ghost"
+                    onClick={() => setReadmore((s) => !s)}
+                    className="relative px-7 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%] text-white"
+                  >
+                    <div className="relative z-10 flex items-center gap-2">
+                      {readmore ? "Show less" : "Read more"}
+                      <ArrowDown className={`transition-transform ml-2 ${readmore ? "rotate-180" : ""}`} />
+                    </div>
+
+                    {/* Liquid glass layers matching blogs code */}
+                    <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+                    <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
+                    <div className="liquidGlass-shine relative w-[102.5%] h-[100%] !top-[-0.1px] !left-[-2.3px]"></div>
+                    <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+                  </Button>
+                </motion.div>
+              </div>
             </div>
 
             {/* AUTHOR SECTION */}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -13,6 +13,7 @@ import { Footer } from "@/components/footer";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import type { BlogEntry, BlogSummary } from "@/lib/blogsRepository";
 import { motion } from "framer-motion";
+import { DynamicBackgroundHues } from "@/components/ui/dynamic-background-hues";
 
 const colors = [
   "#E39E2E",
@@ -66,49 +67,11 @@ const fadeUp = {
 
 export default function BlogPageClient({ entry, related, cardColor }: BlogPageClientProps) {
   const [expanded, setExpanded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="min-h-screen text-foreground bg-[#2A292F] relative overflow-hidden">
-      <div
-        style={{
-          position: "absolute",
-          left: -800,
-          top: -700,
-          width: 1600,
-          height: 1600,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, #D5B0FF26 0%, transparent 60%)`,
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
-      <div
-        className="max-md:hidden"
-        style={{
-          position: "absolute",
-          right: -900,
-          top: -300,
-          width: 1800,
-          height: 1800,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, #D5B0FF26 0%, transparent 50%)`,
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          right: -600,
-          bottom: -1200,
-          width: 1800,
-          height: 1800,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, #471F7733 0%, transparent 60%)`,
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
+    <div ref={containerRef} className="min-h-screen text-foreground bg-[#2A292F] relative overflow-hidden">
+      <DynamicBackgroundHues containerRef={containerRef} />
       <ScrollProgress className="hidden md:block" />
       <main className="max-w-[80%] md:max-w-5xl mx-auto p-6 relative z-10 mt-32 items-center justify-center self-center">
         <header className="mb-8 text-center px-4">

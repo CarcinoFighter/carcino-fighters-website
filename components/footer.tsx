@@ -17,22 +17,28 @@ export function Footer() {
           />
           THE CARCINO FOUNDATION
         </h1>
-        <div className="w-full sm:w-1/3 flex flex-col sm:items-end mt-6 sm:mt-80">
-          <div className="flex gap-2 mb-4">
+        <div className="w-full sm:w-1/3 flex flex-col items-center sm:items-end mt-6 sm:mt-80">
+          <div className="flex gap-2 mb-4 justify-center sm:justify-end">
             <a
               href="https://www.instagram.com/thecarcinofoundation/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-[#D5B0FF] hover:text-white transition-colors"
             >
               <Instagram size={20} strokeWidth={1.5} />
             </a>
             <a
               href="https://www.facebook.com/people/The-Carcino-Foundation/61580643500737/#"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-[#D5B0FF] hover:text-white transition-colors"
             >
               <Facebook size={20} strokeWidth={1.5} />
             </a>
             <a
               href="https://www.linkedin.com/company/thecarcinofoundation"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-[#D5B0FF] hover:text-white transition-colors"
             >
               <Linkedin size={20} strokeWidth={1.5} />
@@ -58,7 +64,7 @@ export function Footer() {
       </div>
       <div className="mb-4 flex justify-center md:justify-start">
         <Link
-          href="tribute"
+          href="/tribute"
           className="text-[#D5B0FF] font-dmsans text-sm md:text-base hover:underline"
         >
           Our Tribute
