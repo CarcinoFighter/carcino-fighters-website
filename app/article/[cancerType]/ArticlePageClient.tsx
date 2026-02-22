@@ -19,6 +19,32 @@ interface ArticlePageClientProps {
   moreArticles: ArticleSummary[];
 }
 const easeSoft = [0.33, 1, 0.68, 1] as const;
+
+function MarkdownImage({ src, alt }: { src: string; alt: string }) {
+  const [error, setError] = useState(false);
+  if (error) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        className="rounded-lg shadow-lg my-8 max-w-full overflow-hidden h-auto w-full object-cover"
+        loading="lazy"
+      />
+    );
+  }
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      width={1200}
+      height={800}
+      sizes="(max-width: 768px) 100vw, 800px"
+      className="rounded-lg shadow-lg my-8 max-w-full overflow-hidden h-auto"
+      onError={() => setError(true)}
+    />
+  );
+}
+
 export function ArticlePageClient({ article, moreArticles }: ArticlePageClientProps) {
   const [readmore, setReadmore] = useState(false);
   // const firstCardRef = useRef<HTMLDivElement | null>(null);
@@ -51,20 +77,33 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                 {article.title}
               </h1>
 
-              <div className="
-  flex flex-wrap items-center justify-center
-  gap-1 sm:gap-2
-  py-6 sm:py-10
-  text-center font-inter
-">
-                <span className="text-xs sm:text-sm">{authorLabel}</span>
-                {positionLabel && (
-                  <>
-                    <span className="text-xs sm:text-sm text-foreground/50">|</span>
-                    <span className="text-xs sm:text-sm text-foreground/50">
-                      {positionLabel}
-                    </span>
-                  </>
+              <div className="flex flex-col items-center justify-center gap-2 py-6 sm:py-10 text-center font-inter">
+                {(article.authors && article.authors.length > 0) ? (
+                  article.authors.map((author, idx) => (
+                    <div key={idx} className="flex items-center justify-center gap-1 sm:gap-2">
+                      <span className="text-xs sm:text-sm">{author.name}</span>
+                      {author.position && (
+                        <>
+                          <span className="text-xs sm:text-sm text-foreground/50">|</span>
+                          <span className="text-xs sm:text-sm text-foreground/50">
+                            {author.position}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex items-center justify-center gap-1 sm:gap-2">
+                    <span className="text-xs sm:text-sm">{authorLabel}</span>
+                    {positionLabel && (
+                      <>
+                        <span className="text-xs sm:text-sm text-foreground/50">|</span>
+                        <span className="text-xs sm:text-sm text-foreground/50">
+                          {positionLabel}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -84,6 +123,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   relative
   max-w-full sm:max-w-4xl
   dark:prose-invert
+  font-dmsans
   ${readmore ? "" : "max-h-[50vh] sm:max-h-[60vh] overflow-hidden"}
 `}
 
@@ -112,17 +152,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                     img: (props: ImgHTMLAttributes<HTMLImageElement>) => {
                       const src = typeof props.src === "string" ? props.src : undefined;
                       if (!src) return null;
-                      const alt = props.alt ?? "";
-                      return (
-                        <Image
-                          src={src}
-                          alt={alt}
-                          width={1200}
-                          height={800}
-                          sizes="(max-width: 768px) 100vw, 800px"
-                          className="rounded-lg shadow-lg my-8 max-w-full overflow-hidden h-auto"
-                        />
-                      );
+                      return <MarkdownImage src={src} alt={props.alt ?? ""} />;
                     },
                   }}
                 >
@@ -151,32 +181,58 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   from-[#b793d8] from-8%
   to-[#ffffff] to-60%
   bg-clip-text text-transparent ">
-                About the Author
+                About the {(article.authors && article.authors.length > 1) ? "Authors" : "Author"}
               </h2>
-              <div className="relative text-left flex flex-col sm:flex-row gap-6  p-5 rounded-[55px] overflow-hidden ">
+              <div className="relative text-left flex flex-col sm:flex-row gap-6  p-5 rounded-[40px] overflow-hidden ">
 
 
-                <div className=" divGlass-effect pointer-events-none z-0  "></div>
-                <div className=" divGlass-tint pointer-events-none z-0 "></div>
-                <div className=" divGlass-shine pointer-events-none z-0 relative opacity-70"></div>
+                <div className="liquidGlass-effect pointer-events-none !rounded-[40px]"></div>
+                <div className="cardGlass-tint pointer-events-none !rounded-[40px]"></div>
+                <div className="glass-noise"></div>
+                <div className="cardGlass-borders pointer-events-none"></div>
+                <div className="cardGlass-shine pointer-events-none"></div>
 
 
-                <Avatar className="w-20 h-20 relative z-10 mx-auto sm:mx-0">
-                  <AvatarImage src={article.profilePicture || "/logo.png"} />
-                  <AvatarFallback>{authorLabel.slice(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
+                <div className="flex flex-col gap-6 relative z-10 w-full">
+                  {(article.authors && article.authors.length > 0) ? (
+                    article.authors.map((author, idx) => (
+                      <div key={idx} className="flex flex-col sm:flex-row gap-6 items-center sm:items-start w-full">
+                        <Avatar className="w-20 h-20 shrink-0">
+                          <AvatarImage src={author.profilePicture || "/logo.png"} />
+                          <AvatarFallback>{author.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
 
-                <div className="max-w-[500px] flex flex-col gap-1 p-2 relative z-10 items-center sm:items-start">
-                  <h3 className="text-[26px] uppercase font-tttravelsnext leading-[20px] font-bold text-center sm:text-left">
-                    {authorLabel}
-                  </h3>
-
-                  <p className="uppercase text-[13px] leading-[30px]  text-[#C1C1C1]">{positionLabel}</p>
+                        <div className="flex flex-col sm:flex-row gap-6 w-full">
+                          <div className="flex-1 flex flex-col gap-1 items-center sm:items-start text-center sm:text-left">
+                            <h3 className="text-[26px] uppercase font-tttravelsnext leading-[20px] font-bold">
+                              {author.name}
+                            </h3>
+                            <p className="uppercase text-[13px] leading-[30px] text-[#C1C1C1]">{author.position}</p>
+                          </div>
+                          <p className="flex-[1.5] text-sm text-[#CDA8E8] leading-[20px] sm:pr-15 text-center sm:text-left">
+                            {author.description}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+                      <Avatar className="w-20 h-20">
+                        <AvatarImage src={article.profilePicture || "/logo.png"} />
+                        <AvatarFallback>{authorLabel.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="max-w-[500px] flex flex-col gap-1 p-2 items-center sm:items-start">
+                        <h3 className="text-[26px] uppercase font-tttravelsnext leading-[20px] font-bold text-center sm:text-left">
+                          {authorLabel}
+                        </h3>
+                        <p className="uppercase text-[13px] leading-[30px]  text-[#C1C1C1]">{positionLabel}</p>
+                      </div>
+                      <p className="text-sm text-[#CDA8E8] leading-[15px] p-5 relative z-10 sm:pr-15 ">
+                        {article.authorDescription || "Researcher at The Carcino Foundation."}
+                      </p>
+                    </div>
+                  )}
                 </div>
-
-                <p className="text-sm text-[#CDA8E8] leading-[15px] p-5 relative z-10 sm:pr-15 ">
-                  {article.authorDescription || "Researcher at The Carcino Foundation."}
-                </p>
               </div>
 
             </div>
@@ -188,76 +244,91 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   to-[#ffffff] to-60%
   bg-clip-text text-transparent">Suggested Articles</h2>
 
-              <div className="flex flex-col sm:flex-row gap-4 items-center justify-center
-w-full max-w-screen-sm sm:max-w-none mx-auto px-4
-">
-                {moreArticles.map((a) => (
-                  <Link
-                    key={a.id}
-                    href={a.slug ? `/article/${a.slug}` : `/article/${a.id}`}
-                    className="w-full max-w-lg sm:w-auto h-full block"
-                  >
-                    <motion.div
-                      className="h-full"
-                      layout
-                      whileHover={{ y: -4, scale: 1.015 }}
-                      variants={{
-                        hidden: { opacity: 0, y: 12 },
-                        visible: {
-                          opacity: 1,
-                          y: 0,
-                          transition: { duration: 0.55, ease: easeSoft },
-                        },
-                      }}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl mx-auto px-4">
+                {moreArticles.map((a) => {
+                  const getTitleFontSize = (title: string) => {
+                    const words = title.split(/\s+/);
+                    const maxWordLength = Math.max(...words.map(w => w.length));
+
+                    // Priority 1: Longest word must fit
+                    if (maxWordLength > 12) return "text-[14px] sm:text-[18px]"; // Very long word
+                    if (maxWordLength >= 9) return "text-[18px] sm:text-[22px]"; // Moderately long word
+
+                    // Priority 2: Total length
+                    if (title.length > 35) return "text-[16px] sm:text-[20px]";
+                    if (title.length >= 15) return "text-[18px] sm:text-[24px]";
+                    return "text-[22px] sm:text-[30px]";
+                  };
+
+                  return (
+                    <Link
+                      key={a.id}
+                      href={a.slug ? `/article/${a.slug}` : `/article/${a.id}`}
+                      className="w-full h-full block"
                     >
-                      <CardContainer className="w-full h-full px-4 rounded-[55px]">
-                        <CardBody
-                          className="
-                            article-card
-                            relative z-20
-                            group/card
-                            vision-pro-ui-hoverable
-                            w-full h-full min-h-[260px]
-                            py-5
-                            flex flex-col justify-center
-                            rounded-[55px]
-                            bg-background/30
-                            bg-gradient-to-br from-[#9875c1]/25 via-[#9875c1]/5 to-transparent
-                            backdrop-blur-xl backdrop-saturate-150
-                            border border-accent shadow-xl
-                            overflow-hidden
-                            select-none
-                          "
-                        >
-                          <CardItem
-                            translateZ="20"
+                      <motion.div
+                        className="h-full"
+                        layout
+                        whileHover={{ y: -4, scale: 1.015 }}
+                        variants={{
+                          hidden: { opacity: 0, y: 12 },
+                          visible: {
+                            opacity: 1,
+                            y: 0,
+                            transition: { duration: 0.55, ease: easeSoft },
+                          },
+                        }}
+                      >
+                        <CardContainer className="w-full h-full px-1 rounded-[40px]">
+                          <CardBody
                             className="
-                              relative z-10
-                              flex flex-col items-center gap-2
-                              rounded-[55px]
-                              pointer-events-none
+                              relative z-20
+                              group/card
+                              vision-pro-ui-hoverable
+                              w-full h-full min-h-[200px]
+                              py-3
+                              flex flex-col justify-center
+                              rounded-[40px]
+                              overflow-hidden isolation-isolate liquid-glass !shadow-none
+                              backdrop-blur-[30px]
+                              select-none
                             "
                           >
-                            <div className="lowercase text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8]">
-                              Research Article
-                            </div>
+                            <div className="liquidGlass-effect pointer-events-none"></div>
+                            <div className="cardGlass-tint pointer-events-none"></div>
+                            <div className="glass-noise"></div>
+                            <div className="cardGlass-borders pointer-events-none"></div>
+                            <div className="cardGlass-shine pointer-events-none"></div>
+                            <div className="liquidGlass-text pointer-events-none"></div>
 
-                            <h3 className="text-[25px] sm:text-[35px] leading-[20px] sm:leading-[30px] p-2 text-center uppercase font-tttravelsnext font-bold line-clamp-7">
-                              {a.title}
-                            </h3>
+                            <CardItem
+                              translateZ="20"
+                              className="
+                                relative z-10
+                                flex flex-col items-center gap-2
+                                rounded-[40px]
+                                pointer-events-none
+                                w-full
+                              "
+                            >
+                              <div className="lowercase text-[16px] sm:text-[20px] lg:text-[22px] font-medium font-instrumentserifitalic text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 text-center w-full">
+                                Research Article
+                              </div>
 
-                            <p className="text-[15px] sm:text-[20px] text-center text-[#CDA8E8]">
-                              by {a.author ?? "Unknown Author"}
-                            </p>
-                          </CardItem>
+                              <h3 className={`${getTitleFontSize(a.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}>
+                                {a.title}
+                              </h3>
 
-                          <div className="divGlass-effect pointer-events-none z-0" />
-                          {/* <div className="cardGlass-shine pointer-events-none z-0 overflow-hidden" /> */}
-                        </CardBody>
-                      </CardContainer>
-                    </motion.div>
-                  </Link>
-                ))}
+                              <p className="text-[14px] sm:text-[18px] text-center text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 font-dmsans w-full font-light">
+                                by {a.author ?? "Unknown Author"}
+                              </p>
+                            </CardItem>
+                          </CardBody>
+                        </CardContainer>
+                      </motion.div>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
 

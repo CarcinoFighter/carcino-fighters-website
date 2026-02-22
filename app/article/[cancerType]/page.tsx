@@ -3,8 +3,22 @@ import Script from "next/script";
 import { Footer } from "@/components/footer";
 import { ArticlePageClient } from "./ArticlePageClient";
 import { getDocBySlugWithAvatar, getRandomArticleSummaries } from "@/lib/docsRepository";
+import { Metadata } from "next";
 
-export const revalidate = 60;
+export async function generateMetadata({ params }: ArticlePageParams): Promise<Metadata> {
+  const { cancerType: slug } = await params;
+  const article = await getDocBySlugWithAvatar(slug);
+
+  if (!article) {
+    return {
+      title: "Article Not Found",
+    };
+  }
+
+  return {
+    title: article.title,
+  };
+}
 
 interface ArticlePageParams {
   params: Promise<{ cancerType: string }>;

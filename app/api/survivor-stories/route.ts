@@ -1,0 +1,297 @@
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import jwt from "jsonwebtoken";
+
+const COOKIE_NAME = "jwt";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY;
+const jwtSecret = process.env.JWT_SECRET;
+const STORY_BUCKET = "survivor-story-images";
+
+const sb = supabaseUrl && supabaseServiceKey ? createClient(supabaseUrl, supabaseServiceKey) : null;
+
+type StoryBody = {
+  action?: "create" | "update" | "delete";
+  id?: string;
+  title?: string;
+  slug?: string;
+  content?: string | null;
+  image_url?: string | null;
+  colour?: string | null;
+  tags?: string[] | string | null;
+};
+
+function missingConfig() {
+  return !supabaseUrl || !supabaseServiceKey || !sb || !jwtSecret;
+}
+
+function slugify(input: string) {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "")
+    .slice(0, 80);
+}
+
+async function ensureUniqueSlug(baseSlug: string) {
+  let candidate = baseSlug || "story";
+  let counter = 1;
+  while (true) {
+    const { count } = await sb!
+      .from("survivorstories")
+      .select("id", { count: "exact", head: true })
+      .eq("slug", candidate);
+
+    if (!count || count === 0) break;
+    candidate = `${baseSlug}-${counter}`;
+    counter += 1;
+  }
+  return candidate;
+}
+
+async function hashToken(token: string) {
+  const crypto = await import("node:crypto");
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+async function getAdminSession() {
+  if (missingConfig() || !jwtSecret) return null;
+  const token = (await cookies()).get(COOKIE_NAME)?.value;
+  if (!token) return null;
+
+  try {
+    const payload = jwt.verify(token, jwtSecret) as jwt.JwtPayload & { sub: string };
+    const tokenHash = await hashToken(token);
+
+    const { data: sessionRow, error: sessionErr } = await sb!
+      .from("login_sessions")
+      .select("user_id, expires_at")
+      .eq("token_hash", tokenHash)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (sessionErr || !sessionRow) return null;
+    if (sessionRow.expires_at && new Date(sessionRow.expires_at).getTime() < Date.now()) return null;
+    if (sessionRow.user_id !== payload.sub) return null;
+
+    const { data: user, error: userErr } = await sb!
+      .from("users")
+      .select("id, username, name, email, avatar_url, description, position")
+      .eq("id", payload.sub)
+      .limit(1)
+      .maybeSingle();
+
+    if (userErr || !user) return null;
+
+    return {
+      id: user.id,
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      avatar_url: user.avatar_url,
+      bio: user.description ?? null,
+      position: user.position ?? null,
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+async function handleUploadImage(req: Request) {
+  if (missingConfig()) {
+    return NextResponse.json({ error: "Supabase credentials not configured" }, { status: 500 });
+  }
+
+  const session = await getAdminSession();
+  if (!session?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const formData = await req.formData();
+  const file = formData.get("image") as File | null;
+  if (!file) return NextResponse.json({ error: "image file is required" }, { status: 400 });
+
+  const ext = (file.name.split(".").pop() || "bin").toLowerCase();
+  const path = `stories/${session.id}/${Date.now()}.${ext}`;
+
+  const arrayBuffer = await file.arrayBuffer();
+  const { error: uploadError } = await sb!
+    .storage
+    .from(STORY_BUCKET)
+    .upload(path, arrayBuffer, { contentType: file.type || "application/octet-stream", upsert: true });
+
+  if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 400 });
+
+  const { data: pub } = sb!.storage.from(STORY_BUCKET).getPublicUrl(path);
+  const image_url = pub?.publicUrl || null;
+
+  return NextResponse.json({ image_url });
+}
+
+function mapStory(row: any) {
+  const author = row?.users;
+  return {
+    id: row.id,
+    user_id: row.user_id,
+    title: row.title,
+    slug: row.slug,
+    content: row.content,
+    image_url: row.image_url,
+    colour: row.colour,
+    tags: row.tags,
+    views: row.views,
+    likes: row.likes,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    deleted: row.deleted,
+    authorName: author?.name ?? author?.username ?? null,
+    authorUsername: author?.username ?? null,
+    authorBio: author?.description ?? null,
+    avatarUrl: author?.avatar_url ?? null,
+  };
+}
+
+export async function GET(req: Request) {
+  try {
+    if (missingConfig()) return NextResponse.json({ error: "Supabase credentials not configured" }, { status: 500 });
+
+    const { searchParams } = new URL(req.url);
+    const mine = searchParams.get("mine") === "true";
+    const session = mine ? await getAdminSession() : null;
+    if (mine && !session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const query = sb!
+      .from("survivorstories")
+      .select(
+        "id, user_id, title, slug, content, image_url, colour, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
+      )
+      .eq("deleted", false)
+      .order("created_at", { ascending: false });
+
+    if (mine && session?.id) {
+      query.eq("user_id", session.id);
+    }
+
+    const { data, error } = await query;
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+    const stories = (data ?? []).map(mapStory);
+    return NextResponse.json({ stories });
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const contentType = req.headers.get("content-type") || "";
+    if (contentType.includes("multipart/form-data")) {
+      return handleUploadImage(req);
+    }
+
+    if (missingConfig()) return NextResponse.json({ error: "Supabase credentials not configured" }, { status: 500 });
+    const session = await getAdminSession();
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const body = (await req.json().catch(() => ({}))) as StoryBody;
+    const action = body.action ?? "create";
+
+    const normalizedTags = Array.isArray(body.tags)
+      ? body.tags
+      : typeof body.tags === "string" && body.tags.length
+        ? body.tags.split(",").map((t) => t.trim()).filter(Boolean)
+        : null;
+
+    if (action === "create") {
+      if (!body.title) return NextResponse.json({ error: "title is required" }, { status: 400 });
+      const baseSlug = body.slug ? slugify(body.slug) : slugify(body.title);
+      const uniqueSlug = await ensureUniqueSlug(baseSlug);
+
+      const { data, error } = await sb!
+        .from("survivorstories")
+        .insert({
+          user_id: session.id,
+          title: body.title,
+          slug: uniqueSlug,
+          content: body.content ?? null,
+          image_url: body.image_url ?? null,
+          colour: body.colour ?? null,
+          tags: normalizedTags,
+        })
+        .select(
+          "id, user_id, title, slug, content, image_url, colour, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
+        )
+        .maybeSingle();
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ story: mapStory(data) }, { status: 201 });
+    }
+
+    if (action === "update") {
+      if (!body.id) return NextResponse.json({ error: "id is required" }, { status: 400 });
+
+      const { data: existing, error: fetchErr } = await sb!
+        .from("survivorstories")
+        .select("id, user_id, slug")
+        .eq("id", body.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (fetchErr) return NextResponse.json({ error: fetchErr.message }, { status: 400 });
+      if (!existing || existing.user_id !== session.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+      const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+      if (body.title !== undefined) updates.title = body.title;
+      if (body.content !== undefined) updates.content = body.content;
+      if (body.image_url !== undefined) updates.image_url = body.image_url;
+      if (body.colour !== undefined) updates.colour = body.colour;
+      if (body.tags !== undefined) updates.tags = normalizedTags;
+
+      if (body.slug !== undefined) {
+        const candidate = body.slug ? slugify(body.slug) : existing.slug;
+        updates.slug = await ensureUniqueSlug(candidate);
+      }
+
+      const { data, error } = await sb!
+        .from("survivorstories")
+        .update(updates)
+        .eq("id", body.id)
+        .select(
+          "id, user_id, title, slug, content, image_url, colour, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
+        )
+        .maybeSingle();
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ story: mapStory(data) });
+    }
+
+    if (action === "delete") {
+      if (!body.id) return NextResponse.json({ error: "id is required" }, { status: 400 });
+
+      const { data: existing, error: fetchErr } = await sb!
+        .from("survivorstories")
+        .select("id, user_id")
+        .eq("id", body.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (fetchErr) return NextResponse.json({ error: fetchErr.message }, { status: 400 });
+      if (!existing || existing.user_id !== session.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+      const { error } = await sb!
+        .from("survivorstories")
+        .update({ deleted: true, updated_at: new Date().toISOString() })
+        .eq("id", body.id);
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ ok: true });
+    }
+
+    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}

@@ -1,8 +1,10 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import React, { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
+import { ProfilePictureEditor } from "@/components/admin/pfp-cropper";
 import { CancerDocsPanel } from "@/components/admin/cancer-docs-panel";
 // Supabase client remains for storage (avatars). Data CRUD now goes through secured API.
 const supabase = createClient(
@@ -26,6 +28,18 @@ export default function AdminPage() {
     profilePicture?: string | null;
   };
 
+  type PublicUserRow = {
+    id: string;
+    username: string | null;
+    email: string | null;
+    name: string | null;
+    bio: string | null;
+    avatar_url: string | null;
+    is_employee?: boolean;
+    employee_id?: string;
+    created_at?: string;
+  };
+
   type CancerDoc = {
     id: string;
     slug: string;
@@ -39,36 +53,66 @@ export default function AdminPage() {
     profilePicture?: string | null; // public URL
   };
 
+  type SubmissionRow = {
+    id: string;
+    doc_id: string | null;
+    slug: string;
+    title: string;
+    content: string;
+    author_user_id: string;
+    status: "pending" | "approved" | "rejected";
+    reviewer_user_id?: string | null;
+    reviewer_note?: string | null;
+    created_at?: string;
+    updated_at?: string;
+    author?: {
+      name: string | null;
+      username: string | null;
+      email: string | null;
+      position: string | null;
+    } | null;
+  };
+
   const [docs, setDocs] = useState<CancerDoc[]>([]);
   const [loading, setLoading] = useState(false);
-  const [editing, setEditing] = useState<string | null>(null);
-  const [editData, setEditData] = useState({
-    slug: "",
-    title: "",
-    content: "",
-    authorId: "",
-  });
-  const [adding, setAdding] = useState(false);
-  const [addData, setAddData] = useState({
-    slug: "",
-    title: "",
-    content: "",
-  });
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
+  const [croppingImage, setCroppingImage] = useState<string | null>(null);
+  const [croppingUserId, setCroppingUserId] = useState<string | null>(null);
   const [lastResponseDebug, setLastResponseDebug] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<UserRow | null>(null);
   const [users, setUsers] = useState<UserRow[]>([]);
+  const [employeesOpen, setEmployeesOpen] = useState(false);
+  const [publicUsers, setPublicUsers] = useState<PublicUserRow[]>([]);
+  const [publicUsersOpen, setPublicUsersOpen] = useState(false);
+  const [publicUsersLoading, setPublicUsersLoading] = useState(false);
   const [selfForm, setSelfForm] = useState({ username: "", email: "", name: "", password: "", description: "" });
   const [userEdits, setUserEdits] = useState<Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string }>>({});
+  const [publicUserEdits, setPublicUserEdits] = useState<Record<string, { username: string; email: string; name: string; bio: string; password: string }>>({});
   const [savingSelf, setSavingSelf] = useState(false);
   const [savingUser, setSavingUser] = useState<Record<string, boolean>>({});
+  const [savingPublicUser, setSavingPublicUser] = useState<Record<string, boolean>>({});
   const [selfEditing, setSelfEditing] = useState(false);
   const [verifying, setVerifying] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
   const [userSearch, setUserSearch] = useState("");
+  const [publicUserSearch, setPublicUserSearch] = useState("");
   const [newUser, setNewUser] = useState({ username: "", email: "", name: "", password: "", position: "", description: "" });
-  const [authorSearch, setAuthorSearch] = useState<Record<string, string>>({});
-  const [usersOpen, setUsersOpen] = useState(false);
+  const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
+  const [submissionsLoading, setSubmissionsLoading] = useState(false);
+  const [reviewing, setReviewing] = useState<Record<string, boolean>>({});
+  const [showAddEmployee, setShowAddEmployee] = useState(false);
+  const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
+  const [expandedPublicUserId, setExpandedPublicUserId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"action-centre" | "articles" | "survivors" | "system">("articles");
+  const [systemCheckResults, setSystemCheckResults] = useState<any>(null);
+  const [systemCheckLoading, setSystemCheckLoading] = useState(false);
+
+  const cardClass = "rounded-[44px] border border-white/10 bg-white/0 backdrop-blur shadow-2xl";
+  const inputClass = "bg-white/5 border border-white/10 rounded-2xl px-3 py-2 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-[#6D54B5]";
+  const textareaClass = `${inputClass} min-h-[100px]`;
+  const primaryButton = "bg-[#6D54B5] hover:bg-[#5a45a0] text-white px-4 py-2 rounded-lg font-semibold shadow-lg shadow-[#6D54B5]/30 transition hover:cursor-pointer disabled:opacity-60";
+  const subtleButton = "border border-white/15 bg-white/5 text-white px-4 py-2 rounded-lg hover:bg-white/10 transition hover:cursor-pointer disabled:opacity-60";
+  const ghostButton = "text-sm text-white/80 hover:text-white underline underline-offset-4 hover:cursor-pointer disabled:opacity-60";
 
   // Force default cursor on admin page (global CSS hides it for the fancy cursor elsewhere)
   useEffect(() => {
@@ -98,6 +142,7 @@ export default function AdminPage() {
           setUnlocked(true);
           if (data.user) {
             setCurrentUser(data.user);
+            setActiveTab(data.user.admin_access ? "action-centre" : "articles");
             setSelfForm({
               username: data.user.username ?? "",
               email: data.user.email ?? "",
@@ -107,8 +152,11 @@ export default function AdminPage() {
             });
           }
           const tasks: Array<Promise<unknown>> = [fetchSelfProfilePicture(), fetchDocsWithPictures({ silent: true })];
+          const submissionsStatus = data.user?.admin_access ? "pending" : "all";
+          tasks.push(fetchSubmissions(submissionsStatus));
           if (data.user?.admin_access) {
             tasks.push(fetchUsers());
+            tasks.push(fetchPublicUsers());
           }
           await Promise.all(tasks);
           setLoading(false);
@@ -189,59 +237,26 @@ export default function AdminPage() {
     }
   }
 
-  async function handleEditSave(id: string) {
-    setLoading(true);
+  async function fetchSubmissions(status?: "pending" | "approved" | "rejected" | "all") {
+    setSubmissionsLoading(true);
     try {
       const res = await fetch("/api/admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "update_doc",
-          docId: id,
-          slug: editData.slug,
-          title: editData.title,
-          content: editData.content,
-          authorId: editData.authorId || null,
-        }),
+        body: JSON.stringify({ action: "list_doc_submissions", status }),
       });
       const data = await res.json().catch(() => ({}));
-      setLastResponseDebug((prev) => `${prev || ''}\nUPDATE_DOC:\n${JSON.stringify(data, null, 2)}`);
-      if (!res.ok) {
-        setError(data?.error || "Update failed");
+      if (res.ok && Array.isArray(data.submissions)) {
+        setSubmissions(data.submissions);
       }
     } catch (err) {
-      console.error("update doc error", err);
-      setError("Update failed");
+      console.error("fetchSubmissions error", err);
     } finally {
-      setEditing(null);
-      await fetchDocsWithPictures();
-      setLoading(false);
+      setSubmissionsLoading(false);
     }
   }
 
-  async function handleAddSave() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "create_doc", ...addData }),
-      });
-      const data = await res.json().catch(() => ({}));
-      setLastResponseDebug((prev) => `${prev || ''}\nCREATE_DOC:\n${JSON.stringify(data, null, 2)}`);
-      if (!res.ok) {
-        setError(data?.error || "Insert failed");
-      }
-    } catch (err) {
-      console.error("create doc error", err);
-      setError("Insert failed");
-    } finally {
-      setAdding(false);
-      setAddData({ slug: "", title: "", content: "" });
-      await fetchDocsWithPictures();
-      setLoading(false);
-    }
-  }
+  // Article creation now happens in the markdown editor screen (/admin/docs/new)
 
   async function handleUpload(file: File, userId: string | null | undefined) {
     if (!userId) {
@@ -251,29 +266,21 @@ export default function AdminPage() {
     try {
       setUploading((s) => ({ ...s, [userId]: true }));
 
-      const ext = file.name.split(".").pop();
-      const path = `authors/${userId}/avatar.${ext}`;
-      await supabase.auth.getUser();
+      const formData = new FormData();
+      formData.append("avatar", file);
+      formData.append("targetUserId", userId);
 
-      const upRes = await supabase.storage.from("profile-picture").upload(path, file, { upsert: true });
-      setLastResponseDebug((p) => `${p || ""}\nUPLOAD_RES:\n${JSON.stringify(upRes, null, 2)}`);
-      if (upRes.error) throw upRes.error;
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        body: formData,
+      });
 
-      const metaRes = await supabase.from("profile_pictures").upsert(
-        {
-          user_id: userId,
-          object_key: path,
-          content_type: file.type,
-          size: file.size,
-        },
-        { onConflict: "user_id" },
-      );
-      setLastResponseDebug((p) => `${p}\nMETA_RES:\n${JSON.stringify(metaRes, null, 2)}`);
-      if (metaRes.error) throw metaRes.error;
+      const data = await res.json().catch(() => ({}));
+      setLastResponseDebug((p) => `${p || ""}\nUPLOAD_RES:\n${JSON.stringify(data, null, 2)}`);
 
-      const signed = await supabase.storage.from("profile-picture").createSignedUrl(path, 60 * 60 * 24 * 7);
-      setLastResponseDebug((p) => `${p}\nSIGNED_URL_AFTER_UPLOAD:\n${JSON.stringify(signed, null, 2)}`);
-      const url = signed.data?.signedUrl || null;
+      if (!res.ok) throw new Error(data.error || "Failed to upload image");
+
+      const url = data.avatar_url || null;
 
       setDocs((prev) => prev.map((d) => (d.author_user_id === userId ? { ...d, profilePicture: url || d.profilePicture || null } : d)));
       setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, profilePicture: url || u.profilePicture || null } : u)));
@@ -305,6 +312,29 @@ export default function AdminPage() {
     } finally {
       await fetchDocsWithPictures();
       setLoading(false);
+    }
+  }
+
+  async function handleReviewSubmission(submissionId: string, decision: "approve" | "reject") {
+    setReviewing((s) => ({ ...s, [submissionId]: true }));
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "review_doc_submission", submissionId, decision }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error || "Review failed");
+      } else {
+        setSubmissions((subs) => subs.filter((s) => s.id !== submissionId));
+        await fetchDocsWithPictures({ silent: true });
+      }
+    } catch (err) {
+      console.error("review submission error", err);
+      setError("Review failed");
+    } finally {
+      setReviewing((s) => ({ ...s, [submissionId]: false }));
     }
   }
 
@@ -363,6 +393,98 @@ export default function AdminPage() {
       setError("Failed to load users");
     }
   }
+
+  async function fetchPublicUsers() {
+    setPublicUsersLoading(true);
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "list_public_users" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && Array.isArray(data.users)) {
+        setPublicUsers(data.users);
+        const initialEdits: Record<string, { username: string; email: string; name: string; bio: string; password: string }> = {};
+        data.users.forEach((u: PublicUserRow) => {
+          initialEdits[u.id] = {
+            username: u.username ?? "",
+            email: u.email ?? "",
+            name: u.name ?? "",
+            bio: u.bio ?? "",
+            password: "",
+          };
+        });
+        setPublicUserEdits(initialEdits);
+      } else if (!res.ok) {
+        setError(data?.error || "Failed to load public users");
+      }
+    } catch (err) {
+      console.error("fetchPublicUsers error", err);
+      setError("Failed to load public users");
+    } finally {
+      setPublicUsersLoading(false);
+    }
+  }
+
+  async function handleUpdatePublicUser(userId: string) {
+    setSavingPublicUser((s) => ({ ...s, [userId]: true }));
+    setError("");
+    const edit = publicUserEdits[userId];
+    if (!edit) {
+      setSavingPublicUser((s) => ({ ...s, [userId]: false }));
+      return;
+    }
+    try {
+      const body: Record<string, unknown> = {
+        action: "update_public_user",
+        targetUserId: userId,
+        username: edit.username,
+        email: edit.email,
+        name: edit.name,
+        bio: edit.bio,
+      };
+      if (edit.password) body.password = edit.password;
+
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error || "Update failed");
+      } else {
+        await fetchPublicUsers();
+      }
+    } catch (err) {
+      console.error("update public user error", err);
+      setError("Update failed");
+    } finally {
+      setSavingPublicUser((s) => ({ ...s, [userId]: false }));
+    }
+  }
+
+  async function handleDeletePublicUser(userId: string) {
+    setError("");
+    if (!confirm("Delete this public user?")) return;
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete_public_user", targetUserId: userId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error || "Delete failed");
+      } else {
+        await fetchPublicUsers();
+      }
+    } catch (err) {
+      setError("Delete failed");
+    }
+  }
+
 
   async function handleUpdateSelf(e: FormEvent) {
     e.preventDefault();
@@ -510,11 +632,21 @@ export default function AdminPage() {
     );
   }, [userSearch, users]);
 
+  const filteredPublicUsers = useMemo(() => {
+    const term = publicUserSearch.toLowerCase().trim();
+    if (!term) return publicUsers;
+    return publicUsers.filter((u) =>
+      [u.name, u.username, u.email, u.bio]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(term))
+    );
+  }, [publicUserSearch, publicUsers]);
+
   if (verifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="min-h-screen flex items-center justify-center bg-[#0b0816] text-white">
+        <div className="flex items-center gap-3 text-sm text-white/70">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-transparent" />
           Verifying session...
         </div>
       </div>
@@ -523,9 +655,9 @@ export default function AdminPage() {
 
   if (!unlocked) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0b0816] text-white">
+        <div className="flex items-center gap-3 text-sm text-white/70">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-transparent" />
           Redirecting to admin login...
         </div>
       </div>
@@ -533,431 +665,595 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-10 pt-[68px] min-w-screen">
-      <div className="max-w-[85%] mx-auto">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-          <div className="flex gap-2 flex-wrap">
-            {currentUser && (
-              <div className="text-sm my-auto text-muted-foreground">Signed in as {currentUser.email || currentUser.username || "user"}</div>
+    <div className="relative min-h-screen min-w-screen overflow-hidden bg-[#2A292F] text-white">
+      {/* Blog-style Radial Gradients */}
+      <div
+        style={{
+          position: "absolute",
+          left: -800,
+          top: -700,
+          width: 1600,
+          height: 1600,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, #D5B0FF26 0%, transparent 60%)`,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+      <div
+        className="max-md:hidden"
+        style={{
+          position: "absolute",
+          right: -900,
+          top: -300,
+          width: 1800,
+          height: 1800,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, #D5B0FF26 0%, transparent 50%)`,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          right: -600,
+          bottom: -1200,
+          width: 1800,
+          height: 1800,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, #471F7733 0%, transparent 60%)`,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+
+      <div className="relative z-10 px-4 py-10 pt-[72px]">
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* Center-aligned Premium Header */}
+          <div className="flex flex-col items-center text-center gap-4 mb-12">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4"
+            >
+              <h1 className="text-6xl sm:text-7xl md:text-8xl leading-tight font-wintersolace text-white py-2">
+                Admin Dashboard
+              </h1>
+              <p className="text-xl text-white/50 font-dmsans max-w-2xl mx-auto">
+                The place where <span className="text-white font-semibold">YOU</span> can bring a change through research and storytelling.
+              </p>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="mt-4"
+            >
+              <button
+                className="relative px-6 py-2.5 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300 font-medium group"
+                onClick={handleLogout}
+                disabled={loggingOut}
+              >
+                <span className="relative z-10 text-white/90 text-sm">
+                  {loggingOut ? "Logging out..." : "Logout"}
+                </span>
+                <div className="absolute inset-0 border border-white/10 rounded-full group-hover:border-white/20 transition-colors" />
+                <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            </motion.div>
+          </div>
+
+          {error && (
+            <div className="mb-6 rounded-[44px] border border-red-500/20 bg-red-500/10 px-6 py-4 text-sm text-red-200 backdrop-blur-xl">
+              {error}
+            </div>
+          )}
+
+          {/* GitHub Style Tabs */}
+          <div className="flex items-center gap-1 border-b border-white/10 mb-8 overflow-x-auto no-scrollbar">
+            {currentUser?.admin_access && (
+              <button
+                onClick={() => setActiveTab("action-centre")}
+                className={`relative px-4 py-3 text-sm font-medium transition-all ${activeTab === "action-centre" ? "text-white" : "text-white/50 hover:text-white/80"}`}
+              >
+                Action Centre
+                {activeTab === "action-centre" && (
+                  <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
+                )}
+              </button>
             )}
             <button
-              className="bg-gray-200 dark:bg-gray-800 text-sm px-3 py-2 rounded border"
-              onClick={handleLogout}
-              disabled={loggingOut}
+              onClick={() => setActiveTab("articles")}
+              className={`relative px-4 py-3 text-sm font-medium transition-all ${activeTab === "articles" ? "text-white" : "text-white/50 hover:text-white/80"}`}
             >
-              {loggingOut ? "Logging out..." : "Logout"}
+              Articles
+              {activeTab === "articles" && (
+                <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
+              )}
             </button>
-          </div>
-        </div>
-
-        {error && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-
-        <section className="mb-8 gap-4 flex flex-col">
-          <div className="p-4 rounded-xl border bg-card">
-            <h2 className="font-semibold mb-3">Your Account</h2>
-            {!selfEditing ? (
-              <div className="flex flex-col gap-2 text-sm">
-                <div className="flex items-center gap-3">
-                  {currentUser?.profilePicture ? (
-                    <Image
-                      src={currentUser.profilePicture}
-                      alt="Your avatar"
-                      width={64}
-                      height={64}
-                      className="h-16 w-16 rounded-full object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="h-16 w-16 rounded-full bg-muted" />
-                  )}
-                  {currentUser && (
-                    <div className="flex flex-col text-xs">
-                      <label htmlFor="self-avatar" className="underline cursor-pointer hover:cursor-pointer">Change photo</label>
-                      <input
-                        id="self-avatar"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const f = e.target.files?.[0];
-                          if (f) handleUpload(f, currentUser.id);
-                        }}
-                      />
-                      {uploading[currentUser.id] && (
-                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-label="Uploading" />
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <div className="text-muted-foreground">Username</div>
-                  <div className="font-medium break-words">{currentUser?.username || "—"}</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">Email</div>
-                  <div className="font-medium break-words">{currentUser?.email || "—"}</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">Name</div>
-                  <div className="font-medium break-words">{currentUser?.name || "—"}</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">Author Description</div>
-                  <div className="font-medium break-words whitespace-pre-wrap">{currentUser?.description || "—"}</div>
-                </div>
-                <button
-                  className="mt-3 bg-primary text-white rounded px-4 py-2 font-semibold w-full sm:w-auto"
-                  onClick={() => setSelfEditing(true)}
-                >
-                  Edit profile
-                </button>
-              </div>
-            ) : (
-              <form className="flex flex-col gap-3" onSubmit={handleUpdateSelf}>
-                <input
-                  className="border rounded px-3 py-2 bg-background"
-                  placeholder="Username"
-                  value={selfForm.username}
-                  onChange={(e) => setSelfForm((s) => ({ ...s, username: e.target.value }))}
-                />
-                <input
-                  className="border rounded px-3 py-2 bg-background"
-                  placeholder="Email"
-                  value={selfForm.email}
-                  onChange={(e) => setSelfForm((s) => ({ ...s, email: e.target.value }))}
-                />
-                <input
-                  className="border rounded px-3 py-2 bg-background"
-                  placeholder="Name"
-                  value={selfForm.name}
-                  onChange={(e) => setSelfForm((s) => ({ ...s, name: e.target.value }))}
-                />
-                <input
-                  type="password"
-                  className="border rounded px-3 py-2 bg-background"
-                  placeholder="New password (optional)"
-                  value={selfForm.password}
-                  onChange={(e) => setSelfForm((s) => ({ ...s, password: e.target.value }))}
-                />
-                <textarea
-                  className="border rounded px-3 py-2 bg-background min-h-[100px]"
-                  placeholder="Author Description"
-                  value={selfForm.description}
-                  onChange={(e) => setSelfForm((s) => ({ ...s, description: e.target.value }))}
-                />
-                <div className="flex gap-2 flex-wrap">
-                  <button
-                    type="submit"
-                    className="bg-primary text-white rounded px-4 py-2 font-semibold"
-                    disabled={savingSelf}
-                  >
-                    {savingSelf ? "Saving..." : "Save changes"}
-                  </button>
-                  <button
-                    type="button"
-                    className="border rounded px-4 py-2"
-                    onClick={() => {
-                      if (currentUser) {
-                        setSelfForm({
-                          username: currentUser.username ?? "",
-                          email: currentUser.email ?? "",
-                          name: currentUser.name ?? "",
-                          password: "",
-                          description: currentUser.description ?? "",
-                        });
-                      }
-                      setSelfEditing(false);
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+            <button
+              onClick={() => setActiveTab("survivors")}
+              className={`relative px-4 py-3 text-sm font-medium transition-all ${activeTab === "survivors" ? "text-white" : "text-white/50 hover:text-white/80"}`}
+            >
+              Survivors
+              {activeTab === "survivors" && (
+                <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
+              )}
+            </button>
+            {currentUser?.admin_access && (
+              <button
+                onClick={() => setActiveTab("system")}
+                className={`relative px-4 py-3 text-sm font-medium transition-all ${activeTab === "system" ? "text-white" : "text-white/50 hover:text-white/80"}`}
+              >
+                System
+                {activeTab === "system" && (
+                  <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
+                )}
+              </button>
             )}
           </div>
 
-          {currentUser?.admin_access && (
-            <div className="p-4 rounded-xl border bg-card">
-              <button
-                className="w-full flex items-center justify-between text-left"
-                onClick={() => setUsersOpen((s) => !s)}
-                aria-expanded={usersOpen}
-              >
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`transition-transform ${usersOpen ? "rotate-90" : ""}`}
-                    aria-hidden
-                  >
-                    &gt;
-                  </span>
-                  <h2 className="font-semibold">Users</h2>
-                </div>
-                <span className="text-sm text-muted-foreground">{usersOpen ? "Hide" : "Show"}</span>
-              </button>
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {activeTab === "action-centre" && currentUser?.admin_access && (
+              <div className="space-y-8">
+                {/* Pending Submissions */}
+                <section className="flex flex-col gap-4">
+                  <div className={`${cardClass} p-8 relative overflow-hidden`}>
+                    <div className="glass-noise" />
+                    <div className="cardGlass-borders" />
+                    <div className="cardGlass-tint" />
+                    <div className="cardGlass-shine pointer-events-none" />
 
-              {usersOpen && (
-                <div className="mt-3 space-y-3">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <input
-                      className="border rounded px-3 py-2 text-sm bg-background"
-                      placeholder="Search users..."
-                      value={userSearch}
-                      onChange={(e) => setUserSearch(e.target.value)}
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        className="text-sm underline"
-                        onClick={fetchUsers}
-                        disabled={loading}
-                      >
-                        Refresh
-                      </button>
-                    </div>
-                  </div>
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h2 className="text-xl font-wintersolace">Pending Submissions</h2>
+                          <p className="text-sm text-white/50 mt-1">Review and approve content from authors.</p>
+                        </div>
+                        <button
+                          className="text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest font-bold"
+                          onClick={() => fetchSubmissions()}
+                          disabled={submissionsLoading}
+                        >
+                          {submissionsLoading ? "Refreshing..." : "Refresh"}
+                        </button>
+                      </div>
 
-                  <div className="w-full overflow-auto">
-                    <table className="w-full text-sm border rounded-lg overflow-hidden">
-                      <thead className="bg-muted">
-                        <tr>
-                          <th className="p-2 text-left">Avatar</th>
-                          <th className="p-2 text-left">Name</th>
-                          <th className="p-2 text-left">Username</th>
-                          <th className="p-2 text-left">Email</th>
-                          <th className="p-2 text-left">Position</th>
-                          <th className="p-2 text-left">Description</th>
-                          <th className="p-2 text-left">Admin</th>
-                          <th className="p-2 text-left">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr className="border-t bg-muted/30">
-                          <td className="p-2 align-top">
-                            <div className="h-12 w-12 rounded-full bg-muted" />
-                          </td>
-                          <td className="p-2 align-top">
-                            <input
-                              className="border rounded px-2 py-1 w-full"
-                              placeholder="Name"
-                              value={newUser.name}
-                              onChange={(e) => setNewUser((s) => ({ ...s, name: e.target.value }))}
-                            />
-                          </td>
-                          <td className="p-2 align-top">
-                            <input
-                              className="border rounded px-2 py-1 w-full"
-                              placeholder="Username"
-                              value={newUser.username}
-                              onChange={(e) => setNewUser((s) => ({ ...s, username: e.target.value }))}
-                            />
-                          </td>
-                          <td className="p-2 align-top">
-                            <input
-                              className="border rounded px-2 py-1 w-full"
-                              placeholder="Email"
-                              value={newUser.email}
-                              onChange={(e) => setNewUser((s) => ({ ...s, email: e.target.value }))}
-                            />
-                          </td>
-                          <td className="p-2 align-top">
-                            <input
-                              className="border rounded px-2 py-1 w-full"
-                              placeholder="Position"
-                              value={newUser.position}
-                              onChange={(e) => setNewUser((s) => ({ ...s, position: e.target.value }))}
-                            />
-                          </td>
-                          <td className="p-2 align-top">
-                            <textarea
-                              className="border rounded px-2 py-1 w-full text-xs min-h-[60px]"
-                              placeholder="Description"
-                              value={newUser.description}
-                              onChange={(e) => setNewUser((s) => ({ ...s, description: e.target.value }))}
-                            />
-                          </td>
-                          <td className="p-2 align-top text-sm text-muted-foreground">—</td>
-                          <td className="p-2 align-top">
-                            <div className="flex flex-col gap-2">
-                              <input
-                                type="password"
-                                className="border rounded px-2 py-1 w-full"
-                                placeholder="Password"
-                                value={newUser.password}
-                                onChange={(e) => setNewUser((s) => ({ ...s, password: e.target.value }))}
-                              />
-                              <button
-                                className="bg-green-600 text-white px-3 py-1 rounded"
-                                onClick={handleCreateUser}
-                                disabled={loading}
-                              >
-                                Add user
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                        {filteredUsers.map((u) => {
-                          const edit = userEdits[u.id] ?? {
-                            username: u.username ?? "",
-                            email: u.email ?? "",
-                            name: u.name ?? "",
-                            password: "",
-                            admin_access: Boolean(u.admin_access),
-                            position: u.position ?? "",
-                          };
-                          return (
-                            <tr key={u.id} className="border-t">
-                              <td className="p-2 align-top">
-                                <div className="flex items-center gap-3">
-                                  {u.profilePicture ? (
-                                    <Image src={u.profilePicture} alt="avatar" width={48} height={48} className="h-12 w-12 rounded-full object-cover" unoptimized />
-                                  ) : (
-                                    <div className="h-12 w-12 rounded-full bg-muted" />
-                                  )}
-                                  <div className="flex flex-col gap-1 text-xs">
-                                    <label htmlFor={`upload-${u.id}`} className="underline cursor-pointer hover:cursor-pointer">Change photo</label>
-                                    <input
-                                      id={`upload-${u.id}`}
-                                      type="file"
-                                      accept="image/*"
-                                      className="hidden"
-                                      onChange={(e) => {
-                                        const f = e.target.files?.[0];
-                                        if (f) handleUpload(f, u.id);
-                                      }}
-                                    />
-                                    {uploading[u.id] && (
-                                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-label="Uploading" />
+                      {submissionsLoading && submissions.length === 0 ? (
+                        <div className="flex items-center gap-3 text-sm text-white/40 py-8 justify-center">
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                          Scanning database...
+                        </div>
+                      ) : submissions.length === 0 ? (
+                        <div className="text-center py-10">
+                          <p className="text-white/30 italic text-sm">Action centre is clear. No pending reviews.</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-4">
+                          {submissions.map((s) => {
+                            const authorLabel = s.author?.name || s.author?.username || s.author?.email || "Unknown";
+                            const kind = s.doc_id ? "Edit" : "New";
+                            const isOwn = s.author_user_id === currentUser?.id;
+                            return (
+                              <div key={s.id} className="relative overflow-hidden rounded-[32px] border border-white/5 bg-white/[0.02] p-6 hover:bg-white/[0.04] transition-all">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                  <div className="space-y-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="px-2 py-0.5 rounded text-[10px] bg-purple-500/20 text-purple-300 font-bold uppercase tracking-wider">{kind}</span>
+                                      <span className="text-[10px] text-white/30 uppercase tracking-widest">Author: {authorLabel}</span>
+                                    </div>
+                                    <h3 className="text-lg font-bold">{s.title}</h3>
+                                    <p className="text-sm text-white/50 line-clamp-1">{s.content}</p>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    {isOwn ? (
+                                      <span className="text-xs text-white/30 italic">Self-review restricted</span>
+                                    ) : (
+                                      <>
+                                        <button
+                                          onClick={() => handleReviewSubmission(s.id, "approve")}
+                                          disabled={Boolean(reviewing[s.id])}
+                                          className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-sm font-bold hover:bg-emerald-500/20 transition-all"
+                                        >
+                                          Approve
+                                        </button>
+                                        <button
+                                          onClick={() => handleReviewSubmission(s.id, "reject")}
+                                          disabled={Boolean(reviewing[s.id])}
+                                          className="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm font-bold hover:bg-red-500/20 transition-all"
+                                        >
+                                          Reject
+                                        </button>
+                                      </>
                                     )}
                                   </div>
                                 </div>
-                              </td>
-                              <td className="p-2 align-top">
-                                <input
-                                  className="border rounded px-2 py-1 w-full"
-                                  placeholder="Name"
-                                  value={edit.name}
-                                  onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, name: e.target.value } }))}
-                                />
-                              </td>
-                              <td className="p-2 align-top">
-                                <input
-                                  className="border rounded px-2 py-1 w-full"
-                                  placeholder="Username"
-                                  value={edit.username}
-                                  onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, username: e.target.value } }))}
-                                />
-                              </td>
-                              <td className="p-2 align-top">
-                                <input
-                                  className="border rounded px-2 py-1 w-full"
-                                  placeholder="Email"
-                                  value={edit.email}
-                                  onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, email: e.target.value } }))}
-                                />
-                              </td>
-                              <td className="p-2 align-top">
-                                <input
-                                  className="border rounded px-2 py-1 w-full"
-                                  placeholder="Position"
-                                  value={edit.position}
-                                  onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, position: e.target.value } }))}
-                                />
-                              </td>
-                              <td className="p-2 align-top">
-                                <textarea
-                                  className="border rounded px-2 py-1 w-full text-xs min-h-[60px]"
-                                  placeholder="Description"
-                                  value={edit.description}
-                                  onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, description: e.target.value } }))}
-                                />
-                              </td>
-                              <td className="p-2 align-top">
-                                <label className="flex items-center gap-2 text-sm">
-                                  <input
-                                    type="checkbox"
-                                    checked={edit.admin_access}
-                                    onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, admin_access: e.target.checked } }))}
-                                  />
-                                  Admin
-                                </label>
-                              </td>
-                              <td className="p-2 align-top whitespace-nowrap">
-                                <div className="flex gap-2 flex-wrap">
-                                  <button
-                                    className="bg-blue-600 text-white px-3 py-1 rounded"
-                                    onClick={() => handleUpdateUser(u.id)}
-                                    disabled={savingUser[u.id]}
-                                  >
-                                    {savingUser[u.id] ? "Saving..." : "Save"}
-                                  </button>
-                                  <button
-                                    className="text-sm underline"
-                                    onClick={() => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, password: "" } }))}
-                                  >
-                                    Clear password
-                                  </button>
-                                  <button
-                                    className="text-sm text-red-600 underline"
-                                    onClick={() => handleDeleteUser(u.id)}
-                                  >
-                                    Delete
-                                  </button>
-                                </div>
-                                <div className="mt-2">
-                                  <input
-                                    type="password"
-                                    className="border rounded px-2 py-1 w-full"
-                                    placeholder="New password"
-                                    value={edit.password}
-                                    onChange={(e) => setUserEdits((s) => ({ ...s, [u.id]: { ...edit, password: e.target.value } }))}
-                                  />
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                        {filteredUsers.length === 0 && (
-                          <tr>
-                            <td className="p-3 text-sm text-muted-foreground" colSpan={8}>No users found.</td>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </section>
+
+                {/* Employee Management Section */}
+                <div className={`${cardClass} p-8 relative overflow-hidden`}>
+                  <div className="glass-noise" />
+                  <div className="cardGlass-borders" />
+                  <div className="cardGlass-tint" />
+                  <div className="cardGlass-shine pointer-events-none" />
+
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-8">
+                      <div>
+                        <h2 className="text-xl font-bold font-wintersolace">Employee Management</h2>
+                        <p className="text-sm text-white/50 mt-1">Manage society members and their administrative roles.</p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <input
+                          className={`${inputClass} !rounded-full !px-6 !py-2.5 !bg-black/20 w-64`}
+                          placeholder="Filter database..."
+                          value={userSearch}
+                          onChange={(e) => setUserSearch(e.target.value)}
+                        />
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-flex">
+                          <button
+                            className="relative px-5 py-2.5 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300"
+                            onClick={() => setShowAddEmployee((v) => !v)}
+                          >
+                            <span className="relative z-10 flex items-center gap-2 text-white text-sm font-medium">
+                              {showAddEmployee ? "Cancel" : "Add Employee"}
+                            </span>
+                            {/* Liquid glass layers */}
+                            <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+                            <div className="liquidGlass-shine relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
+                          </button>
+                        </motion.div>
+                      </div>
+                    </div>
+
+                    {showAddEmployee && (
+                      <div className="mb-10 p-6 rounded-2xl border border-white/10 bg-white/[0.02]">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Name</label><input className={`${inputClass} w-full`} placeholder="Full name" value={newUser.name} onChange={(e) => setNewUser(s => ({ ...s, name: e.target.value }))} /></div>
+                          <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Username</label><input className={`${inputClass} w-full`} placeholder="@username" value={newUser.username} onChange={(e) => setNewUser(s => ({ ...s, username: e.target.value }))} /></div>
+                          <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Email</label><input className={`${inputClass} w-full`} placeholder="email@example.com" value={newUser.email} onChange={(e) => setNewUser(s => ({ ...s, email: e.target.value }))} /></div>
+                          <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Password</label><input type="password" className={`${inputClass} w-full`} placeholder="Password" value={newUser.password} onChange={(e) => setNewUser(s => ({ ...s, password: e.target.value }))} /></div>
+                        </div>
+                        <button className="mt-6 px-6 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-bold transition-all" onClick={async () => { await handleCreateUser(); setShowAddEmployee(false); }}>Register Employee</button>
+                      </div>
+                    )}
+
+                    <div className="overflow-x-auto no-scrollbar">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-white/5">
+                            <th className="text-left py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Contributor</th>
+                            <th className="text-left py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Role</th>
+                            <th className="text-center py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Access</th>
+                            <th className="text-right py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Actions</th>
                           </tr>
-                        )}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {filteredUsers.map((u) => {
+                            const isExpanded = expandedUserId === u.id;
+                            const edit = userEdits[u.id] ?? {};
+                            return (
+                              <React.Fragment key={u.id}>
+                                <tr className={`group hover:bg-white/[0.02] transition-colors cursor-pointer ${isExpanded ? 'bg-white/[0.02]' : ''}`} onClick={() => setExpandedUserId(isExpanded ? null : u.id)}>
+                                  <td className="py-4 px-4">
+                                    <div className="flex items-center gap-4">
+                                      <div className="group/avatar relative h-10 w-10 rounded-full bg-white/5 border border-white/10 overflow-hidden ring-4 ring-white/[0.02] cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                                        {u.profilePicture ? (
+                                          <img src={u.profilePicture} className="w-full h-full object-cover transition-transform group-hover/avatar:scale-110" alt="" />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-white/20">
+                                            {u.name?.[0] || u.username?.[0] || "?"}
+                                          </div>
+                                        )}
+                                        <label className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer">
+                                          <input
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                              const f = e.target.files?.[0];
+                                              if (f) {
+                                                setCroppingUserId(u.id);
+                                                const reader = new FileReader();
+                                                reader.onload = (ev) => {
+                                                  setCroppingImage(ev.target?.result as string);
+                                                };
+                                                reader.readAsDataURL(f);
+                                              }
+                                            }}
+                                          />
+                                          <div className="text-[8px] font-black uppercase tracking-tighter text-white">Edit</div>
+                                        </label>
+                                      </div>
+                                      <div>
+                                        <div className="font-bold text-white/90">{u.name || u.username}</div>
+                                        <div className="text-[10px] text-white/40 lowercase">{u.email}</div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="py-4 px-4 text-white/60">{u.position || "Staff"}</td>
+                                  <td className="py-4 px-4 text-center">
+                                    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${u.admin_access ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-white/5 text-white/30'}`}>
+                                      {u.admin_access ? "Admin" : "Standard"}
+                                    </span>
+                                  </td>
+                                  <td className="py-4 px-4 text-right group-hover:text-white transition-all text-white/40 text-[10px] font-bold uppercase tracking-widest">
+                                    {isExpanded ? "Close" : "Modify"}
+                                  </td>
+                                </tr>
+                                {isExpanded && (
+                                  <tr>
+                                    <td colSpan={4} className="p-6 bg-white/[0.01] border-b border-white/5">
+                                      <div className="grid grid-cols-2 gap-6 max-w-4xl">
+                                        <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Update Name</label><input className={`${inputClass} w-full`} value={edit.name} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, name: e.target.value } }))} /></div>
+                                        <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Assign Position</label><input className={`${inputClass} w-full`} value={edit.position} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, position: e.target.value } }))} /></div>
+                                        <div className="space-y-1.5 flex items-center gap-4 pb-2 pt-4">
+                                          <input type="checkbox" id={`admin-${u.id}`} className="accent-purple-500 h-4 w-4" checked={edit.admin_access} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, admin_access: e.target.checked } }))} />
+                                          <label htmlFor={`admin-${u.id}`} className="text-xs font-bold uppercase tracking-widest text-white/80 cursor-pointer">Grant Admin Authorization</label>
+                                        </div>
+                                        <div className="flex justify-end gap-3 items-center">
+                                          <button onClick={() => handleDeleteUser(u.id)} className="text-xs font-bold text-red-400/60 hover:text-red-400 transition-colors uppercase tracking-widest mr-4">Purge User</button>
+                                          <button onClick={() => handleUpdateUser(u.id)} disabled={Boolean(savingUser[u.id])} className="px-6 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all">{savingUser[u.id] ? "Saving..." : "Apply Changes"}</button>
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                              </React.Fragment>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
-              )}
-            </div>
-          )}
-        </section>
 
-        <CancerDocsPanel
-          docs={docs}
-          currentUser={currentUser}
-          editingId={editing}
-          editData={editData}
-          setEditData={setEditData}
-          setEditing={setEditing}
-          onSave={handleEditSave}
-          onDelete={handleDelete}
-          users={users}
-          authorSearch={authorSearch}
-          setAuthorSearch={setAuthorSearch}
-          loading={loading}
-          adding={adding}
-          onAddOpen={() => setAdding(true)}
-          onAddClose={() => {
-            setAdding(false);
-            setAddData({ slug: "", title: "", content: "" });
-          }}
-          addData={addData}
-          setAddData={setAddData}
-          onAddSubmit={handleAddSave}
-        />
+                {/* Public Users Table */}
+                <div className={`${cardClass} p-8 relative overflow-hidden`}>
+                  <div className="glass-noise" />
+                  <div className="cardGlass-borders" />
+                  <div className="cardGlass-tint" />
+                  <div className="cardGlass-shine pointer-events-none" />
+
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-8">
+                      <div>
+                        <h2 className="text-xl font-bold font-wintersolace">Public Community</h2>
+                        <p className="text-sm text-white/50 mt-1">Monitor registered community members and subscribers.</p>
+                      </div>
+                      <input
+                        className={`${inputClass} !rounded-full !px-6 !py-2.5 !bg-black/20 w-64`}
+                        placeholder="Search community..."
+                        value={publicUserSearch}
+                        onChange={(e) => setPublicUserSearch(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="overflow-x-auto no-scrollbar">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-white/5">
+                            <th className="text-left py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Display Profile</th>
+                            <th className="text-center py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Community Role</th>
+                            <th className="text-right py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredPublicUsers.map((u) => {
+                            const isExpanded = expandedPublicUserId === u.id;
+                            return (
+                              <React.Fragment key={u.id}>
+                                <tr className={`group hover:bg-white/[0.02] transition-colors cursor-pointer ${isExpanded ? 'bg-white/[0.02]' : ''}`} onClick={() => setExpandedPublicUserId(isExpanded ? null : u.id)}>
+                                  <td className="py-4 px-4">
+                                    <div className="flex items-center gap-4">
+                                      <div className="h-10 w-10 rounded-full bg-white/5 border border-white/10 overflow-hidden ring-4 ring-white/[0.02]">
+                                        {u.avatar_url && <img src={u.avatar_url} className="w-full h-full object-cover" alt="" />}
+                                      </div>
+                                      <div>
+                                        <div className="font-bold text-white/90">{u.name || u.username || "Anonymous User"}</div>
+                                        <div className="text-[10px] text-white/40 lowercase">{u.email}</div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="py-4 px-4 text-center">
+                                    {u.is_employee ? (
+                                      <span className="px-2 py-0.5 rounded text-[8px] bg-purple-500/20 text-purple-300 border border-purple-500/30 font-black uppercase tracking-wider">Employee</span>
+                                    ) : (
+                                      <span className="px-2 py-0.5 rounded text-[8px] bg-white/5 text-white/30 font-black uppercase tracking-wider">Public</span>
+                                    )}
+                                  </td>
+                                  <td className="py-4 px-4 text-right group-hover:text-white transition-all text-white/40 text-[10px] font-bold uppercase tracking-widest">
+                                    {isExpanded ? "Close" : "Control"}
+                                  </td>
+                                </tr>
+                                {isExpanded && (
+                                  <tr>
+                                    <td colSpan={3} className="p-6 bg-white/[0.01] border-b border-white/5">
+                                      <div className="flex justify-start gap-4">
+                                        <button onClick={() => handleDeletePublicUser(u.id)} className="px-5 py-2.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 transition-all uppercase tracking-widest">Suspend Account</button>
+                                        <div className="flex-1" />
+                                        <p className="text-[10px] text-white/20 italic self-center">Registered on {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'Unknown date'}</p>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                              </React.Fragment>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "articles" && (
+              <div className="space-y-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                  <div>
+                    <h2 className="text-2xl font-bold font-wintersolace">Research Articles</h2>
+                    <p className="text-sm text-white/50 mt-1">Manage our growing database of cancer research and information.</p>
+                  </div>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="inline-flex"
+                  >
+                    <button
+                      className="relative px-6 py-3 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300 group"
+                      onClick={() => router.push("/admin/docs/new")}
+                    >
+                      <span className="relative z-10 flex items-center gap-2 text-white font-medium">
+                        + Add New Article
+                      </span>
+                      {/* Liquid glass layers */}
+                      <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+                      <div className="liquidGlass-shine relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
+                    </button>
+                  </motion.div>
+                </div>
+
+                <CancerDocsPanel
+                  docs={currentUser?.admin_access ? docs : docs.filter(d => d.author_user_id === currentUser?.id)}
+                  currentUser={currentUser}
+                  onDelete={handleDelete}
+                  users={users}
+                  loading={loading}
+                />
+              </div>
+            )}
+
+            {activeTab === "survivors" && (
+              <div className="space-y-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                  <div>
+                    <h2 className="text-2xl font-bold font-wintersolace">Survivor Stories</h2>
+                    <p className="text-sm text-white/50 mt-1">Publish and manage narratives of resilience and hope.</p>
+                  </div>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="inline-flex"
+                  >
+                    <button
+                      className="relative px-6 py-3 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300"
+                      onClick={() => router.push("/admin/survivor-stories")}
+                    >
+                      <span className="relative z-10 flex items-center gap-2 text-white font-medium">
+                        + Post Survivor Story
+                      </span>
+                      {/* Liquid glass layers */}
+                      <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+                      <div className="liquidGlass-shine relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
+                    </button>
+                  </motion.div>
+                </div>
+
+                {/* Survivor stories list simplified for the dashboard view */}
+                <div className="grid grid-cols-1 gap-4">
+                  <div className={`${cardClass} p-8 text-center py-20 relative overflow-hidden`}>
+                    <div className="glass-noise" />
+                    <div className="cardGlass-borders" />
+                    <div className="cardGlass-tint" />
+                    <div className="cardGlass-shine pointer-events-none" />
+
+                    <div className="relative z-10 max-w-md mx-auto space-y-4">
+                      <h3 className="text-xl font-bold font-wintersolace">Survivor Stories Hub</h3>
+                      <p className="text-sm text-white/50">To manage the full collection of survivor stories, visit our dedicated storytelling workspace.</p>
+                      <button
+                        className="mt-4 px-8 py-3 bg-white/5 border border-white/10 rounded-full text-sm font-bold hover:bg-white/10 transition-all uppercase tracking-widest"
+                        onClick={() => router.push("/admin/survivor-stories")}
+                      >
+                        Enter Storytelling Lab
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "system" && currentUser?.admin_access && (
+              <div className="space-y-8">
+                <section className={`${cardClass} p-8 relative overflow-hidden`}>
+                  <div className="glass-noise" />
+                  <div className="cardGlass-borders" />
+                  <div className="cardGlass-tint" />
+                  <div className="cardGlass-shine pointer-events-none" />
+
+                  <div className="relative z-10 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-2xl font-wintersolace text-white">System Verification</h2>
+                      <button
+                        onClick={async () => {
+                          setSystemCheckLoading(true);
+                          try {
+                            const res = await fetch("/api/admin", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ action: "system_check" }),
+                            });
+                            const data = await res.json();
+                            setSystemCheckResults(data.results);
+                          } catch (err) {
+                            setError("Failed to run system check");
+                          } finally {
+                            setSystemCheckLoading(false);
+                          }
+                        }}
+                        disabled={systemCheckLoading}
+                        className={primaryButton}
+                      >
+                        {systemCheckLoading ? "Running..." : "Run System Check"}
+                      </button>
+                    </div>
+
+                    {systemCheckResults && (
+                      <div className="space-y-4">
+                        <div className="rounded-2xl bg-black/40 p-4 font-mono text-xs overflow-auto max-h-[500px] border border-white/5">
+                          <pre className="text-purple-300">
+                            {JSON.stringify(systemCheckResults, null, 2)}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              </div>
+            )}
+          </motion.div>
+        </div>
       </div>
+      <AnimatePresence>
+        {croppingImage && (
+          <ProfilePictureEditor
+            imageSrc={croppingImage}
+            onCrop={(file) => {
+              handleUpload(file, croppingUserId || currentUser?.id);
+              setCroppingImage(null);
+              setCroppingUserId(null);
+            }}
+            onCancel={() => {
+              setCroppingImage(null);
+              setCroppingUserId(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

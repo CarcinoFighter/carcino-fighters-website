@@ -5,6 +5,7 @@ import { Geist, Space_Grotesk, Cinzel, Michroma } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import localFont from "next/font/local";
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 // import { Footer } from "@/components/footer";
 
@@ -109,14 +110,17 @@ const tttravelsnext = localFont({
 const dmsans = localFont({
   src: [
     {
-      path: "../public/fonts/dmsans.ttf",
+      path: "../public/fonts/googlesansflex.ttf",
       style: "normal",
     }
   ],
   variable: "--font-dmsans",
 });
 export const metadata: Metadata = {
-  title: "The Carcino Foundation – Breaking Down Cancer for Anyone and Everyone",
+  title: {
+    template: '%s | The Carcino Foundation',
+    default: "The Carcino Foundation – Breaking Down Cancer for Anyone and Everyone",
+  },
   description: "A simple hub, built to educate and help emerging and concurrent generations upon one of the leading causes of death in humanity.",
 };
 
@@ -241,9 +245,8 @@ export default function RootLayout({
           </svg>
 
           {children}
-
-
         </ThemeProvider>
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ""} />
       </body>
 
     </html>

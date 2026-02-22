@@ -77,7 +77,7 @@ export default function Home() {
     target: heroRef,
     offset: ["start start", "end start"],
   });
-  const y = useTransform(scrollYProgress, [0, 1], [0, -300]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, -200]);
   // Parallax blobs for Articles section
   const { scrollYProgress: articlesProgress } = useScroll({
     container: containerRef,
@@ -179,7 +179,7 @@ export default function Home() {
       />
       <div
         ref={containerRef}
-        className=" flex flex-col relative lg:block lg:h-screen w-screen overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background"
+        className=" flex flex-col relative lg:block lg:h-screen w-full overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background hide-scrollbar"
       >
         {/* <div
         className=" hidden sm:inline fixed inset-0 z-100 opacity-0 transition-opacity duration-500 ease-in-out pointer-events-none"
@@ -254,7 +254,7 @@ export default function Home() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.6 }}
             variants={staggerContainer}
-            className="h-screen flex bg-transparent flex-col mb-10 items-center gap-[12rem] justify-center w-full overflow-y-hidden"
+            className="h-screen flex bg-transparent flex-col mb-10 items-center gap-[12rem] justify-center w-full overflow-y-hidden relative lg:static"
           >
             <motion.div
               style={{ y }}
@@ -265,38 +265,23 @@ export default function Home() {
               variants={fadeScale}
             >
               <Image
-                src={`/landing/Background.png`}
+                src={`/landing/background_new.png`}
                 height={888}
                 width={1440}
                 alt="background"
-                className="object-cover w-full h-full"
+                className="object-cover w-full h-[100%] md:h-[106%]"
                 priority
               />
+              <div className="absolute inset-x-0 bottom-0 md:bottom-[-6%] h-2/5 bg-gradient-to-t from-black to-transparent lg:h-2/12" />
 
-              <div className="absolute inset-0 bg-[#471F77]/52" />
-              <div className="absolute inset-0 bg-[#000000] opacity-55" />
+              {/*<div className="absolute inset-0 bg-[#471F77]/52" /> 
+              <div className="absolute inset-0 bg-[#000000] opacity-55" />*/}
             </motion.div>
 
             <motion.div
               className="flex z-10 flex-col w-full justify-self-center self-center items-center gap-11"
               variants={staggerContainer}
             >
-              <ShinyText
-                text={"Breaking Down Cancer for Everyone"}
-                disabled={true}
-                speed={4}
-                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium w-5xl mt-5 max-sm:text-3xl max-sm:w-4/5"
-                textColor="#fafafa"
-              />
-              <motion.span
-                className="font-dmsans text-2xl max-sm:px-6 sm:max-w-[35%] w-full text-center max-sm:text-xs max-sm:w-4/5 max-sm:font-light"
-                variants={fadeUp}
-              >
-                At the Carcino Foundation, we believe that everyone should be
-                able to learn about one of the leading causes of human
-                mortality.
-                {/* but in a way everyone can understand. */}
-              </motion.span>
               <motion.div
                 variants={fadeUp}
                 whileHover={{ y: -2, scale: 1.04 }}
@@ -305,23 +290,68 @@ export default function Home() {
               >
                 <Button
                   variant="ghost"
-                  className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-giest font-medium transition-all duration-300"
+                  className="relative px-3 py-2 sm:px-5 sm:py-4 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-dmsans font-normal transition-all duration-300 mt-12 sm:mt-10 text-xs sm:text-[15px]"
                 >
                   <Link
-                    href="/article"
-                    className="relative z-10 flex items-center gap-2"
+                    href="/the-vision"
+                    className="relative z-10 flex items-center gap-1"
                   >
-                    Read Our Documents{" "}
+                    Read the
+                    <span className="font-bold">Chief Editor's</span>
+                    Note
+                    <span />
                     <ArrowUpRight className="transition-transform" />
                   </Link>
 
                   {/* Liquid glass layers */}
                   <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-                  <div className="absolute inset-0 liquidGlass-tint pointer-events-none"></div>
+
                   <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
                   <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
                 </Button>
               </motion.div>
+              <ShinyText
+                text={"One Year of changing the Game"}
+                disabled={true}
+                speed={4}
+                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-[560px] [word-spacing:6px] sm:mt-3 max-sm:text-3xl max-sm:w-3/5 leading-[100%]"
+                textColor="#fafafa"
+              />
+              <motion.span
+                className="font-dmsans text-[#c6c6c6] text-2xl sm:max-w-[50%] sm:-mt-0 w-full text-center max-sm:text-xs max-sm:w-4/5 font-light leading-[109%]"
+                variants={fadeUp}
+              >
+                As we cross a year of work at Carcino, here’s to looking forward
+                to more success and reach. Read the address from our leadership!
+                {/*but in a way everyone can understand. */}
+              </motion.span>
+              <div className="flex flex-col items-center gap-2">
+                <motion.div
+                  variants={fadeUp}
+                  whileHover={{ y: -2, scale: 1.04 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="inline-flex"
+                >
+                  <Button
+                    variant="ghost"
+                    className="relative px-4 py-3 md:px-[22px] md:py-[22px] rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300 font-normal"
+                  >
+                    <Link
+                      href="/article"
+                      className="relative z-10 flex items-center gap-2 text-[#e0e0e0] text-[12px] sm:text-[18px] font-light"
+                    >
+                      Read Articles{" "}
+                      <ArrowUpRight className="transition-transform mt-[1px]" />
+                    </Link>
+
+                    {/* Liquid glass layers */}
+                    <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+
+                    <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
+                    <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+                  </Button>
+                </motion.div>
+              </div>
             </motion.div>
           </motion.div>
 
@@ -334,7 +364,6 @@ export default function Home() {
             variants={staggerContainer}
             className="z-10 font-giest flex flex-col lg:gap-8 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full sm:max-w-[90%] mx-auto h-fit lg:px-14 md:px-10 px-6 pb-6 py-7 relative"
           >
-
             <motion.h1
               className="text-5xl leading-[0.9]
   sm:text-5xl sm:leading-[0.9]
@@ -372,10 +401,9 @@ export default function Home() {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
-              key={loading ? 'skeleton' : 'cards'}
+              key={loading ? "skeleton" : "cards"}
               variants={staggerContainer}
             >
-
               {/* <div className="pointer-events-none absolute z-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <motion.div
                   initial={false}
@@ -407,74 +435,98 @@ export default function Home() {
                   No articles found.
                 </div>
               ) : (
-                featuredArticles.map((article) => (
-                  <Link
-                    key={article.id}
-                    href={article.slug ? `/article/${article.slug}` : `/article/${article.id}`}
-                    className="h-full block"
-                  >
-                    <motion.div
-                      className="h-full"
-                      layout
-                      whileHover={{ y: -4, scale: 1.015 }}
-                      variants={{
-                        hidden: { opacity: 0, y: 12 },
-                        visible: {
-                          opacity: 1,
-                          y: 0,
-                          transition: { duration: 0.55, ease: easeSoft },
-                        },
-                      }}
+                featuredArticles.map((article) => {
+                  const getTitleFontSize = (title: string) => {
+                    const words = title.split(/\s+/);
+                    const maxWordLength = Math.max(
+                      ...words.map((w) => w.length),
+                    );
+
+                    // Priority 1: Longest word must fit
+                    if (maxWordLength > 12) return "text-[14px] sm:text-[18px]"; // Very long word
+                    if (maxWordLength >= 9) return "text-[18px] sm:text-[22px]"; // Moderately long word
+
+                    // Priority 2: Total length
+                    if (title.length > 35) return "text-[16px] sm:text-[20px]";
+                    if (title.length >= 15) return "text-[18px] sm:text-[24px]";
+                    return "text-[22px] sm:text-[30px]";
+                  };
+
+                  return (
+                    <Link
+                      key={article.id}
+                      href={
+                        article.slug
+                          ? `/article/${article.slug}`
+                          : `/article/${article.id}`
+                      }
+                      className="h-full block"
                     >
-                      <CardContainer className="w-full h-full px-4 rounded-[55px]">
-                        <CardBody
-                          className="
-        article-card
-          relative z-20
-          group/card
-          vision-pro-ui-hoverable
-          w-full h-full min-h-[260px]
-          py-5
-          flex flex-col justify-center
-          rounded-[55px]
-          bg-background/30
-          bg-gradient-to-br from-[#9875c1]/25 via-[#9875c1]/5 to-transparent
-          backdrop-blur-xl backdrop-saturate-150
-          border border-accent shadow-xl
-          overflow-hidden
-          select-none
-        "
-                        >
-                          <CardItem
-                            translateZ="20"
+                      <motion.div
+                        className="h-full"
+                        layout
+                        whileHover={{ y: -4, scale: 1.015 }}
+                        variants={{
+                          hidden: { opacity: 0, y: 12 },
+                          visible: {
+                            opacity: 1,
+                            y: 0,
+                            transition: { duration: 0.55, ease: easeSoft },
+                          },
+                        }}
+                      >
+                        <CardContainer className="w-full h-full px-1 rounded-[40px]">
+                          <CardBody
                             className="
-            relative z-10
-            flex flex-col items-center gap-2
-            rounded-[55px]
-            pointer-events-none
-          "
+                              relative z-20
+                              group/card
+                              vision-pro-ui-hoverable
+                              w-full h-full min-h-[200px]
+                              py-3
+                              flex flex-col justify-center
+                              rounded-[40px]
+                              overflow-hidden isolation-isolate liquid-glass !shadow-none
+                              backdrop-blur-[30px]
+                              select-none
+                            "
                           >
-                            <div className="lowercase text-[20px] sm:text-[26px] font-medium font-instrumentserifitalic text-[#CDA8E8]">
-                              Research Article
-                            </div>
+                            <div className="liquidGlass-effect pointer-events-none"></div>
+                            <div className="cardGlass-tint pointer-events-none"></div>
+                            <div className="glass-noise"></div>
+                            <div className="cardGlass-borders pointer-events-none"></div>
+                            <div className="cardGlass-shine pointer-events-none"></div>
+                            <div className="liquidGlass-text pointer-events-none"></div>
 
-                            <h3 className="text-[25px] sm:text-[35px] leading-[20px] sm:leading-[30px] p-2 text-center uppercase font-tttravelsnext font-bold line-clamp-7">
-                              {article.title}
-                            </h3>
+                            <CardItem
+                              translateZ="20"
+                              className="
+                                relative z-10
+                                flex flex-col items-center gap-2
+                                rounded-[40px]
+                                pointer-events-none
+                                w-full
+                              "
+                            >
+                              <div className="lowercase text-[16px] sm:text-[20px] lg:text-[22px] font-medium font-instrumentserifitalic text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 text-center w-full">
+                                Research Article
+                              </div>
 
-                            <p className="text-[15px] sm:text-[20px] text-center text-[#CDA8E8]">
-                              by {article.author ?? "Unknown Author"}
-                            </p>
-                          </CardItem>
+                              <h3
+                                className={`${getTitleFontSize(article.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}
+                              >
+                                {article.title}
+                              </h3>
 
-                          <div className="divGlass-effect pointer-events-none z-0" />
-                          {/* <div className="cardGlass-shine pointer-events-none z-0 overflow-hidden" /> */}
-                        </CardBody>
-                      </CardContainer>
-                    </motion.div>
-                  </Link>
-
-                ))
+                              <p className="text-[14px] sm:text-[18px] text-center text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 font-dmsans w-full font-light">
+                                by {article.author ?? "Unknown Author"}
+                              </p>
+                            </CardItem>
+                          </CardBody>
+                        </CardContainer>
+                      </motion.div>
+                    </Link>
+                  );
+                })
               )}
             </motion.div>
             <motion.div
@@ -576,8 +628,9 @@ export default function Home() {
                     </CardHeader>
                     <CardContent>
                       <p className="font-dmsans leading-[20px] text-muted-foreground text-sm lg:text-lg">
-                        Working with plenty of pioneers in the field of medicine
-                        has helped us bring out the truth behind cancer.
+                        Working with plenty of pioneers in the field of human
+                        and life science has helped us bring out the truth
+                        behind cancer.
                       </p>
                     </CardContent>
                   </Card>
@@ -639,7 +692,7 @@ export default function Home() {
                     </CardHeader>
                     <CardContent>
                       <p className="font-dmsans leading-[20px] text-muted-foreground lg:text-lg">
-                        We believe that our generation can beat cancer. And we
+                        We believe that our generation can fight cancer. And we
                         try our best to educate our peers.
                       </p>
                     </CardContent>
@@ -653,7 +706,7 @@ export default function Home() {
                 </h2>
                 <p className="font-dmsans text-2xl text-center">
                   <span className="font-bold">Rajannya Das</span> <br /> Founder
-                  & Managing Director
+                  & CEO
                 </p>
 
                 <Button
@@ -710,7 +763,7 @@ export default function Home() {
                   className=" text-base sm:text-lg
         font-dmsans
         text-muted-foreground sm:ml-10
-        max-w-full sm:max-w-[85%] xl:max-w-[70%]"
+        max-w-full sm:max-w-[85%] xl:max-w-[70%] leading-[22px]"
                 >
                   Do you wish to contribute to the cause? Write to us or send us
                   articles, and our Writing Team will work on it and share it
