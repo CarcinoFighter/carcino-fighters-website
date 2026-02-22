@@ -856,7 +856,7 @@ export default function AdminPage() {
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-8">
                       <div>
-                        <h2 className="text-xl font-bold font-wintersolace">Employee Management</h2>
+                        <h2 className="text-xl font-wintersolace">Employee Management</h2>
                         <p className="text-sm text-white/50 mt-1">Manage society members and their administrative roles.</p>
                       </div>
                       <div className="flex items-center gap-4">
@@ -884,11 +884,13 @@ export default function AdminPage() {
 
                     {showAddEmployee && (
                       <div className="mb-10 p-6 rounded-2xl border border-white/10 bg-white/[0.02]">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                           <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Name</label><input className={`${inputClass} w-full`} placeholder="Full name" value={newUser.name} onChange={(e) => setNewUser(s => ({ ...s, name: e.target.value }))} /></div>
                           <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Username</label><input className={`${inputClass} w-full`} placeholder="@username" value={newUser.username} onChange={(e) => setNewUser(s => ({ ...s, username: e.target.value }))} /></div>
                           <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Email</label><input className={`${inputClass} w-full`} placeholder="email@example.com" value={newUser.email} onChange={(e) => setNewUser(s => ({ ...s, email: e.target.value }))} /></div>
                           <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Password</label><input type="password" className={`${inputClass} w-full`} placeholder="Password" value={newUser.password} onChange={(e) => setNewUser(s => ({ ...s, password: e.target.value }))} /></div>
+                          <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Position / Role</label><input className={`${inputClass} w-full`} placeholder="e.g. Research Lead" value={newUser.position} onChange={(e) => setNewUser(s => ({ ...s, position: e.target.value }))} /></div>
+                          <div className="space-y-1.5 md:col-span-2"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Description / Bio</label><textarea className={`${textareaClass} w-full !min-h-[80px]`} placeholder="Short bio or description..." value={newUser.description} onChange={(e) => setNewUser(s => ({ ...s, description: e.target.value }))} /></div>
                         </div>
                         <button className="mt-6 px-6 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-bold transition-all" onClick={async () => { await handleCreateUser(); setShowAddEmployee(false); }}>Register Employee</button>
                       </div>
@@ -960,10 +962,36 @@ export default function AdminPage() {
                                 {isExpanded && (
                                   <tr>
                                     <td colSpan={4} className="p-6 bg-white/[0.01] border-b border-white/5">
-                                      <div className="grid grid-cols-2 gap-6 max-w-4xl">
-                                        <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Update Name</label><input className={`${inputClass} w-full`} value={edit.name} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, name: e.target.value } }))} /></div>
-                                        <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Assign Position</label><input className={`${inputClass} w-full`} value={edit.position} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, position: e.target.value } }))} /></div>
-                                        <div className="space-y-1.5 flex items-center gap-4 pb-2 pt-4">
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl">
+                                        <div className="space-y-1.5">
+                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Full Name</label>
+                                          <input className={`${inputClass} w-full`} placeholder="Full name" value={edit.name} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, name: e.target.value } }))} />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Username</label>
+                                          <input className={`${inputClass} w-full`} placeholder="@username" value={edit.username} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, username: e.target.value } }))} />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Email</label>
+                                          <input type="email" className={`${inputClass} w-full`} placeholder="email@example.com" value={edit.email} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, email: e.target.value } }))} />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Position / Role</label>
+                                          <input className={`${inputClass} w-full`} placeholder="e.g. Research Lead" value={edit.position} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, position: e.target.value } }))} />
+                                        </div>
+                                        <div className="space-y-1.5 md:col-span-2">
+                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Description / Bio</label>
+                                          <textarea className={`${textareaClass} w-full !min-h-[80px]`} placeholder="Short bio or description..." value={edit.description} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, description: e.target.value } }))} />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">New Password</label>
+                                          <input type="password" className={`${inputClass} w-full`} placeholder="Leave blank to keep current" value={edit.password} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, password: e.target.value } }))} />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Confirm Password</label>
+                                          <input type="password" className={`${inputClass} w-full`} placeholder="Repeat new password" onChange={(e) => {/* confirm is local UI only – validated on save */ }} />
+                                        </div>
+                                        <div className="space-y-1.5 flex items-center gap-4 pb-2 pt-2">
                                           <input type="checkbox" id={`admin-${u.id}`} className="accent-purple-500 h-4 w-4" checked={edit.admin_access} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, admin_access: e.target.checked } }))} />
                                           <label htmlFor={`admin-${u.id}`} className="text-xs font-bold uppercase tracking-widest text-white/80 cursor-pointer">Grant Admin Authorization</label>
                                         </div>
@@ -994,7 +1022,7 @@ export default function AdminPage() {
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-8">
                       <div>
-                        <h2 className="text-xl font-bold font-wintersolace">Public Community</h2>
+                        <h2 className="text-xl font-wintersolace">Public Community</h2>
                         <p className="text-sm text-white/50 mt-1">Monitor registered community members and subscribers.</p>
                       </div>
                       <input
@@ -1042,17 +1070,48 @@ export default function AdminPage() {
                                     {isExpanded ? "Close" : "Control"}
                                   </td>
                                 </tr>
-                                {isExpanded && (
-                                  <tr>
-                                    <td colSpan={3} className="p-6 bg-white/[0.01] border-b border-white/5">
-                                      <div className="flex justify-start gap-4">
-                                        <button onClick={() => handleDeletePublicUser(u.id)} className="px-5 py-2.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 transition-all uppercase tracking-widest">Suspend Account</button>
-                                        <div className="flex-1" />
-                                        <p className="text-[10px] text-white/20 italic self-center">Registered on {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'Unknown date'}</p>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                )}
+                                {isExpanded && (() => {
+                                  const pubEdit = publicUserEdits[u.id] ?? { username: u.username ?? "", email: u.email ?? "", name: u.name ?? "", bio: u.bio ?? "", password: "" };
+                                  return (
+                                    <tr>
+                                      <td colSpan={3} className="p-6 bg-white/[0.01] border-b border-white/5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mb-6">
+                                          <div className="space-y-1.5">
+                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Display Name</label>
+                                            <input className={`${inputClass} w-full`} placeholder="Full name" value={pubEdit.name} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, name: e.target.value } }))} />
+                                          </div>
+                                          <div className="space-y-1.5">
+                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Username</label>
+                                            <input className={`${inputClass} w-full`} placeholder="@username" value={pubEdit.username} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, username: e.target.value } }))} />
+                                          </div>
+                                          <div className="space-y-1.5">
+                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Email</label>
+                                            <input type="email" className={`${inputClass} w-full`} placeholder="email@example.com" value={pubEdit.email} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, email: e.target.value } }))} />
+                                          </div>
+                                          <div className="space-y-1.5 md:col-span-2">
+                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Bio</label>
+                                            <textarea className={`${textareaClass} w-full !min-h-[80px]`} placeholder="Short bio..." value={pubEdit.bio} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, bio: e.target.value } }))} />
+                                          </div>
+                                          <div className="space-y-1.5">
+                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">New Password</label>
+                                            <input type="password" className={`${inputClass} w-full`} placeholder="Leave blank to keep current" value={pubEdit.password} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, password: e.target.value } }))} />
+                                          </div>
+                                          <div className="space-y-1.5">
+                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Confirm Password</label>
+                                            <input type="password" className={`${inputClass} w-full`} placeholder="Repeat new password" />
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-3">
+                                            <button onClick={() => handleDeletePublicUser(u.id)} className="px-5 py-2.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 transition-all uppercase tracking-widest">Suspend Account</button>
+                                            <p className="text-[10px] text-white/20 italic">Registered on {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'Unknown date'}</p>
+                                          </div>
+                                          <button onClick={() => handleUpdatePublicUser(u.id)} disabled={Boolean(savingPublicUser[u.id])} className="px-6 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all">{savingPublicUser[u.id] ? "Saving..." : "Save Changes"}</button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  );
+                                })()}
                               </React.Fragment>
                             );
                           })}
@@ -1068,7 +1127,7 @@ export default function AdminPage() {
               <div className="space-y-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                   <div>
-                    <h2 className="text-2xl font-bold font-wintersolace">Research Articles</h2>
+                    <h2 className="text-2xl font-wintersolace">Research Articles</h2>
                     <p className="text-sm text-white/50 mt-1">Manage our growing database of cancer research and information.</p>
                   </div>
                   <motion.div
@@ -1104,7 +1163,7 @@ export default function AdminPage() {
               <div className="space-y-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                   <div>
-                    <h2 className="text-2xl font-bold font-wintersolace">Survivor Stories</h2>
+                    <h2 className="text-2xl  font-wintersolace">Survivor Stories</h2>
                     <p className="text-sm text-white/50 mt-1">Publish and manage narratives of resilience and hope.</p>
                   </div>
                   <motion.div
