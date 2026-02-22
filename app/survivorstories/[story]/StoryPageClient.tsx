@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { DynamicBackgroundHues } from "@/components/ui/dynamic-background-hues";
 import { ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -86,6 +87,7 @@ export default function StoryPageClient({
   const [related, setRelated] = useState<
     (SurvivorStorySummary & { image_url?: string | null })[]
   >(() => pickRelated(relatedProp, story.id));
+  const containerRef = useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     (async () => {
@@ -117,47 +119,8 @@ export default function StoryPageClient({
   };
 
   return (
-    <div className="min-h-screen text-foreground bg-[#2A292F] relative overflow-hidden">
-      <div
-        style={{
-          position: "absolute",
-          left: -800,
-          top: -700,
-          width: 1600,
-          height: 1600,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, ${cardColor}55 0%, transparent 60%)`,
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
-      <div
-        className="max-md:hidden"
-        style={{
-          position: "absolute",
-          right: -900,
-          top: -300,
-          width: 1800,
-          height: 1800,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, ${cardColor}55 0%, transparent 50%)`,
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          right: -600,
-          bottom: -1200,
-          width: 1800,
-          height: 1800,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, #583B7A 0%, transparent 60%)`,
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
+    <div ref={containerRef} className="min-h-screen text-foreground bg-[#2A292F] relative overflow-hidden">
+      <DynamicBackgroundHues containerRef={containerRef} baseColor={cardColor} />
       <ScrollProgress className="hidden md:block" />
       <main className="max-w-[80%] md:max-w-5xl mx-auto p-6 relative z-10 mt-32 items-center justify-center self-center">
         <header className="mb-8 text-center">
@@ -182,11 +145,11 @@ export default function StoryPageClient({
           style={
             !expanded
               ? {
-                  maskImage:
-                    "linear-gradient(to bottom, black 0%, black 30%, transparent 100%)",
-                  WebkitMaskImage:
-                    "linear-gradient(to bottom, black 0%, black 30%, transparent 100%)",
-                }
+                maskImage:
+                  "linear-gradient(to bottom, black 0%, black 30%, transparent 100%)",
+                WebkitMaskImage:
+                  "linear-gradient(to bottom, black 0%, black 30%, transparent 100%)",
+              }
               : undefined
           }
         >
