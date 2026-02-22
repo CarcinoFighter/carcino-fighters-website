@@ -60,7 +60,7 @@ const jwtSecret = process.env.JWT_SECRET;
 const COOKIE_NAME = "jwt";
 const AUTH_VERBOSE = process.env.AUTH_VERBOSE === "true";
 
-const sb = supabaseUrl && supabaseServiceKey ? createClient(supabaseUrl, supabaseServiceKey) : null;
+const sb = (supabaseUrl && supabaseServiceKey ? createClient(supabaseUrl, supabaseServiceKey) : null) as any;
 
 type DocSubmissionRow = {
 	id: string;
@@ -127,13 +127,13 @@ async function validateSessionFromToken(token: string) {
 	};
 
 	const tokenHash = await hashToken(token);
-	const { data: session, error } = await client
+	const { data: session, error } = await (client
 		.from("login_sessions")
 		.select("user_id, expires_at")
 		.eq("token_hash", tokenHash)
 		.order("created_at", { ascending: false })
 		.limit(1)
-		.maybeSingle();
+		.maybeSingle() as any);
 
 	if (error) throw error;
 	if (!session) return null;
@@ -599,7 +599,7 @@ export async function POST(req: Request) {
 			if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
 			const bucket = "profile-picture";
-			const userIds = (usersData ?? []).map((u) => u.id);
+			const userIds = (usersData ?? []).map((u: any) => u.id);
 			const profileMap: Record<string, string | null> = {};
 			if (userIds.length) {
 				const { data: pics, error: picErr } = await client
@@ -608,7 +608,7 @@ export async function POST(req: Request) {
 					.in("user_id", userIds);
 				if (!picErr && pics) {
 					const signedResults = await Promise.all(
-						pics.map(async (p) => {
+						pics.map(async (p: any) => {
 							if (!p.object_key) return { id: p.user_id, url: null };
 							try {
 								const signed = await client.storage.from(bucket).createSignedUrl(p.object_key, 60 * 60 * 24 * 7);
@@ -618,13 +618,13 @@ export async function POST(req: Request) {
 							}
 						})
 					);
-					signedResults.forEach((r) => {
+					signedResults.forEach((r: any) => {
 						if (r?.id) profileMap[r.id] = r.url;
 					});
 				}
 			}
 
-			const usersWithPictures = (usersData ?? []).map((u) => ({
+			const usersWithPictures = (usersData ?? []).map((u: any) => ({
 				...u,
 				profilePicture: profileMap[u.id] || u.avatar_url || null
 			}));
@@ -712,7 +712,7 @@ export async function POST(req: Request) {
 
 			if (!data) return NextResponse.json({ docs: [] });
 
-			const authorIds = Array.from(new Set(data.map((d) => d.author_user_id).filter(Boolean)));
+			const authorIds = Array.from(new Set(data.map((d: any) => d.author_user_id).filter(Boolean)));
 			let validAuthors: Set<string> = new Set();
 			const authorMeta: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null }> = {};
 			if (authorIds.length) {
@@ -721,8 +721,8 @@ export async function POST(req: Request) {
 					.select("id, username, email, name, position")
 					.in("id", authorIds);
 				if (uErr) return NextResponse.json({ error: uErr.message }, { status: 500 });
-				validAuthors = new Set((usersRows ?? []).map((u) => u.id));
-				(usersRows ?? []).forEach((u) => {
+				validAuthors = new Set((usersRows ?? []).map((u: any) => u.id));
+				(usersRows ?? []).forEach((u: any) => {
 					authorMeta[u.id] = {
 						name: u.name ?? null,
 						username: u.username ?? null,
@@ -735,7 +735,7 @@ export async function POST(req: Request) {
 
 			// pull profile pictures (stored by doc id) and generate signed URLs
 			const bucket = "profile-picture";
-			const authorIdsForPics = Array.from(new Set(data.map((d) => d.author_user_id).filter(Boolean))) as string[];
+			const authorIdsForPics = Array.from(new Set(data.map((d: any) => d.author_user_id).filter(Boolean))) as string[];
 			const profileMap: Record<string, string | null> = {};
 			if (authorIdsForPics.length) {
 				const { data: pics, error: picErr } = await client
@@ -744,7 +744,7 @@ export async function POST(req: Request) {
 					.in("user_id", authorIdsForPics);
 				if (!picErr && pics) {
 					const signedResults = await Promise.all(
-						pics.map(async (p) => {
+						pics.map(async (p: any) => {
 							if (!p.object_key) return { id: p.user_id, url: null };
 							try {
 								const signed = await client.storage.from(bucket).createSignedUrl(p.object_key, 60 * 60 * 24 * 7);
@@ -754,15 +754,15 @@ export async function POST(req: Request) {
 							}
 						})
 					);
-					signedResults.forEach((r) => {
+					signedResults.forEach((r: any) => {
 						if (r?.id) profileMap[r.id] = r.url;
 					});
 				}
 			}
 
 			const filtered = data
-				.filter((d) => !d.author_user_id || validAuthors.has(d.author_user_id))
-				.map((d) => ({
+				.filter((d: any) => !d.author_user_id || validAuthors.has(d.author_user_id))
+				.map((d: any) => ({
 					...d,
 					author_name: d.author_user_id ? authorMeta[d.author_user_id]?.name ?? authorMeta[d.author_user_id]?.username ?? authorMeta[d.author_user_id]?.email ?? null : null,
 					author_username: d.author_user_id ? authorMeta[d.author_user_id]?.username ?? null : null,
@@ -917,14 +917,14 @@ export async function POST(req: Request) {
 			const { data, error } = await query;
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-			const authorIds = Array.from(new Set((data ?? []).map((d) => d.author_user_id).filter(Boolean)));
+			const authorIds = Array.from(new Set((data ?? []).map((d: any) => d.author_user_id).filter(Boolean)));
 			let authors: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null }> = {};
 			if (authorIds.length) {
 				const { data: usersRows } = await client
 					.from("users")
 					.select("id, name, username, email, position")
 					.in("id", authorIds);
-				(usersRows ?? []).forEach((u) => {
+				(usersRows ?? []).forEach((u: any) => {
 					authors[u.id] = {
 						name: u.name ?? null,
 						username: u.username ?? null,
@@ -934,7 +934,7 @@ export async function POST(req: Request) {
 				});
 			}
 
-			const submissions = (data ?? []).map((d) => ({
+			const submissions = (data ?? []).map((d: any) => ({
 				...d,
 				author: authors[d.author_user_id] ?? null,
 			}));
@@ -1167,14 +1167,14 @@ export async function POST(req: Request) {
 			const bucket = "profile-picture";
 			const profileMap: Record<string, string | null> = {};
 			if (usersData?.length) {
-				const userIds = usersData.map((u) => u.id);
+				const userIds = usersData.map((u: any) => u.id);
 				const { data: pics, error: picErr } = await client
 					.from("profile_pictures")
 					.select("user_id, object_key")
 					.in("user_id", userIds);
 				if (!picErr && pics) {
 					const signedResults = await Promise.all(
-						pics.map(async (p) => {
+						pics.map(async (p: any) => {
 							if (!p.object_key) return { id: p.user_id, url: null };
 							try {
 								const signed = await client.storage.from(bucket).createSignedUrl(p.object_key, 60 * 60 * 24 * 7);
@@ -1184,13 +1184,13 @@ export async function POST(req: Request) {
 							}
 						})
 					);
-					signedResults.forEach((r) => {
+					signedResults.forEach((r: any) => {
 						if (r?.id) profileMap[r.id] = r.url;
 					});
 				}
 			}
 
-			const usersWithPictures = (usersData ?? []).map((u) => ({
+			const usersWithPictures = (usersData ?? []).map((u: any) => ({
 				...u,
 				profilePicture: profileMap[u.id] || u.avatar_url || null
 			}));
@@ -1212,17 +1212,17 @@ export async function POST(req: Request) {
 			if (!publicUsers) return NextResponse.json({ users: [] });
 
 			// Fetch all employees to check for merges
-			const emails = publicUsers.map(u => u.email.toLowerCase());
+			const emails = publicUsers.map((u: any) => u.email.toLowerCase());
 			const { data: employees } = await client
 				.from("users")
 				.select("id, email, name, position, description")
 				.in("email", emails);
 
 			const employeeMap = new Map();
-			employees?.forEach(e => employeeMap.set(e.email.toLowerCase(), e));
+			employees?.forEach((e: any) => employeeMap.set(e.email.toLowerCase(), e));
 
 			// Fetch profile photos for these employees
-			const employeeIds = employees?.map(e => e.id) || [];
+			const employeeIds = employees?.map((e: any) => e.id) || [];
 			const photoMap = new Map();
 			if (employeeIds.length) {
 				const { data: photos } = await client
@@ -1231,7 +1231,7 @@ export async function POST(req: Request) {
 					.in("user_id", employeeIds);
 
 				if (photos) {
-					await Promise.all(photos.map(async p => {
+					await Promise.all(photos.map(async (p: any) => {
 						try {
 							const signed = await client.storage.from("profile-picture").createSignedUrl(p.object_key, 60 * 60 * 24 * 7);
 							if (signed.data?.signedUrl) photoMap.set(p.user_id, signed.data.signedUrl);
@@ -1240,7 +1240,7 @@ export async function POST(req: Request) {
 				}
 			}
 
-			const mergedUsers = publicUsers.map(u => {
+			const mergedUsers = publicUsers.map((u: any) => {
 				const emp = employeeMap.get(u.email.toLowerCase());
 				if (emp) {
 					return {
