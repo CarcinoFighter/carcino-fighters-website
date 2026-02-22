@@ -32,10 +32,10 @@ export const tributes: Tribute[] = [
     text: "As I referred to her 'Dida' was an amazing person always by my side.",
     image: "/tribute/pratimasaharoy.jpeg",
   },
-  // {
-  //   name: "Jane Foster",
-  //   year: "1965–2021",
-  //   text: "A constant source of inspiration, kindness, and wisdom.",
-  //   image: "/tribute/janefoster.png",
-  // },
+  {
+    name: "SUKHAMOY MONDAL",
+    year: "",
+    text: "",
+    image: "/tribute/sukhamoymondal.jpeg",
+  },
 ];
