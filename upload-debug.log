@@ -1,7 +1,0 @@
-[2026-02-21T14:46:37.111Z] Started handleUploadAvatar
-Session valid for cc1b6d32-9adb-4d1e-958a-75730d2d9292
-Parsed formData. file: true, targetUserId: e5675b7b-ca2f-4505-aac9-46980e34aa73
-Processing file avatar.jpg of size 129294 and type image/jpeg
-Uploading to path authors/e5675b7b-ca2f-4505-aac9-46980e34aa73/avatar.jpg
-Storage upload success
-DB insert error: insert or update on table "profile_pictures" violates foreign key constraint "profile_pictures_user_id_fkey"
