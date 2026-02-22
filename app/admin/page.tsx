@@ -103,7 +103,9 @@ export default function AdminPage() {
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
   const [expandedPublicUserId, setExpandedPublicUserId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"action-centre" | "articles" | "survivors">("articles");
+  const [activeTab, setActiveTab] = useState<"action-centre" | "articles" | "survivors" | "system">("articles");
+  const [systemCheckResults, setSystemCheckResults] = useState<any>(null);
+  const [systemCheckLoading, setSystemCheckLoading] = useState(false);
 
   const cardClass = "rounded-[44px] border border-white/10 bg-white/0 backdrop-blur shadow-2xl";
   const inputClass = "bg-white/5 border border-white/10 rounded-2xl px-3 py-2 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-[#6D54B5]";
@@ -780,6 +782,17 @@ export default function AdminPage() {
                 <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
               )}
             </button>
+            {currentUser?.admin_access && (
+              <button
+                onClick={() => setActiveTab("system")}
+                className={`relative px-4 py-3 text-sm font-medium transition-all ${activeTab === "system" ? "text-white" : "text-white/50 hover:text-white/80"}`}
+              >
+                System
+                {activeTab === "system" && (
+                  <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
+                )}
+              </button>
+            )}
           </div>
 
           <motion.div
@@ -1171,6 +1184,55 @@ export default function AdminPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {activeTab === "system" && currentUser?.admin_access && (
+              <div className="space-y-8">
+                <section className={`${cardClass} p-8 relative overflow-hidden`}>
+                  <div className="glass-noise" />
+                  <div className="cardGlass-borders" />
+                  <div className="cardGlass-tint" />
+                  <div className="cardGlass-shine pointer-events-none" />
+
+                  <div className="relative z-10 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-2xl font-wintersolace text-white">System Verification</h2>
+                      <button
+                        onClick={async () => {
+                          setSystemCheckLoading(true);
+                          try {
+                            const res = await fetch("/api/admin", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ action: "system_check" }),
+                            });
+                            const data = await res.json();
+                            setSystemCheckResults(data.results);
+                          } catch (err) {
+                            setError("Failed to run system check");
+                          } finally {
+                            setSystemCheckLoading(false);
+                          }
+                        }}
+                        disabled={systemCheckLoading}
+                        className={primaryButton}
+                      >
+                        {systemCheckLoading ? "Running..." : "Run System Check"}
+                      </button>
+                    </div>
+
+                    {systemCheckResults && (
+                      <div className="space-y-4">
+                        <div className="rounded-2xl bg-black/40 p-4 font-mono text-xs overflow-auto max-h-[500px] border border-white/5">
+                          <pre className="text-purple-300">
+                            {JSON.stringify(systemCheckResults, null, 2)}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </section>
               </div>
             )}
           </motion.div>

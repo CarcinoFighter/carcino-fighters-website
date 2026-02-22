@@ -29,7 +29,8 @@ type AuthBody = {
 	| "update_pfp"
 	| "list_public_users"
 	| "update_public_user"
-	| "delete_public_user";
+	| "delete_public_user"
+	| "system_check";
 	username?: string;
 	email?: string;
 	password?: string;
@@ -1107,6 +1108,29 @@ export async function POST(req: Request) {
 			if (delErr) return NextResponse.json({ error: delErr.message }, { status: 400 });
 
 			return NextResponse.json({ ok: true });
+		}
+
+		if (action === "system_check") {
+			const session = await getAuthenticatedUser();
+			if (!session || !session.user.admin_access) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+			const results: Record<string, any> = {};
+
+			const { data: articles } = await client.from("cancer_docs").select("id, title, author_user_id").limit(5);
+			results.articles = articles;
+
+			const { data: employees } = await client.from("users").select("id, email, username").limit(5);
+			results.employees = employees;
+
+			const { data: publicUsers } = await client.from("users_public").select("id, email, username").limit(5);
+			results.public_users = publicUsers;
+
+			const { data: pfps } = await client.from("profile_pictures").select("*").limit(1);
+			results.profile_pictures_sample = pfps;
+
+			const { data: coauthors } = await client.from("article_co_authors").select("*").limit(5);
+			results.co_authors = coauthors;
+
+			return NextResponse.json({ results });
 		}
 
 		if (action === "logout") {
