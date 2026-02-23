@@ -35,7 +35,7 @@ export const tributes: Tribute[] = [
   {
     name: "SUKHAMOY MONDAL",
     year: "1951 – 2023",
-    text: "",
+    text: "A retired deputy commandent who lived a life of discipline and believed mindfulness and hardwork always pays off.",
     image: "/tribute/sukhamoymondal.jpeg",
   },
 ];
