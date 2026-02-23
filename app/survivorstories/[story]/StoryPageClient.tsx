@@ -119,8 +119,14 @@ export default function StoryPageClient({
   };
 
   return (
-    <div ref={containerRef} className="min-h-screen text-foreground bg-[#2A292F] relative overflow-hidden">
-      <DynamicBackgroundHues containerRef={containerRef} baseColor={cardColor} />
+    <div
+      ref={containerRef}
+      className="min-h-screen text-foreground bg-[#2A292F] relative overflow-hidden"
+    >
+      <DynamicBackgroundHues
+        containerRef={containerRef}
+        baseColor={cardColor}
+      />
       <ScrollProgress className="hidden md:block" />
       <main className="max-w-[80%] md:max-w-5xl mx-auto p-6 relative z-10 mt-32 items-center justify-center self-center">
         <header className="mb-8 text-center">
@@ -145,11 +151,11 @@ export default function StoryPageClient({
           style={
             !expanded
               ? {
-                maskImage:
-                  "linear-gradient(to bottom, black 0%, black 30%, transparent 100%)",
-                WebkitMaskImage:
-                  "linear-gradient(to bottom, black 0%, black 30%, transparent 100%)",
-              }
+                  maskImage:
+                    "linear-gradient(to bottom, black 0%, black 30%, transparent 100%)",
+                  WebkitMaskImage:
+                    "linear-gradient(to bottom, black 0%, black 30%, transparent 100%)",
+                }
               : undefined
           }
         >
@@ -276,7 +282,7 @@ export default function StoryPageClient({
                           vision-pro-ui-hoverable
                           w-full h-[180px]
                           flex flex-col justify-center
-                          rounded-[32px]
+                          rounded-[44px]
                           overflow-hidden isolation-isolate liquid-glass !shadow-none
                           select-none bg-cover
                         "
@@ -309,7 +315,7 @@ export default function StoryPageClient({
         <div className="mt-12">
           <Link
             href="/survivorstories"
-            className="text-primary underline font-dmsans text-lg"
+            className="text-primary underline font-dmsans text-lg pl-3"
           >
             ← Back to Stories
           </Link>
