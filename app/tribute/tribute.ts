@@ -28,14 +28,14 @@ export const tributes: Tribute[] = [
   },
   {
     name: "PRATIMA SAHA ROY",
-    year: "1947–2016",
+    year: "1947 – 2016",
     text: "As I referred to her 'Dida' was an amazing person always by my side.",
     image: "/tribute/pratimasaharoy.jpeg",
   },
-  // {
-  //   name: "Jane Foster",
-  //   year: "1965–2021",
-  //   text: "A constant source of inspiration, kindness, and wisdom.",
-  //   image: "/tribute/janefoster.png",
-  // },
+  {
+    name: "SUKHAMOY MONDAL",
+    year: "1951 – 2023",
+    text: "A retired deputy commandent who lived a life of discipline and believed mindfulness and hardwork always pays off.",
+    image: "/tribute/sukhamoymondal.jpeg",
+  },
 ];

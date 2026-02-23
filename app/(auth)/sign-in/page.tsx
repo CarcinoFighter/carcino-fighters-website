@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
+import DarkVeil from "@/components/DarkVeil";
 
 function SignInInner() {
   const router = useRouter();
@@ -58,35 +59,19 @@ function SignInInner() {
   }
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(to_bottom,_#202020_0%,_#050505_92%)] text-white flex items-center justify-center px-4 pt-[60px] md:pt-6 font-dmsans">
-      <div
-        style={{
-          position: "fixed",
-          left: -720,
-          top: -750,
-          width: 1600,
-          height: 1600,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, #30164f 0%, #30164F6B 33%, #30164F2E 60%, #30164F00 100%)`,
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
-      <div
-        className="max-md:hidden"
-        style={{
-          position: "fixed",
-          right: -850,
-          top: -300,
-          width: 1600,
-          height: 1600,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, #30164f 0%, #30164F6B 33%, #30164F2E 60%, #30164F00 100%)`,
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
-      <div className="w-full max-w-[90%] md:max-w-[40%] mx-auto">
+    <div className="min-h-screen bg-none text-white flex items-center justify-center px-4 pt-[60px] md:pt-6 font-dmsans">
+      <div className="fixed inset-0 pointer-events-none -z-10 bg-black mt-[12%] scale-[175%]">
+        <DarkVeil
+          hueShift={0}
+          noiseIntensity={0.16}
+          scanlineIntensity={0}
+          speed={0.5}
+          scanlineFrequency={0}
+          warpAmount={0}
+          resolutionScale={1}
+        />
+      </div>
+      <div className="w-full max-w-[90%] md:max-w-[40%] mx-auto rounded-[55px] bg-black/40">
         <div className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr] items-center">
           <div className="relative overflow-hidden px-6 md:px-16 py-8 md:py-10 ">
             <div className="liquidGlass-effect pointer-events-none"></div>
@@ -97,7 +82,7 @@ function SignInInner() {
             <div className="liquidGlass-text pointer-events-none"></div>
             <div className="relative flex flex-col gap-6">
               <div className="pb-5">
-                <h1 className="text-4xl font-semibold text-center pb-3">
+                <h1 className="text-4xl font-semibold text-center pb-3 font-wintersolace">
                   Welcome back
                 </h1>
                 <div className="text-center text-base md:text-lg text-white/70">
