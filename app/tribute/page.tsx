@@ -181,7 +181,7 @@ export default function Home() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.6 }}
             variants={staggerContainer}
-            className="flex bg-transparent flex-col items-center gap-5 md:gap-10 justify-center w-full overflow-y-hidden relative lg:static"
+            className="flex bg-transparent flex-col items-center gap-10 justify-center w-full overflow-y-hidden relative lg:static"
           >
             <div className="fixed inset-0 will-change-transform">
               <Image
@@ -195,7 +195,7 @@ export default function Home() {
             </div>
 
             <motion.div
-              className="flex z-10 flex-col w-full items-center gap-4 sm:gap-5 mt-32 sm:mt-28"
+              className="flex z-10 flex-col w-full items-center gap-8 sm:gap-5 mt-32 sm:mt-28"
               variants={staggerContainer}
             >
               <span className="text-3xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-[40%] max-sm:text-3xl max-sm:w-3/5 leading-[109%] text-[#f8f8f8]">
@@ -273,8 +273,8 @@ export default function Home() {
                                 relative z-20
                                 group/card
                                 vision-pro-ui-hoverable
-                                w-[320px] sm:w-[420px] max-w-full h-[260px] hover:h-[290px] active:h-[290px]
-                                
+                                w-[320px] sm:w-[420px] max-w-full h-[260px]
+                                py-3
                                 flex flex-col
                                 rounded-[44px]
                                 overflow-hidden isolation-isolate liquid-glass !shadow-none
@@ -302,18 +302,18 @@ export default function Home() {
                                   rounded-[44px]
                                   pointer-events-none
                                   w-full h-full
-                                  mb-5 group-hover:mb-0 group-active:mb-0 transition-[margin] duration-300
+                                  p-4
                                 "
                               >
+                                <p className="absolute bottom-28 bg-black/30 backdrop-blur-sm px-4 text-[14px] sm:text-[16px] text-center text-[#dfdfdf] transition-opacity duration-300 font-dmsans w-full font-light opacity-0 group-hover:opacity-100">
+                                  {item.text}
+                                </p>
                                 <h3 className="text-[26px] leading-[1] p-2 align-middle justify-center text-center font-tttravelsnext font-bold max-w-[300px] mx-auto w-full text-[#f8f8f8]">
                                   {item.name}
                                 </h3>
                                 <div className="sm:text-[16px] text-[14px] text-[#ffffff] font-tttravelsnext">
                                   {item.year}
                                 </div>
-                                <p className="text-[14px] leading-[18px] sm:text-[16px] text-center text-[#dfdfdf] transition-all duration-300 font-dmsans w-full font-light opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-20 group-active:opacity-100 group-active:max-h-20 overflow-hidden group-active:backdrop-blur-xl group-hover:backdrop-blur-xl px-3 pt-1 pb-2">
-                                  {item.text}
-                                </p>
                               </CardItem>
                             </CardBody>
                           </CardContainer>
