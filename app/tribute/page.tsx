@@ -311,7 +311,7 @@ export default function Home() {
                                 <div className="sm:text-[16px] text-[14px] text-[#ffffff] font-tttravelsnext">
                                   {item.year}
                                 </div>
-                                <p className="text-[14px] leading-5 sm:text-[16px] text-center text-[#dfdfdf] transition-all duration-300 font-dmsans w-full font-light opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-20 group-active:opacity-100 group-active:max-h-20 overflow-hidden group-active:backdrop-blur-xl group-hover:backdrop-blur-xl px-3 pt-1 pb-2">
+                                <p className="text-[14px] leading-[18px] sm:text-[16px] text-center text-[#dfdfdf] transition-all duration-300 font-dmsans w-full font-light opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-20 group-active:opacity-100 group-active:max-h-20 overflow-hidden group-active:backdrop-blur-xl group-hover:backdrop-blur-xl px-3 pt-1 pb-2">
                                   {item.text}
                                 </p>
                               </CardItem>
