@@ -4,8 +4,8 @@ import * as React from "react";
 import Script from "next/script";
 import Image from "next/image";
 import { Label } from "@/components/ui/label";
-import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
-import { motion, MotionConfig, useScroll, useTransform } from "framer-motion";
+import { CardBody, CardContainer, CardItem, useMouseEnter } from "@/components/ui/3d-card";
+import { motion, MotionConfig, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { tributes, Tribute } from "./tribute";
 
 const easeSoft = [0.33, 1, 0.68, 1] as const;
@@ -23,6 +23,148 @@ const staggerContainer = {
 const MotionLabel = motion(Label);
 
 const SCROLL_SPEED = 40; // px/s auto-scroll speed
+
+/**
+ * Sub-component for individual tribute card content.
+ * Uses useMouseEnter hook from 3d-card context to drive height animation.
+ */
+function TributeCardInner({ item }: { item: Tribute }) {
+  const [isHovered] = useMouseEnter();
+  const [isActuallyHovered, setIsActuallyHovered] = React.useState(false);
+  const [isColorHovered, setIsColorHovered] = React.useState(false);
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const contentRef = React.useRef<HTMLDivElement | null>(null);
+  const [expandedHeight, setExpandedHeight] = React.useState(320);
+
+  const imgSrc = item.image;
+
+  // Handle delayed un-hover to prevent abrupt snapping
+  React.useEffect(() => {
+    // Only allow hover state if there's text to display
+    const hasText = Boolean(item.text);
+    if (isHovered && hasText) {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      setIsActuallyHovered(true);
+    } else {
+      timeoutRef.current = setTimeout(() => {
+        setIsActuallyHovered(false);
+      }, 150);
+    }
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [isHovered]);
+
+  // Color hover always responds to mouse
+  React.useEffect(() => {
+    setIsColorHovered(isHovered);
+  }, [isHovered]);
+
+  // Measure full expanded height dynamically when state changes
+  React.useEffect(() => {
+    if (contentRef.current) {
+      const fullHeight = contentRef.current.scrollHeight;
+      // Only update if the measured height is significantly different to avoid loops
+      if (Math.abs(fullHeight - expandedHeight) > 1) {
+        setExpandedHeight(fullHeight);
+      }
+    }
+  }, [isActuallyHovered, expandedHeight]);
+
+  return (
+    <motion.div
+      initial={false}
+      animate={{
+        height: isActuallyHovered ? expandedHeight : 320,
+      }}
+      transition={{
+        duration: 0.4,
+        ease: easeSoft,
+        delay: isActuallyHovered ? 0 : 0.15 // Apply delay only to retraction to fix abruptness
+      }}
+      className="
+        relative z-20
+        group/card
+        vision-pro-ui-hoverable
+        w-[320px] sm:w-[420px] max-w-full
+        flex flex-col
+        rounded-[44px]
+        overflow-hidden isolation-isolate liquid-glass !shadow-none
+        backdrop-blur-[30px]
+        select-none
+        [transform-style:preserve-3d]
+        *:[transform-style:preserve-3d]
+      "
+    >
+      <div ref={contentRef} className="relative w-full h-full overflow-hidden rounded-[44px]">
+        <motion.div
+          className="absolute inset-0 bg-cover bg-center origin-center"
+          style={{ backgroundImage: `url(${imgSrc})` }}
+          initial={false}
+          animate={{
+            filter: isColorHovered ? "grayscale(0%)" : "grayscale(100%)",
+            scale: isColorHovered ? 1.05 : 1,
+          }}
+          transition={{
+            duration: 0.5,
+            ease: easeSoft,
+          }}
+        />
+        <div className="absolute bottom-0 w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
+        <div className="storyGlass-tint pointer-events-none"></div>
+        <div className="glass-noise"></div>
+        <div className="cardGlass-borders pointer-events-none"></div>
+        <div className="cardGlass-shine pointer-events-none"></div>
+        <div className="liquidGlass-text pointer-events-none"></div>
+
+        <CardItem
+          translateZ="20"
+          className="
+            relative z-10
+            flex flex-col items-center
+            justify-start
+            rounded-[44px]
+            pointer-events-none
+            w-full
+            p-6 sm:p-8
+          "
+        >
+          {/* Fixed spacer to push content to bottom of initial 320px view */}
+          <div className="h-[160px] sm:h-[140px] w-full shrink-0" />
+
+          <div className="flex flex-col items-center w-full">
+            <h3 className="text-[26px] sm:text-[32px] leading-tight p-2 align-middle justify-center text-center font-tttravelsnext font-bold max-w-[340px] mx-auto w-full text-[#f8f8f8]">
+              {item.name}
+            </h3>
+            <div className="sm:text-[18px] text-[14px] text-[#ffffff]/95 font-tttravelsnext font-medium [text-shadow:0_2px_8px_rgba(0,0,0,0.4)]">
+              {item.year}
+            </div>
+          </div>
+
+          <motion.div
+            animate={{
+              opacity: isActuallyHovered ? 1 : 0,
+            }}
+            transition={{
+              duration: 0.3,
+              ease: easeSoft,
+            }}
+            className="overflow-hidden w-full mt-4"
+            style={{
+              height: isActuallyHovered ? "auto" : 0
+            }}
+          >
+            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent mb-4" />
+            <p className="text-[14px] sm:text-[16px] text-center text-[#dfdfdf] font-dmsans w-full font-light leading-relaxed pb-4">
+              {item.text}
+            </p>
+          </motion.div>
+        </CardItem>
+      </div>
+    </motion.div>
+  );
+}
 
 export default function Home() {
   const [items, setItems] = React.useState<Tribute[]>([]);
@@ -215,11 +357,6 @@ export default function Home() {
               variants={staggerContainer}
               style={{ overflow: "hidden" }}
             >
-              {/*
-                wrapperRef: receives wheel + pointer events.
-                No overlay — pointer events reach cards naturally for hover.
-                Pointer capture handles drag even outside bounds.
-              */}
               <div
                 ref={wrapperRef}
                 className="w-full select-none"
@@ -242,7 +379,6 @@ export default function Home() {
                   }}
                 >
                   {[...featuredItems, ...featuredItems].map((item, idx) => {
-                    const imgSrc = item.image;
                     return (
                       <div
                         key={`${item.name}-${idx}`}
@@ -256,8 +392,6 @@ export default function Home() {
                       >
                         <motion.div
                           className="tribute-card group rounded-[44px] will-change-transform transform-gpu"
-                          layout
-                          whileHover={{ y: -4, scale: 1.015 }}
                           variants={{
                             hidden: { opacity: 0, y: 12 },
                             visible: {
@@ -267,55 +401,11 @@ export default function Home() {
                             },
                           }}
                         >
-                          <CardContainer className="w-[320px] sm:w-[420px] px-0 rounded-[44px]">
-                            <CardBody
-                              className="
-                                relative z-20
-                                group/card
-                                vision-pro-ui-hoverable
-                                w-[320px] sm:w-[420px] max-w-full h-[260px]
-                                py-3
-                                flex flex-col
-                                rounded-[44px]
-                                overflow-hidden isolation-isolate liquid-glass !shadow-none
-                                backdrop-blur-[30px]
-                                select-none
-                              "
-                            >
-                              <div
-                                className="absolute inset-0 bg-cover bg-center [filter:grayscale(100%)] group-hover:[filter:none] group-active:[filter:none] transition-all duration-500"
-                                style={{ backgroundImage: `url(${imgSrc})` }}
-                              />
-                              <div className="absolute bottom-0 w-full h-3/5 bg-gradient-to-t from-black/90 to-transparent pointer-events-none" />
-                              <div className="storyGlass-tint pointer-events-none"></div>
-                              <div className="glass-noise"></div>
-                              <div className="cardGlass-borders pointer-events-none"></div>
-                              <div className="cardGlass-shine pointer-events-none"></div>
-                              <div className="liquidGlass-text pointer-events-none"></div>
-
-                              <CardItem
-                                translateZ="20"
-                                className="
-                                  relative z-10
-                                  flex flex-col items-center
-                                  justify-end
-                                  rounded-[44px]
-                                  pointer-events-none
-                                  w-full h-full
-                                  p-4
-                                "
-                              >
-                                <p className="absolute bottom-28 bg-black/30 backdrop-blur-sm px-4 text-[14px] sm:text-[16px] text-center text-[#dfdfdf] transition-opacity duration-300 font-dmsans w-full font-light opacity-0 group-hover:opacity-100">
-                                  {item.text}
-                                </p>
-                                <h3 className="text-[26px] leading-[1] p-2 align-middle justify-center text-center font-tttravelsnext font-bold max-w-[300px] mx-auto w-full text-[#f8f8f8]">
-                                  {item.name}
-                                </h3>
-                                <div className="sm:text-[16px] text-[14px] text-[#ffffff] font-tttravelsnext">
-                                  {item.year}
-                                </div>
-                              </CardItem>
-                            </CardBody>
+                          <CardContainer
+                            className="w-[320px] sm:w-[420px] px-0 rounded-[44px]"
+                            containerClassName="!items-start"
+                          >
+                            <TributeCardInner item={item} />
                           </CardContainer>
                         </motion.div>
                       </div>
