@@ -49,8 +49,4 @@ next-env.d.ts
 
 .vercel
 
-# database manager
-/app/db-manager/
-/app/api/db-manager/
-
 /.idea/
