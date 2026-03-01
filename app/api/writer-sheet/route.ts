@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const auth = new google.auth.GoogleAuth({
   credentials: {
     client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY?.split(String.raw`\n`).join('\n'),
+    private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
   },
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
@@ -46,10 +46,22 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error('Error writing data to Google Sheets:', error);
+
+    let errorMessage = 'Unknown error';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      // Check for common Google Auth errors
+      if (errorMessage.includes('private key')) {
+        errorMessage = 'Invalid GOOGLE_PRIVATE_KEY format. Ensure it is copied correctly to .env';
+      } else if (errorMessage.includes('client_email')) {
+        errorMessage = 'Invalid GOOGLE_CLIENT_EMAIL. Ensure it matches your service account';
+      }
+    }
+
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: errorMessage,
       },
       { status: 500, headers: { 'Access-Control-Allow-Origin': '*' } }
     );
