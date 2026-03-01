@@ -48,6 +48,24 @@ type BookmarkedBlog = {
     likes: number | null;
 };
 
+function stripMarkdown(text: string | null | undefined, maxLen = 150): string {
+    if (!text) return "No content preview available.";
+    const plain = text
+        .replace(/```[\s\S]*?```/g, "")       // fenced code blocks
+        .replace(/`[^`]+`/g, "")              // inline code
+        .replace(/!?\[[^\]]*\]\([^)]*\)/g, "") // images & links
+        .replace(/^#{1,6}\s+/gm, "")          // headings
+        .replace(/(\*{1,3}|_{1,3})(.*?)\1/g, "$2") // bold/italic
+        .replace(/^[\s]*[-*+]\s+/gm, "")      // unordered list markers
+        .replace(/^[\s]*\d+\.\s+/gm, "")      // ordered list markers
+        .replace(/^>\s?/gm, "")               // blockquotes
+        .replace(/---/g, "")                   // horizontal rules
+        .replace(/\s+/g, " ")
+        .trim();
+    if (!plain) return "No content preview available.";
+    return plain.length > maxLen ? `${plain.substring(0, maxLen)}...` : plain;
+}
+
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -607,7 +625,7 @@ export default function DashboardPage() {
                                         </h3>
 
                                         <p className="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
-                                            {blog.content?.replace(/```[\s\S]*?```/g, "").replace(/\s+/g, " ").trim().substring(0, 150) || "No content preview available."}...
+                                            {stripMarkdown(blog.content)}
                                         </p>
 
                                         <Link
@@ -673,7 +691,7 @@ export default function DashboardPage() {
                                         )}
 
                                         <p className="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
-                                            {blog.content?.replace(/```[\s\S]*?```/g, "").replace(/\s+/g, " ").trim().substring(0, 150) || "No content preview available."}...
+                                            {stripMarkdown(blog.content)}
                                         </p>
 
                                         <Link
