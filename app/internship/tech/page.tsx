@@ -30,8 +30,7 @@ export default function RegistrationPage() {
     setIsSubmitting(true);
 
     try {
-      const apiRoute = process.env.NEXT_PUBLIC_API_ROUTE || "/api";
-      const response = await axios.post(`${apiRoute}/tech-sheet`, {
+      const response = await axios.post("/api/tech-sheet", {
         Name: fullName,
         Email: email,
         Phone: phone,
@@ -48,6 +47,7 @@ export default function RegistrationPage() {
 
       if (response.status === 200) {
         toast.success("Submitted successfully!");
+        setSubmitted(true);
       } else {
         throw new Error(response.data.message || "Submission failed");
       }
@@ -71,7 +71,6 @@ export default function RegistrationPage() {
 
       toast.error(`Error: ${errorMessage}`);
     } finally {
-      setSubmitted(true);
       setIsSubmitting(false);
     }
   };
