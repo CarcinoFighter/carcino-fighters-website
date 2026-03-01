@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Heart } from "lucide-react";
+import { Bookmark } from "lucide-react";
 
 interface LikeButtonProps {
     blogId: string;
@@ -79,20 +79,20 @@ export default function LikeButton({
         <button
             onClick={handleLike}
             disabled={liked || busy}
-            aria-label={liked ? "Liked" : "Like this post"}
+            aria-label={liked ? "Bookmarked" : "Bookmark this post"}
             className={`
         inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-dmsans
         transition-all duration-300 select-none
         ${liked
-                    ? "bg-pink-500/20 text-pink-400 cursor-default"
+                    ? "bg-indigo-500/20 text-indigo-400 cursor-default"
                     : isAuthenticated
-                        ? "bg-white/5 text-white/60 hover:bg-white/10 hover:text-pink-400 cursor-pointer"
+                        ? "bg-white/5 text-white/60 hover:bg-white/10 hover:text-indigo-400 cursor-pointer"
                         : "bg-white/5 text-white/30 cursor-pointer"
                 }
       `}
         >
-            <Heart
-                className={`w-4 h-4 transition-all duration-300 ${liked ? "fill-pink-400 text-pink-400 scale-110" : ""}`}
+            <Bookmark
+                className={`w-4 h-4 transition-all duration-300 ${liked ? "fill-indigo-400 text-indigo-400 scale-110" : ""}`}
             />
             <span>{likeCount}</span>
         </button>

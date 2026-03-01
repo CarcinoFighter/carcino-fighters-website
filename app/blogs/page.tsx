@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 // import { CardContainer, CardItem } from "@/components/ui/3d-card";
 import { motion, MotionConfig, useScroll } from "framer-motion";
-import { Eye, Heart } from "lucide-react";
+import { Eye, Bookmark } from "lucide-react";
 
 const easeSoft = [0.33, 1, 0.68, 1] as const;
 
@@ -233,7 +233,7 @@ export default function BlogsPage() {
                                 {entry.views ?? 0}
                               </span>
                               <span className="inline-flex items-center gap-1 text-white/30 text-[11px] sm:text-xs font-dmsans">
-                                <Heart className="w-3.5 h-3.5" />
+                                <Bookmark className="w-3.5 h-3.5" />
                                 {entry.likes ?? 0}
                               </span>
                             </div>
