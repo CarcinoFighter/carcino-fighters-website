@@ -663,14 +663,14 @@ export default function DashboardPage() {
                                             <span className="px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-medium text-indigo-300">
                                                 Bookmarked
                                             </span>
-                                            {blog.authorName && (
-                                                <span className="text-xs text-gray-500">by {blog.authorName}</span>
-                                            )}
                                         </div>
 
-                                        <h3 className="text-2xl font-bold mb-3 group-hover:text-indigo-300 transition-colors">
+                                        <h3 className="text-2xl font-bold mb-1 group-hover:text-indigo-300 transition-colors">
                                             {blog.title}
                                         </h3>
+                                        {blog.authorName && (
+                                            <p className="text-xs text-gray-500 mb-3">by {blog.authorName}</p>
+                                        )}
 
                                         <p className="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
                                             {blog.content?.replace(/```[\s\S]*?```/g, "").replace(/\s+/g, " ").trim().substring(0, 150) || "No content preview available."}...
