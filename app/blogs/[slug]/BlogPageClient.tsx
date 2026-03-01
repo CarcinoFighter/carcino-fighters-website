@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import Link from "next/link";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, Eye } from "lucide-react";
+import LikeButton from "@/components/LikeButton";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Footer } from "@/components/footer";
@@ -68,6 +69,26 @@ const fadeUp = {
 export default function BlogPageClient({ entry, related, cardColor }: BlogPageClientProps) {
   const [expanded, setExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Record view (anonymous)
+    fetch("/api/blogs/interact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "view", blogId: entry.id }),
+    }).catch(() => { });
+
+    // Check auth status
+    fetch("/api/blogs/interact")
+      .then((r) => r.json())
+      .then((data) => {
+        setIsAuthenticated(!!data.authenticated);
+        setUserId(data.userId ?? null);
+      })
+      .catch(() => { });
+  }, [entry.id]);
 
   return (
     <div ref={containerRef} className="min-h-screen text-foreground bg-[#2A292F] relative overflow-hidden">
@@ -80,12 +101,21 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
           >
             {entry.title}
           </h1>
-          <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2 py-6 text-center font-inter text-white/70">
-            <span className="text-xs sm:text-sm">{entry.authorName || "The Carcino Foundation"}</span>
-            <span className="text-xs sm:text-sm px-1 opacity-50">|</span>
-            <span className="text-xs sm:text-sm opacity-60">
-              {entry.authorBio || "Researcher at The Carcino Foundation"}
+          <div className="flex items-center justify-between px-5 py-3 mt-4">
+            <span className="text-xs sm:text-sm font-inter text-white/70">
+              {entry.authorName || "The Carcino Foundation"}
             </span>
+            {/* Glass slab – view & like only */}
+            <div className="relative flex items-center gap-4 px-4 py-2 rounded-full overflow-hidden isolate">
+              <div className="liquidGlass-shine relative w-[102.5%] h-[100%] !top-[-0.1px] !left-[-2.3px]"></div>
+              <span className="relative z-10 inline-flex items-center gap-1.5 text-white/40 text-xs sm:text-sm font-dmsans">
+                <Eye className="w-4 h-4" />
+                {entry.views ?? 0}
+              </span>
+              <div className="relative z-10">
+                <LikeButton blogId={entry.id} initialLikes={entry.likes ?? 0} isAuthenticated={isAuthenticated} userId={userId} />
+              </div>
+            </div>
           </div>
         </header>
 
