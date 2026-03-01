@@ -90,21 +90,6 @@ export default function Home() {
     inLanguage: "en-IN",
   };
 
-  React.useEffect(() => {
-    if (loading) return;
-    const cards = document.querySelectorAll<HTMLElement>(".article-card");
-    let maxHeight = 0;
-    cards.forEach((card) => {
-      card.style.height = "auto";
-    });
-    cards.forEach((card) => {
-      maxHeight = Math.max(maxHeight, card.offsetHeight);
-    });
-    cards.forEach((card) => {
-      card.style.height = `${maxHeight}px`;
-    });
-  }, [loading, featuredStories]);
-
   return (
     <>
       <Script
@@ -114,7 +99,7 @@ export default function Home() {
       />
       <div
         ref={containerRef}
-        className="flex flex-col relative lg:block lg:h-screen w-full overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background hide-scrollbar"
+        className="flex flex-col relative lg:block lg:h-screen w-full overflow-y-scroll overflow-x-hidden items-start bg-background hide-scrollbar"
       >
         <MotionConfig transition={{ duration: 1 }}>
           <div
@@ -145,12 +130,12 @@ export default function Home() {
           </div>
 
           {/* Stories */}
-          <div className="z-10 font-dmsans flex flex-col lg:gap-8 md:gap-4 gap-2 items-center text-center lg:text-left justify-start w-full sm:max-w-[90%] mx-auto h-fit lg:px-40 md:px-10 px-6 pb-6 relative">
+          <div className="z-10 font-dmsans flex flex-col items-center justify-start w-full max-w-7xl mx-auto px-4 sm:px-6 pb-20 relative">
             <motion.div
-              className="relative z-10 grid grid-cols-1 md:grid-cols-3 items-stretch gap-6 py-6 w-full"
+              className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch gap-6 w-full"
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
+              viewport={{ once: true, amount: 0.1 }}
               key={loading ? "skeleton" : "cards"}
               variants={staggerContainer}
             >
@@ -229,7 +214,7 @@ export default function Home() {
                           },
                         }}
                       >
-                        <CardContainer className="w-[350px] h-[200px] px-1 rounded-[44px]">
+                        <CardContainer className="w-full h-full px-1 rounded-[44px]">
                           <div
                             style={{
                               backgroundImage: `url('${backgroundImage}')`,
@@ -268,9 +253,9 @@ export default function Home() {
                               "
                             >
                               {/* translateY-based centering: smooth, no layout shift */}
-                              <div className="w-full h-full flex flex-col items-center justify-center">
+                              <div className="w-full h-full flex flex-col items-center justify-center p-6">
                                 <h3
-                                  className={`${getTitleFontSize(story.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[250px] mx-auto w-full text-white translate-y-14 group-hover/card:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]`}
+                                  className={`${getTitleFontSize(story.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[250px] mx-auto w-full text-white translate-y-0 sm:translate-y-14 sm:group-hover/card:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]`}
                                 >
                                   {story.title}
                                 </h3>
