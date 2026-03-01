@@ -61,6 +61,21 @@ function TributeCardInner({ item }: { item: Tribute }) {
     setIsColorHovered(isHovered);
   }, [isHovered]);
 
+  // Auto-scroll logic: when card expands, ensure it's visible in the viewport
+  React.useEffect(() => {
+    if (isActuallyHovered && contentRef.current) {
+      const scrollTimeout = setTimeout(() => {
+        // Using block: 'nearest' ensures the card scrolls just enough to be fully visible
+        // without jumping to the top of the viewport if it's already mostly visible.
+        contentRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+      }, 150); // Small delay to sync with the start of the height animation
+      return () => clearTimeout(scrollTimeout);
+    }
+  }, [isActuallyHovered]);
+
   // Measure full expanded height dynamically when state changes
   React.useEffect(() => {
     if (contentRef.current) {
@@ -71,6 +86,18 @@ function TributeCardInner({ item }: { item: Tribute }) {
       }
     }
   }, [isActuallyHovered, expandedHeight]);
+
+  const getTitleFontSize = (name: string) => {
+    const words = name.split(/\s+/);
+    const maxWordLength = Math.max(...words.map((w) => w.length));
+
+    // For very small screens (under 400px), we need to be more aggressive with scaling
+    if (maxWordLength > 12) return "text-[18px] sm:text-[24px] lg:text-[32px]";
+    if (maxWordLength >= 9) return "text-[20px] sm:text-[28px] lg:text-[32px]";
+    if (name.length > 35) return "text-[18px] sm:text-[26px] lg:text-[32px]";
+    if (name.length >= 15) return "text-[22px] sm:text-[30px] lg:text-[32px]";
+    return "text-[26px] sm:text-[32px]";
+  };
 
   return (
     <motion.div
@@ -87,7 +114,7 @@ function TributeCardInner({ item }: { item: Tribute }) {
         relative z-20
         group/card
         vision-pro-ui-hoverable
-        w-[320px] sm:w-[420px] max-w-full
+        w-[280px] min-[400px]:w-[320px] sm:w-[420px] max-w-full
         flex flex-col
         rounded-[44px]
         overflow-hidden isolation-isolate liquid-glass !shadow-none
@@ -131,10 +158,10 @@ function TributeCardInner({ item }: { item: Tribute }) {
           "
         >
           {/* Fixed spacer to push content to bottom of initial 320px view */}
-          <div className="h-[160px] sm:h-[140px] w-full shrink-0" />
+          <div className="h-[140px] sm:h-[140px] w-full shrink-0" />
 
           <div className="flex flex-col items-center w-full">
-            <h3 className="text-[26px] sm:text-[32px] leading-tight p-2 align-middle justify-center text-center font-tttravelsnext font-bold max-w-[340px] mx-auto w-full text-[#f8f8f8]">
+            <h3 className={`${getTitleFontSize(item.name)} leading-tight p-2 align-middle justify-center text-center font-tttravelsnext font-bold max-w-[340px] mx-auto w-full text-[#f8f8f8]`}>
               {item.name}
             </h3>
             <div className="sm:text-[18px] text-[14px] text-[#ffffff]/95 font-tttravelsnext font-medium [text-shadow:0_2px_8px_rgba(0,0,0,0.4)]">
@@ -212,6 +239,11 @@ export default function Home() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Auto-focus the container on mount to enable arrow key scrolling immediately
+  React.useEffect(() => {
+    containerRef.current?.focus();
+  }, [featuredItems]);
 
   // rAF loop
   React.useEffect(() => {
@@ -314,7 +346,8 @@ export default function Home() {
 
       <div
         ref={containerRef}
-        className="flex flex-col relative lg:block lg:h-screen w-full overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background hide-scrollbar"
+        tabIndex={0}
+        className="flex flex-col relative lg:block lg:h-screen w-full overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background hide-scrollbar outline-none"
       >
         <MotionConfig transition={{ duration: 1 }}>
           <motion.div
@@ -382,7 +415,7 @@ export default function Home() {
                     return (
                       <div
                         key={`${item.name}-${idx}`}
-                        className="block flex-shrink-0 w-[320px] sm:w-[420px] overflow-hidden rounded-[44px]"
+                        className="block flex-shrink-0 w-[280px] min-[400px]:w-[320px] sm:w-[420px] overflow-hidden rounded-[44px]"
                         onMouseEnter={() => {
                           hoveredRef.current = true;
                         }}
@@ -402,7 +435,7 @@ export default function Home() {
                           }}
                         >
                           <CardContainer
-                            className="w-[320px] sm:w-[420px] px-0 rounded-[44px]"
+                            className="w-[280px] min-[400px]:w-[320px] sm:w-[420px] px-0 rounded-[44px]"
                             containerClassName="!items-start"
                           >
                             <TributeCardInner item={item} />
