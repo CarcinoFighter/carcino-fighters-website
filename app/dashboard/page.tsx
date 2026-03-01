@@ -557,7 +557,7 @@ export default function DashboardPage() {
                                                 </h3>
 
                                                 <p className="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
-                                                    {doc.content?.substring(0, 150) || "No content preview available."}...
+                                                    {stripMarkdown(doc.content)}
                                                 </p>
 
                                                 <Link
