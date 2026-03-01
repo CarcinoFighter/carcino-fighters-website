@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 // import { CardContainer, CardItem } from "@/components/ui/3d-card";
 import { motion, MotionConfig, useScroll } from "framer-motion";
+import { Eye, Heart } from "lucide-react";
 
 const easeSoft = [0.33, 1, 0.68, 1] as const;
 
@@ -27,6 +28,8 @@ interface BlogEntry {
   content: string | null;
   tags?: string[] | null;
   created_at?: string;
+  views?: number | null;
+  likes?: number | null;
 }
 
 export default function BlogsPage() {
@@ -224,6 +227,16 @@ export default function BlogsPage() {
                             <span className="text-white/40 text-[12px] sm:text-sm font-dmsans font-normal">
                               {formattedDate || "February 14, 2026"}
                             </span>
+                            <div className="flex items-center gap-3 mt-2">
+                              <span className="inline-flex items-center gap-1 text-white/30 text-[11px] sm:text-xs font-dmsans">
+                                <Eye className="w-3.5 h-3.5" />
+                                {entry.views ?? 0}
+                              </span>
+                              <span className="inline-flex items-center gap-1 text-white/30 text-[11px] sm:text-xs font-dmsans">
+                                <Heart className="w-3.5 h-3.5" />
+                                {entry.likes ?? 0}
+                              </span>
+                            </div>
                           </div>
 
                           {/* Right Side: Dummy Image */}
