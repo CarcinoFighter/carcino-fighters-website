@@ -15,6 +15,7 @@ import { ScrollProgress } from "@/components/ui/scroll-progress";
 import type { BlogEntry, BlogSummary } from "@/lib/blogsRepository";
 import { motion } from "framer-motion";
 import { DynamicBackgroundHues } from "@/components/ui/dynamic-background-hues";
+import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 
 const colors = [
   "#E39E2E",
@@ -192,9 +193,6 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {related.map((r, i) => {
-              const colorsleft: string[] = colors.filter((element) => element !== cardColor);
-              const relatedCardColor = colorsleft[i % colorsleft.length];
-
               const getTitleFontSize = (title: string) => {
                 const words = title.split(/\s+/);
                 const maxWordLength = Math.max(...words.map((w) => w.length));
@@ -213,38 +211,63 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
                 >
                   <motion.div
                     className="h-full"
+                    layout
                     whileHover={{ y: -4, scale: 1.015 }}
-                    transition={{ duration: 0.3, ease: easeSoft }}
+                    variants={{
+                      hidden: { opacity: 0, y: 12 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: { duration: 0.55, ease: easeSoft },
+                      },
+                    }}
                   >
-                    <div
-                      style={{
-                        backgroundColor: relatedCardColor,
-                      }}
-                      className="
-                        relative
-                        group/card
-                        vision-pro-ui-hoverable
-                        w-full h-[180px]
-                        flex flex-col justify-center
-                        rounded-[32px]
-                        overflow-hidden isolation-isolate liquid-glass !shadow-none
-                        select-none bg-cover
-                      "
-                    >
-                      <div
-                        className="storyGlass-tint pointer-events-none"
-                        style={{ backgroundColor: relatedCardColor }}
-                      />
-                      <div className="cardGlass-borders pointer-events-none" />
-                      <div className="cardGlass-shine pointer-events-none" />
-                      <div className="liquidGlass-text pointer-events-none" />
+                    <CardContainer className="w-full h-full px-1 rounded-[40px]">
+                      <CardBody
+                        className="
+                          relative z-20
+                          group/card
+                          vision-pro-ui-hoverable
+                          w-full h-full min-h-[200px]
+                          py-3
+                          flex flex-col justify-center
+                          rounded-[40px]
+                          overflow-hidden isolation-isolate liquid-glass !shadow-none
+                          backdrop-blur-[30px]
+                          select-none
+                        "
+                      >
+                        <div className="liquidGlass-effect pointer-events-none"></div>
+                        <div className="cardGlass-tint pointer-events-none"></div>
+                        <div className="glass-noise"></div>
+                        <div className="cardGlass-borders pointer-events-none"></div>
+                        <div className="cardGlass-shine pointer-events-none"></div>
+                        <div className="liquidGlass-text pointer-events-none"></div>
 
-                      <div className="relative z-10 flex flex-col items-center gap-2 p-4 w-full justify-center">
-                        <h3 className={`${getTitleFontSize(r.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}>
-                          {r.title}
-                        </h3>
-                      </div>
-                    </div>
+                        <CardItem
+                          translateZ="20"
+                          className="
+                            relative z-10
+                            flex flex-col items-center gap-2
+                            rounded-[40px]
+                            pointer-events-none
+                            w-full
+                          "
+                        >
+                          <div className="lowercase text-[16px] sm:text-[20px] lg:text-[22px] font-medium font-instrumentserifitalic text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 text-center w-full">
+                            Blog Post
+                          </div>
+
+                          <h3 className={`${getTitleFontSize(r.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}>
+                            {r.title}
+                          </h3>
+
+                          <p className="text-[14px] sm:text-[18px] text-center text-[#CDA8E8] group-hover/card:text-white transition-colors duration-300 font-dmsans w-full font-light">
+                            by {r.authorName || "The Carcino Foundation"}
+                          </p>
+                        </CardItem>
+                      </CardBody>
+                    </CardContainer>
                   </motion.div>
                 </Link>
               );
