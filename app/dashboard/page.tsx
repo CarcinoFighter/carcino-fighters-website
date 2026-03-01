@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight, Plus } from "lucide-react";
+import { ArrowUpRight, Plus, Bookmark } from "lucide-react";
 // @ts-ignore
 import DarkVeil from "@/components/DarkVeil";
 import { createClient } from "@supabase/supabase-js";
@@ -35,6 +35,17 @@ type Blog = {
     title: string;
     content: string | null;
     created_at: string;
+};
+
+type BookmarkedBlog = {
+    id: string;
+    slug: string;
+    title: string;
+    content: string | null;
+    created_at: string;
+    authorName: string | null;
+    views: number | null;
+    likes: number | null;
 };
 
 
@@ -104,6 +115,7 @@ export default function DashboardPage() {
     const [user, setUser] = useState<User | null>(null);
     const [docs, setDocs] = useState<Doc[]>([]);
     const [blogs, setBlogs] = useState<Blog[]>([]);
+    const [bookmarkedBlogs, setBookmarkedBlogs] = useState<BookmarkedBlog[]>([]);
     const [loading, setLoading] = useState(true);
     const [loggingOut, setLoggingOut] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -234,6 +246,33 @@ export default function DashboardPage() {
                 const blogsData = await blogsRes.json().catch(() => ({}));
                 if (blogsRes.ok && blogsData.blogs) {
                     setBlogs(blogsData.blogs);
+                }
+
+                // Fetch bookmarked blogs from localStorage
+                try {
+                    const userId = publicData.user?.id;
+                    const bookmarkedIds: string[] = [];
+                    const uuidRe = /^blog_liked_([0-9a-f-]{36})(?:_([0-9a-f-]{36}))?$/;
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (!key || localStorage.getItem(key) !== "true") continue;
+                        const m = key.match(uuidRe);
+                        if (!m) continue;
+                        const blogId = m[1];
+                        const keyUserId = m[2]; // may be undefined
+                        // If the key includes a userId, only accept if it matches the current user
+                        if (keyUserId && keyUserId !== userId) continue;
+                        bookmarkedIds.push(blogId);
+                    }
+                    if (bookmarkedIds.length > 0) {
+                        const bmRes = await fetch(`/api/blogs?ids=${bookmarkedIds.join(",")}`);
+                        const bmData = await bmRes.json().catch(() => ({}));
+                        if (bmRes.ok && bmData.blogs) {
+                            setBookmarkedBlogs(bmData.blogs);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Failed to load bookmarked blogs", e);
                 }
 
             } catch (err) {
@@ -574,6 +613,72 @@ export default function DashboardPage() {
                                         <Link
                                             href={`/blogs/${blog.slug}`}
                                             className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm font-medium group/link"
+                                        >
+                                            View Blog
+                                            <ArrowUpRight className="w-4 h-4 transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5" />
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+
+                    {/* Your Activity / Bookmarked Blogs */}
+                    <div className="flex items-center justify-between mb-2 pt-8">
+                        <h3 className="text-xl font-semibold text-gray-200">Your Activity</h3>
+                    </div>
+
+                    {bookmarkedBlogs.length === 0 ? (
+                        <div className="relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[30px] rounded-[40px] p-12 text-center group">
+                            <div className="liquidGlass-effect pointer-events-none"></div>
+                            <div className="cardGlass-tint pointer-events-none"></div>
+                            <div className="glass-noise"></div>
+                            <div className="cardGlass-borders pointer-events-none"></div>
+                            <div className="cardGlass-shine pointer-events-none"></div>
+                            <p className="relative z-10 text-gray-400 font-medium font-dmsans">You haven't bookmarked any blogs yet.</p>
+                        </div>
+                    ) : (
+                        bookmarkedBlogs.map((blog) => (
+                            <div
+                                key={blog.id}
+                                className="group relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[30px] rounded-[40px] p-6 sm:p-8 flex flex-col md:flex-row gap-8 hover:bg-white/5 transition-all duration-300"
+                            >
+                                <div className="liquidGlass-effect pointer-events-none"></div>
+                                <div className="cardGlass-tint pointer-events-none"></div>
+                                <div className="glass-noise"></div>
+                                <div className="cardGlass-borders pointer-events-none"></div>
+                                <div className="cardGlass-shine pointer-events-none"></div>
+
+                                <div className="relative z-10 w-full flex flex-col md:flex-row gap-8">
+                                    <div className="w-full md:w-48 h-48 md:h-auto shrink-0 relative rounded-2xl overflow-hidden bg-[#1A1A1A]">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 to-violet-900/40" />
+                                        <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-indigo-500/20 blur-2xl rounded-full" />
+                                        <div className="absolute top-4 left-4">
+                                            <Bookmark className="w-5 h-5 text-indigo-400 fill-indigo-400" />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex-1 flex flex-col justify-center">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <span className="px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-medium text-indigo-300">
+                                                Bookmarked
+                                            </span>
+                                            {blog.authorName && (
+                                                <span className="text-xs text-gray-500">by {blog.authorName}</span>
+                                            )}
+                                        </div>
+
+                                        <h3 className="text-2xl font-bold mb-3 group-hover:text-indigo-300 transition-colors">
+                                            {blog.title}
+                                        </h3>
+
+                                        <p className="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
+                                            {blog.content?.replace(/```[\s\S]*?```/g, "").replace(/\s+/g, " ").trim().substring(0, 150) || "No content preview available."}...
+                                        </p>
+
+                                        <Link
+                                            href={`/blogs/${blog.slug}`}
+                                            className="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 text-sm font-medium group/link"
                                         >
                                             View Blog
                                             <ArrowUpRight className="w-4 h-4 transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5" />

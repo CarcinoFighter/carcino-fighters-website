@@ -96,6 +96,7 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const mine = searchParams.get("mine") === "true";
+    const idsParam = searchParams.get("ids");
     const session = mine ? await getSession() : null;
     if (mine && !session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -109,6 +110,13 @@ export async function GET(req: Request) {
 
     if (mine && session?.id) {
       query.eq("user_id", session.id);
+    }
+
+    if (idsParam) {
+      const ids = idsParam.split(",").map((id) => id.trim()).filter(Boolean);
+      if (ids.length > 0) {
+        query.in("id", ids);
+      }
     }
 
     const { data, error } = await query;
