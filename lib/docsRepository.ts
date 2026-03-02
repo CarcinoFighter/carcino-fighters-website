@@ -1,7 +1,7 @@
-// lib/docsRepository.ts
 import { unstable_cache } from 'next/cache';
 import { supabase } from '@/lib/initSupabase';
 import { getAvatarUrls } from '@/lib/avatarService';
+import { transformSupabaseUrl } from '@/lib/utils';
 
 function resolveApiUrl(path: string) {
   if (typeof window !== 'undefined') {
@@ -133,7 +133,7 @@ async function getDocBySlugWithAvatarUncached(slug: string): Promise<ArticleWith
         author = authorRow.name ?? authorRow.username ?? authorRow.email ?? null;
         position = authorRow.position ?? null;
         authorDescription = authorRow.description ?? null;
-        avatarUrlFallback = authorRow.avatar_url ?? null;
+        avatarUrlFallback = transformSupabaseUrl(authorRow.avatar_url) ?? null;
       }
     }
 
@@ -413,8 +413,8 @@ async function getLeadershipMembersUncached(): Promise<Record<string, Leadership
         email: u.email,
         position: u.position,
         description: u.description,
-        avatar_url: u.avatar_url,
-        profilePicture: picMap[u.id] || u.avatar_url || null
+        avatar_url: transformSupabaseUrl(u.avatar_url) ?? null,
+        profilePicture: picMap[u.id] || transformSupabaseUrl(u.avatar_url) || null
       };
       if (u.username) map[u.username.toLowerCase()] = member;
       // Also map by name if possible for flexibility

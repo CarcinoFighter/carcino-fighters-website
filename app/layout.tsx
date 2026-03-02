@@ -237,7 +237,7 @@ export default function RootLayout({
               <feDisplacementMap
                 in="SourceGraphic"
                 in2="softMap"
-                scale={150}
+                scale={20}
                 xChannelSelector="R"
                 yChannelSelector="G"
               />

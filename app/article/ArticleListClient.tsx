@@ -169,7 +169,7 @@ export function ArticleListClient({ articles }: ArticleListClientProps) {
                         "
                         >
                           <div className="liquidGlass-effect pointer-events-none"></div>
-                          <div className="cardGlass-tint pointer-events-none"></div>
+                          <div className="cardGlass-tint pointer-events-none opacity-0 group-hover/card:opacity-40 transition-opacity duration-300"></div>
                           <div className="glass-noise"></div>
                           <div className="cardGlass-borders pointer-events-none"></div>
                           <div className="cardGlass-shine pointer-events-none"></div>

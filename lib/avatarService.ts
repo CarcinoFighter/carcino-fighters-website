@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { transformSupabaseUrl } from './utils';
 
 export async function getAvatarUrls(ids: string[]): Promise<Record<string, string | null>> {
     if (!Array.isArray(ids) || ids.length === 0) {
@@ -36,10 +37,10 @@ export async function getAvatarUrls(ids: string[]): Promise<Record<string, strin
                         .from('profile-picture')
                         .createSignedUrl(row.object_key, 60 * 60 * 24 * 7); // 7 days
                     if (signed?.data?.signedUrl) {
-                        map[row.user_id] = signed.data.signedUrl;
+                        map[row.user_id] = transformSupabaseUrl(signed.data.signedUrl);
                     } else {
                         const pub = sb.storage.from('profile-picture').getPublicUrl(row.object_key);
-                        map[row.user_id] = pub?.data?.publicUrl ?? null;
+                        map[row.user_id] = transformSupabaseUrl(pub?.data?.publicUrl) ?? null;
                     }
                 } catch (e) {
                     map[row.user_id] = null;

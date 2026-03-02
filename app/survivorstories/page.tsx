@@ -218,9 +218,8 @@ export default function Home() {
                           <div
                             style={{
                               backgroundImage: `url('${backgroundImage}')`,
-                              // Desaturate and darken the card color to avoid harsh saturation
                               backgroundColor: cardColor,
-                              backgroundBlendMode: "multiply",
+                              backgroundBlendMode: "overlay",
                               filter: "saturate(0.8) brightness(1)",
                             }}
                             className="
@@ -231,7 +230,7 @@ export default function Home() {
                               flex flex-col justify-center
                               rounded-[44px]
                               overflow-hidden isolation-isolate liquid-glass !shadow-none
-                              select-none bg-cover
+                              select-none bg-cover bg-center
                             "
                           >
                             <div

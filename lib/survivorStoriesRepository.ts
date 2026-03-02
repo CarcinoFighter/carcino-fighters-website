@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { supabase } from "@/lib/initSupabase";
+import { transformSupabaseUrl } from "@/lib/utils";
 
 type RawStoryRow = {
   id: string;
@@ -16,19 +17,19 @@ type RawStoryRow = {
   updated_at: string;
   deleted: boolean | null;
   users?:
-    | {
-        name: string | null;
-        username: string | null;
-        avatar_url: string | null;
-        description?: string | null;
-      }
-    | {
-        name: string | null;
-        username: string | null;
-        avatar_url: string | null;
-        description?: string | null;
-      }[]
-    | null;
+  | {
+    name: string | null;
+    username: string | null;
+    avatar_url: string | null;
+    description?: string | null;
+  }
+  | {
+    name: string | null;
+    username: string | null;
+    avatar_url: string | null;
+    description?: string | null;
+  }[]
+  | null;
 };
 
 export type SurvivorStory = {
@@ -72,7 +73,7 @@ function mapRow(row: RawStoryRow | null): SurvivorStory | null {
     title: row.title,
     slug: row.slug,
     content: row.content,
-    image_url: row.image_url ?? null,
+    image_url: transformSupabaseUrl(row.image_url) ?? null,
     colour: row.colour ?? null,
     tags: row.tags,
     views: row.views,
@@ -83,7 +84,7 @@ function mapRow(row: RawStoryRow | null): SurvivorStory | null {
     authorName,
     authorUsername,
     authorBio,
-    avatarUrl,
+    avatarUrl: transformSupabaseUrl(avatarUrl),
   };
 }
 

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import jwt from "jsonwebtoken";
+import { transformSupabaseUrl } from "@/lib/utils";
 
 const COOKIE_NAME = "jwt";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -137,7 +138,7 @@ function mapStory(row: any) {
     title: row.title,
     slug: row.slug,
     content: row.content,
-    image_url: row.image_url,
+    image_url: transformSupabaseUrl(row.image_url),
     colour: row.colour,
     tags: row.tags,
     views: row.views,
@@ -148,7 +149,7 @@ function mapStory(row: any) {
     authorName: author?.name ?? author?.username ?? null,
     authorUsername: author?.username ?? null,
     authorBio: author?.description ?? null,
-    avatarUrl: author?.avatar_url ?? null,
+    avatarUrl: transformSupabaseUrl(author?.avatar_url) ?? null,
   };
 }
 
