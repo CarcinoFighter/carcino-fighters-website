@@ -229,10 +229,12 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                   {(article.authors && article.authors.length > 0) ? (
                     article.authors.map((author, idx) => (
                       <div key={idx} className="flex flex-col sm:flex-row gap-6 items-center sm:items-start w-full">
-                        <Avatar className="w-20 h-20 shrink-0">
-                          <AvatarImage src={author.profilePicture || "/logo.png"} />
-                          <AvatarFallback>{author.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
+                        <div className="relative z-10">
+                          <Avatar className="w-20 h-20 shrink-0">
+                            <AvatarImage src={author.profilePicture || "/logo.png"} />
+                            <AvatarFallback>{author.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                        </div>
 
                         <div className="flex flex-col sm:flex-row gap-6 w-full">
                           <div className="flex-1 flex flex-col gap-1 items-center sm:items-start text-center sm:text-left">
@@ -249,10 +251,12 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                     ))
                   ) : (
                     <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
-                      <Avatar className="w-20 h-20">
-                        <AvatarImage src={article.profilePicture || "/logo.png"} />
-                        <AvatarFallback>{authorLabel.slice(0, 2).toUpperCase()}</AvatarFallback>
-                      </Avatar>
+                      <div className="relative z-10">
+                        <Avatar className="w-20 h-20">
+                          <AvatarImage src={article.profilePicture || "/logo.png"} />
+                          <AvatarFallback>{authorLabel.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                      </div>
                       <div className="max-w-[500px] flex flex-col gap-1 p-2 items-center sm:items-start">
                         <h3 className="text-[26px] uppercase font-tttravelsnext leading-[20px] font-bold text-center sm:text-left">
                           {authorLabel}
@@ -327,7 +331,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                             "
                           >
                             <div className="liquidGlass-effect pointer-events-none"></div>
-                            <div className="cardGlass-tint pointer-events-none"></div>
+                            <div className="cardGlass-tint pointer-events-none opacity-0 group-hover/card:opacity-40 transition-opacity duration-300"></div>
                             <div className="glass-noise"></div>
                             <div className="cardGlass-borders pointer-events-none"></div>
                             <div className="cardGlass-shine pointer-events-none"></div>
