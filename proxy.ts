@@ -37,13 +37,26 @@ export async function proxy(request: NextRequest) {
 
   if (!isMaintenancePage && !isAdminPath && !isApiPath && !isAsset) {
     try {
-      // Fetch maintenance status from local file (via URL for middleware compatibility)
-      const maintenanceUrl = new URL('/maintenance.json', request.url);
-      const res = await fetch(maintenanceUrl);
-      if (res.ok) {
-        const setting = await res.json();
-        if (setting?.enabled === true) {
-          return NextResponse.redirect(new URL('/maintenance', request.url));
+      // Fetch maintenance status from Supabase REST API (Edge compatible)
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+      if (supabaseUrl && supabaseAnonKey) {
+        const restUrl = `${supabaseUrl}/rest/v1/site_settings?key=eq.maintenance_mode&select=value`;
+        const res = await fetch(restUrl, {
+          headers: {
+            'apikey': supabaseAnonKey,
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+          },
+          next: { revalidate: 0 } // Ensure we don't cache stale maintenance status in the proxy
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const setting = data[0]?.value;
+          if (setting?.enabled === true) {
+            return NextResponse.redirect(new URL('/maintenance', request.url));
+          }
         }
       }
     } catch (err) {
