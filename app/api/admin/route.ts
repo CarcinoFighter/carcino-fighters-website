@@ -1367,11 +1367,25 @@ export async function POST(req: Request) {
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
 			try {
-				const filePath = path.join(process.cwd(), "public", "maintenance.json");
-				const content = await fs.readFile(filePath, "utf-8");
-				const maintenance = JSON.parse(content);
-				return NextResponse.json({ settings: [{ key: "maintenance_mode", value: maintenance }] });
-			} catch (err) {
+				const { data, error } = await client
+					.from("site_settings")
+					.select("key, value");
+
+				if (error) throw error;
+
+				const settings = data?.map((s: any) => ({
+					key: s.key,
+					value: s.value
+				})) || [];
+
+				// Ensure maintenance_mode is present if we found nothing
+				if (!settings.some((s: any) => s.key === "maintenance_mode")) {
+					settings.push({ key: "maintenance_mode", value: { enabled: false } });
+				}
+
+				return NextResponse.json({ settings });
+			} catch (err: any) {
+				console.error("get_site_settings error:", err);
 				return NextResponse.json({ settings: [{ key: "maintenance_mode", value: { enabled: false } }] });
 			}
 		}
@@ -1384,11 +1398,16 @@ export async function POST(req: Request) {
 			const { key, value } = body as any;
 			if (key === "maintenance_mode") {
 				try {
-					const filePath = path.join(process.cwd(), "public", "maintenance.json");
-					await fs.writeFile(filePath, JSON.stringify(value, null, 2));
+					const { error } = await client
+						.from("site_settings")
+						.upsert({ key, value, updated_at: new Date().toISOString() });
+
+					if (error) throw error;
+
 					return NextResponse.json({ setting: { key, value } });
-				} catch (err) {
-					return NextResponse.json({ error: "Failed to update maintenance file" }, { status: 500 });
+				} catch (err: any) {
+					console.error("update_site_settings error:", err);
+					return NextResponse.json({ error: `Failed to update ${key}: ${err.message}` }, { status: 500 });
 				}
 			}
 
