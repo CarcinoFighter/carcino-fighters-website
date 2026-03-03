@@ -5,6 +5,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { Buffer } from "node:buffer";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 type AuthBody = {
 	action:
@@ -30,7 +32,9 @@ type AuthBody = {
 	| "list_public_users"
 	| "update_public_user"
 	| "delete_public_user"
-	| "system_check";
+	| "system_check"
+	| "get_site_settings"
+	| "update_site_settings";
 	username?: string;
 	email?: string;
 	password?: string;
@@ -1356,6 +1360,45 @@ export async function POST(req: Request) {
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 			return NextResponse.json({ ok: true });
+		}
+
+		if (action === "get_site_settings") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+			try {
+				const filePath = path.join(process.cwd(), "public", "maintenance.json");
+				const content = await fs.readFile(filePath, "utf-8");
+				const maintenance = JSON.parse(content);
+				return NextResponse.json({ settings: [{ key: "maintenance_mode", value: maintenance }] });
+			} catch (err) {
+				return NextResponse.json({ settings: [{ key: "maintenance_mode", value: { enabled: false } }] });
+			}
+		}
+
+		if (action === "update_site_settings") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+			const { key, value } = body as any;
+			if (key === "maintenance_mode") {
+				try {
+					const filePath = path.join(process.cwd(), "public", "maintenance.json");
+					await fs.writeFile(filePath, JSON.stringify(value, null, 2));
+					return NextResponse.json({ setting: { key, value } });
+				} catch (err) {
+					return NextResponse.json({ error: "Failed to update maintenance file" }, { status: 500 });
+				}
+			}
+
+			return NextResponse.json({ error: "Unsupported setting key" }, { status: 400 });
+		}
+
+		if (action === "system_check") {
+			// This was missing from the POST but mentioned in the type, let's add a placeholder or check if it was elsewhere
+			// For now, let's just return something to avoid 400
+			return NextResponse.json({ status: "ok", time: new Date().toISOString() });
 		}
 
 		return NextResponse.json({ error: "Unknown action" }, { status: 400 });

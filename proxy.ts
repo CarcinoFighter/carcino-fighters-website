@@ -29,26 +29,51 @@ async function hasValidAdminToken(token: string | undefined) {
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
-  if (!pathname.startsWith(ADMIN_ROOT)) return NextResponse.next();
+  // 1. Maintenance Mode Logic
+  const isMaintenancePage = pathname === '/maintenance';
+  const isAdminPath = pathname.startsWith('/admin');
+  const isApiPath = pathname.startsWith('/api');
+  const isAsset = pathname.includes('.') || pathname.startsWith('/_next');
 
-  const token = request.cookies.get(COOKIE_NAME)?.value;
-  const valid = await hasValidAdminToken(token);
-  const isLogin = pathname === LOGIN_PATH || pathname.startsWith(`${LOGIN_PATH}/`);
-
-  if (isLogin && valid) {
-    const redirectUrl = new URL(ADMIN_ROOT, request.url);
-    return NextResponse.redirect(redirectUrl);
+  if (!isMaintenancePage && !isAdminPath && !isApiPath && !isAsset) {
+    try {
+      // Fetch maintenance status from local file (via URL for middleware compatibility)
+      const maintenanceUrl = new URL('/maintenance.json', request.url);
+      const res = await fetch(maintenanceUrl);
+      if (res.ok) {
+        const setting = await res.json();
+        if (setting?.enabled === true) {
+          return NextResponse.redirect(new URL('/maintenance', request.url));
+        }
+      }
+    } catch (err) {
+      console.error('Proxy: Maintenance check error:', err);
+    }
   }
 
-  if (!isLogin && !valid) {
-    const loginUrl = new URL(LOGIN_PATH, request.url);
-    loginUrl.searchParams.set("redirectTo", `${pathname}${search}`);
-    return NextResponse.redirect(loginUrl);
+  // 2. Admin Auth Proxy Logic
+  if (pathname.startsWith(ADMIN_ROOT)) {
+    const token = request.cookies.get(COOKIE_NAME)?.value;
+    const valid = await hasValidAdminToken(token);
+    const isLogin = pathname === LOGIN_PATH || pathname.startsWith(`${LOGIN_PATH}/`);
+
+    if (isLogin && valid) {
+      const redirectUrl = new URL(ADMIN_ROOT, request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    if (!isLogin && !valid) {
+      const loginUrl = new URL(LOGIN_PATH, request.url);
+      loginUrl.searchParams.set("redirectTo", `${pathname}${search}`);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
 };

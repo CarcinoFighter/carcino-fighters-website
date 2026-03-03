@@ -107,6 +107,8 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<"action-centre" | "articles" | "survivors" | "system">("articles");
   const [systemCheckResults, setSystemCheckResults] = useState<any>(null);
   const [systemCheckLoading, setSystemCheckLoading] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceLoading, setMaintenanceLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const cardClass = "rounded-[44px] border border-white/10 bg-white/0 backdrop-blur shadow-2xl";
@@ -159,6 +161,7 @@ export default function AdminPage() {
           if (data.user?.admin_access) {
             tasks.push(fetchUsers());
             tasks.push(fetchPublicUsers());
+            tasks.push(fetchSiteSettings());
           }
           await Promise.all(tasks);
           setLoading(false);
@@ -337,6 +340,52 @@ export default function AdminPage() {
       setError("Review failed");
     } finally {
       setReviewing((s) => ({ ...s, [submissionId]: false }));
+    }
+  }
+
+  async function fetchSiteSettings() {
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "get_site_settings" }),
+      });
+      const data = await res.json();
+      if (res.ok && data.settings) {
+        const maint = data.settings.find((s: any) => s.key === "maintenance_mode");
+        if (maint) {
+          setMaintenanceMode(maint.value?.enabled ?? false);
+        }
+      }
+    } catch (err) {
+      console.error("fetchSiteSettings error", err);
+    }
+  }
+
+  async function toggleMaintenanceMode() {
+    setMaintenanceLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_site_settings",
+          key: "maintenance_mode",
+          value: { enabled: !maintenanceMode }
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMaintenanceMode(!maintenanceMode);
+      } else {
+        setError(data.error || "Failed to update maintenance mode");
+      }
+    } catch (err) {
+      console.error("toggleMaintenanceMode error", err);
+      setError("Failed to update maintenance mode");
+    } finally {
+      setMaintenanceLoading(false);
     }
   }
 
@@ -1210,6 +1259,44 @@ export default function AdminPage() {
 
             {activeTab === "system" && currentUser?.admin_access && (
               <div className="space-y-8">
+                {/* Maintenance Mode Card */}
+                <section className={`${cardClass} p-8 relative overflow-hidden`}>
+                  <div className="glass-noise" />
+                  <div className="cardGlass-borders" />
+                  <div className="cardGlass-tint" />
+                  <div className="cardGlass-shine pointer-events-none" />
+
+                  <div className="relative z-10 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-2xl font-wintersolace text-white">Maintenance Mode</h2>
+                        <p className="text-sm text-white/50 mt-1">Restrict public access to the website while performing updates.</p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {maintenanceLoading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />}
+                        <button
+                          onClick={toggleMaintenanceMode}
+                          disabled={maintenanceLoading}
+                          className={`relative w-14 h-7 rounded-full transition-colors duration-300 ${maintenanceMode ? "bg-red-500" : "bg-white/10"}`}
+                        >
+                          <motion.div
+                            animate={{ x: maintenanceMode ? 32 : 4 }}
+                            className="absolute top-1 w-5 h-5 bg-white rounded-full shadow-lg"
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-2 p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+                      <p className="text-xs text-white/40 leading-relaxed font-dmsans">
+                        <span className="text-white font-bold uppercase tracking-wider block mb-1">Warning:</span>
+                        When enabled, visitors will be redirected to the maintenance page. Admin panel and API will remain accessible.
+                        Make sure to toggle it off once your work is complete.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+
                 <section className={`${cardClass} p-8 relative overflow-hidden`}>
                   <div className="glass-noise" />
                   <div className="cardGlass-borders" />
