@@ -421,50 +421,17 @@
 
   /* Vertical borders remain solid for most of length, dissolving to 0% opacity exactly at the 44px junction */
   /* Each border segment has its own fade direction: Top-right, Bottom-left diagonal logic */
+  /* Asymmetrical fades: merge with shine at TL/BR, absolute 0% at TR/BL */
   mask-image:
-    linear-gradient(to right,
-      black calc(100% - 88px),
-      transparent calc(100% - 44px)),
-    /* Top: fade right */
-    linear-gradient(to bottom, transparent 44px, black 88px),
-    /* Right: fade top */
-    linear-gradient(to left,
-      black calc(100% - 88px),
-      transparent calc(100% - 22px)),
-    /* Bottom: fade left */
-    linear-gradient(to top, transparent 44px, black 88px);
-  /* Left: fade bottom */
-  mask-size:
-    100% 88px,
-    88px 100%,
-    100% 88px,
-    88px 100%;
-  mask-position:
-    top center,
-    center right,
-    bottom center,
-    center left;
-  mask-repeat: no-repeat;
+    linear-gradient(to right, rgba(0, 0, 0, 0.2) 44px, black 120px, black calc(100% - 120px), transparent calc(100% - 44px)) top / 100% 1px no-repeat,
+    linear-gradient(to left, rgba(0, 0, 0, 0.2) 44px, black 120px, black calc(100% - 120px), transparent calc(100% - 44px)) bottom / 100% 1px no-repeat,
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 44px, black 120px, black calc(100% - 120px), transparent calc(100% - 44px)) left / 1px 100% no-repeat,
+    linear-gradient(to top, rgba(0, 0, 0, 0.2) 44px, black 120px, black calc(100% - 120px), transparent calc(100% - 44px)) right / 1px 100% no-repeat;
   -webkit-mask-image:
-    linear-gradient(to right,
-      black calc(100% - 88px),
-      transparent calc(100% - 22px)),
-    linear-gradient(to bottom, transparent 44px, black 88px),
-    linear-gradient(to left,
-      black calc(100% - 88px),
-      transparent calc(100% - 22px)),
-    linear-gradient(to top, transparent 44px, black 88px);
-  -webkit-mask-size:
-    100% 88px,
-    88px 100%,
-    100% 88px,
-    88px 100%;
-  -webkit-mask-position:
-    top center,
-    center right,
-    bottom center,
-    center left;
-  -webkit-mask-repeat: no-repeat;
+    linear-gradient(to right, rgba(0, 0, 0, 0.2) 44px, black 120px, black calc(100% - 120px), transparent calc(100% - 44px)) top / 100% 1px no-repeat,
+    linear-gradient(to left, rgba(0, 0, 0, 0.2) 44px, black 120px, black calc(100% - 120px), transparent calc(100% - 44px)) bottom / 100% 1px no-repeat,
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 44px, black 120px, black calc(100% - 120px), transparent calc(100% - 44px)) left / 1px 100% no-repeat,
+    linear-gradient(to top, rgba(0, 0, 0, 0.2) 44px, black 120px, black calc(100% - 120px), transparent calc(100% - 44px)) right / 1px 100% no-repeat;
 
   /* Precise corner gaps */
   clip-path: polygon(44px 0,
@@ -508,36 +475,21 @@
   pointer-events: none;
 
   border-radius: 44px;
-  border-top: 1.5px solid rgba(255, 255, 255, 0.45);
-  border-left: 1.5px solid rgba(255, 255, 255, 0.45);
+  border-top: 1px solid rgba(255, 255, 255, 0.9);
+  border-left: 1px solid rgba(255, 255, 255, 0.9);
 
-  /* shadow from top-left corner */
-  box-shadow: inset 0.1px 0.1px 2px rgba(255, 255, 255, 0.4);
+  /* shadow from top-left corner removed to prevent internal bleed */
+  /* box-shadow: inset 0.5px 0.5px 4px rgba(255, 255, 255, 0.5); */
 
-  /* Sharper circular mask combined with angular fade for smooth blending */
+  /* Combined masks for centered shine and edge clipping - Synced at 0.2 with borders */
   mask-image:
-    radial-gradient(circle 46px at 0% 0%,
-      rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 44px,
-      rgba(0, 0, 0, 0) 46px),
-    conic-gradient(from 90deg at 0% 0%,
-      transparent 0deg,
-      black 10deg,
-      black 80deg,
-      transparent 90deg);
+    radial-gradient(circle 46px at 0% 0%, black 0px, black 44px, transparent 46px),
+    conic-gradient(from 90deg at 0% 0%, rgba(0, 0, 0, 0.2) 0deg, black 45deg, rgba(0, 0, 0, 0.2) 90deg);
   -webkit-mask-image:
-    radial-gradient(circle 46px at 0% 0%,
-      rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 44px,
-      rgba(0, 0, 0, 0) 46px),
-    conic-gradient(from 90deg at 0% 0%,
-      transparent 0deg,
-      black 10deg,
-      black 80deg,
-      transparent 90deg);
+    radial-gradient(circle 46px at 0% 0%, black 0px, black 44px, transparent 46px),
+    conic-gradient(from 90deg at 0% 0%, rgba(0, 0, 0, 0.2) 0deg, black 45deg, rgba(0, 0, 0, 0.2) 90deg);
   mask-composite: intersect;
   -webkit-mask-composite: source-in;
-  /* For Safari */
 
   /* Strictly clip to 44x44 corner area to match border gaps */
   clip-path: inset(0 calc(100% - 44px) calc(100% - 44px) 0);
@@ -549,38 +501,23 @@
   inset: 0;
   pointer-events: none;
 
-  /* Boosted bottom-right edges for visibility */
-  border-bottom: 1.5px solid rgba(255, 255, 255, 0.45);
-  border-right: 1.5px solid rgba(255, 255, 255, 0.45);
+  /* Matching border edge styles for seamless merging */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.9);
+  border-right: 1px solid rgba(255, 255, 255, 0.9);
   border-radius: 44px;
 
-  /* shadow from bottom-right corner */
-  box-shadow: inset -0.1px -0.1px 2.5px rgba(255, 255, 255, 0.6);
+  /* shadow from bottom-right corner removed to prevent internal bleed */
+  /* box-shadow: inset -0.5px -0.5px 4px rgba(255, 255, 255, 0.5); */
 
-  /* Sharper circular mask combined with angular fade for smooth blending */
+  /* Combined masks for centered shine and edge clipping - Synced at 0.2 with borders */
   mask-image:
-    radial-gradient(circle 46px at 100% 100%,
-      rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 44px,
-      rgba(0, 0, 0, 0) 46px),
-    conic-gradient(from 270deg at 100% 100%,
-      transparent 0deg,
-      black 10deg,
-      black 80deg,
-      rgba(0, 0, 0, 0.5) 90deg);
+    radial-gradient(circle 46px at 100% 100%, black 0px, black 44px, transparent 46px),
+    conic-gradient(from 270deg at 100% 100%, rgba(0, 0, 0, 0.2) 0deg, black 45deg, rgba(0, 0, 0, 0.2) 90deg);
   -webkit-mask-image:
-    radial-gradient(circle 46px at 100% 100%,
-      rgba(0, 0, 0, 1) 0px,
-      rgba(0, 0, 0, 1) 44px,
-      rgba(0, 0, 0, 0) 46px),
-    conic-gradient(from 270deg at 100% 100%,
-      transparent 0deg,
-      black 10deg,
-      black 80deg,
-      rgba(0, 0, 0, 0.5) 90deg);
+    radial-gradient(circle 46px at 100% 100%, black 0px, black 44px, transparent 46px),
+    conic-gradient(from 270deg at 100% 100%, rgba(0, 0, 0, 0.2) 0deg, black 45deg, rgba(0, 0, 0, 0.2) 90deg);
   mask-composite: intersect;
   -webkit-mask-composite: source-in;
-  /* For Safari */
 
   clip-path: inset(calc(100% - 44px) 0 0 calc(100% - 44px));
 }
