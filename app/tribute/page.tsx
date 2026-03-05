@@ -4,8 +4,19 @@ import * as React from "react";
 import Script from "next/script";
 import Image from "next/image";
 import { Label } from "@/components/ui/label";
-import { CardBody, CardContainer, CardItem, useMouseEnter } from "@/components/ui/3d-card";
-import { motion, MotionConfig, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import {
+  CardBody,
+  CardContainer,
+  CardItem,
+  useMouseEnter,
+} from "@/components/ui/3d-card";
+import {
+  motion,
+  MotionConfig,
+  useScroll,
+  useTransform,
+  AnimatePresence,
+} from "framer-motion";
 import { tributes, Tribute } from "./tribute";
 
 const easeSoft = [0.33, 1, 0.68, 1] as const;
@@ -35,7 +46,7 @@ function TributeCardInner({ item, containerRef }: { item: Tribute, containerRef:
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const contentRef = React.useRef<HTMLDivElement | null>(null);
-  const [expandedHeight, setExpandedHeight] = React.useState(320);
+  const [expandedHeight, setExpandedHeight] = React.useState(260);
 
   const imgSrc = item.image;
 
@@ -65,10 +76,11 @@ function TributeCardInner({ item, containerRef }: { item: Tribute, containerRef:
   React.useEffect(() => {
     if (isActuallyHovered && contentRef.current) {
       const scrollTimeout = setTimeout(() => {
-        // Scroll to the absolute end of the document/page
-        window.scrollTo({
-          top: document.documentElement.scrollHeight,
-          behavior: 'smooth',
+        // Using block: 'nearest' ensures the card scrolls just enough to be fully visible
+        // without jumping to the top of the viewport if it's already mostly visible.
+        contentRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
         });
       }, 200); // Increased delay to sync with the start of the height animation
       return () => clearTimeout(scrollTimeout);
@@ -102,12 +114,12 @@ function TributeCardInner({ item, containerRef }: { item: Tribute, containerRef:
     <motion.div
       initial={false}
       animate={{
-        height: isActuallyHovered ? expandedHeight : 320,
+        height: isActuallyHovered ? expandedHeight : 260,
       }}
       transition={{
         duration: 0.4,
         ease: easeSoft,
-        delay: isActuallyHovered ? 0 : 0.15 // Apply delay only to retraction to fix abruptness
+        delay: isActuallyHovered ? 0 : 0.15, // Apply delay only to retraction to fix abruptness
       }}
       className="
         relative z-20
@@ -123,7 +135,10 @@ function TributeCardInner({ item, containerRef }: { item: Tribute, containerRef:
         *:[transform-style:preserve-3d]
       "
     >
-      <div ref={contentRef} className="relative w-full h-full overflow-hidden rounded-[44px]">
+      <div
+        ref={contentRef}
+        className="relative w-full h-full overflow-hidden rounded-[44px]"
+      >
         <motion.div
           className="absolute inset-0 bg-cover bg-center origin-center"
           style={{ backgroundImage: `url(${imgSrc})` }}
@@ -153,14 +168,16 @@ function TributeCardInner({ item, containerRef }: { item: Tribute, containerRef:
             rounded-[44px]
             pointer-events-none
             w-full
-            p-6 sm:p-8
+            py-5 sm:py-6 px-0
           "
         >
-          {/* Fixed spacer to push content to bottom of initial 320px view */}
-          <div className="h-[140px] sm:h-[140px] w-full shrink-0" />
+          {/* Fixed spacer to push content to bottom of initial view */}
+          <div className="h-[100px] sm:h-[100px] w-full shrink-0" />
 
           <div className="flex flex-col items-center w-full">
-            <h3 className={`${getTitleFontSize(item.name)} leading-tight p-2 align-middle justify-center text-center font-tttravelsnext font-bold max-w-[340px] mx-auto w-full text-[#f8f8f8]`}>
+            <h3
+              className={`${getTitleFontSize(item.name)} leading-tight p-2 align-middle justify-center text-center font-tttravelsnext font-bold max-w-[340px] mx-auto w-full text-[#f8f8f8] -mt-2`}
+            >
               {item.name}
             </h3>
             <div className="sm:text-[18px] text-[14px] text-[#ffffff]/95 font-tttravelsnext font-medium [text-shadow:0_2px_8px_rgba(0,0,0,0.4)]">
@@ -176,13 +193,13 @@ function TributeCardInner({ item, containerRef }: { item: Tribute, containerRef:
               duration: 0.3,
               ease: easeSoft,
             }}
-            className="overflow-hidden w-full mt-4"
+            className="overflow-hidden w-full px-4 mt-2"
             style={{
-              height: isActuallyHovered ? "auto" : 0
+              height: isActuallyHovered ? "auto" : 0,
             }}
           >
-            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent mb-4" />
-            <p className="text-[14px] sm:text-[16px] text-center text-[#dfdfdf] font-dmsans w-full font-light leading-relaxed pb-4">
+            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent mb-2" />
+            <p className="text-[14px] sm:text-[16px] text-center text-[#dfdfdf] font-dmsans w-full font-light leading-5">
               {item.text}
             </p>
           </motion.div>
@@ -369,7 +386,7 @@ export default function Home() {
             </div>
 
             <motion.div
-              className="flex z-10 flex-col w-full items-center gap-8 sm:gap-5 mt-32 sm:mt-28"
+              className="flex z-10 flex-col w-full items-center gap-8 sm:gap-5 mt-32 sm:mt-24"
               variants={staggerContainer}
             >
               <span className="text-3xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-[40%] max-sm:text-3xl max-sm:w-3/5 leading-[109%] text-[#f8f8f8]">
