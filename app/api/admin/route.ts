@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
@@ -978,6 +979,8 @@ export async function POST(req: Request) {
 			if (decision === "approve") {
 				try {
 					const applied = await applySubmissionToDocs(client, submission as DocSubmissionRow, session.user.id);
+					revalidateTag('articles');
+					revalidateTag('article-list');
 					return NextResponse.json({ submission: applied.submission, doc: applied.applied, status: "approved" });
 				} catch (err) {
 					const message = err instanceof Error ? err.message : String(err);
@@ -1020,6 +1023,8 @@ export async function POST(req: Request) {
 				.maybeSingle();
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+			revalidateTag('articles');
+			revalidateTag('article-list');
 			return NextResponse.json({ doc: data });
 		}
 
@@ -1079,6 +1084,8 @@ export async function POST(req: Request) {
 				.maybeSingle();
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+			revalidateTag('articles');
+			revalidateTag('article-list');
 			return NextResponse.json({ doc: data });
 		}
 
@@ -1090,8 +1097,9 @@ export async function POST(req: Request) {
 			const { docId } = body ?? {};
 			if (!docId) return NextResponse.json({ error: "docId is required" }, { status: 400 });
 
-			const { error } = await client.from("cancer_docs").delete().eq("id", docId);
-			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+			const { error } = await client.from("cancer_docs").delete().eq("id", docId); if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+			revalidateTag('articles');
+			revalidateTag('article-list');
 			return NextResponse.json({ ok: true });
 		}
 
