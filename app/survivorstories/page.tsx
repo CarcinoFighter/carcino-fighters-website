@@ -219,8 +219,9 @@ export default function Home() {
                             style={{
                               backgroundImage: `url('${backgroundImage}')`,
                               backgroundColor: cardColor,
-                              backgroundBlendMode: "overlay",
-                              filter: "saturate(0.8) brightness(1)",
+                              backgroundBlendMode: "multiply",
+                              filter:
+                                "saturate(1.2) brightness(1) contrast(0.8)",
                             }}
                             className="
                               relative z-20

@@ -274,7 +274,7 @@ export default function StoryPageClient({
                           backgroundImage: `url('${backgroundImage}')`,
                           backgroundColor: relatedCardColor,
                           backgroundBlendMode: "multiply",
-                          filter: "saturate(0.8) brightness(1)",
+                          filter: "saturate(1.2) brightness(1) contrast(0.8)",
                         }}
                         className="
                           relative
