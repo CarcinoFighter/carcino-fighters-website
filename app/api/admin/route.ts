@@ -54,6 +54,7 @@ type AuthBody = {
 	reviewerNote?: string;
 	status?: "pending" | "approved" | "rejected";
 	description?: string;
+	department?: string;
 	bio?: string;
 	forceOwn?: boolean;
 };
@@ -150,7 +151,7 @@ async function validateSessionFromToken(token: string) {
 
 	const { data: userRow, error: userError } = await client
 		.from("users")
-		.select("id, username, email, name, admin_access, description, position")
+		.select("id, username, email, name, admin_access, description, position, department")
 		.eq("id", payload.sub)
 		.limit(1)
 		.maybeSingle();
@@ -168,6 +169,7 @@ async function validateSessionFromToken(token: string) {
 			admin_access: Boolean(userRow.admin_access),
 			description: userRow.description,
 			position: userRow.position,
+			department: userRow.department,
 		},
 	};
 }
@@ -202,7 +204,7 @@ async function getAuthenticatedUser() {
 			// Then check if they are an employee in the "users" table
 			const { data: userRow } = await client
 				.from("users")
-				.select("id, username, email, name, admin_access, description, position")
+				.select("id, username, email, name, admin_access, description, position, department")
 				.eq("email", publicUser.email.toLowerCase())
 				.limit(1)
 				.maybeSingle();
@@ -219,6 +221,7 @@ async function getAuthenticatedUser() {
 					admin_access: Boolean(userRow.admin_access),
 					description: userRow.description,
 					position: userRow.position,
+					department: userRow.department,
 				},
 			};
 		} catch (e) {
@@ -433,7 +436,7 @@ export async function POST(req: Request) {
 		}
 
 		if (action === "register") {
-			const { username, email, password, name, avatar_url, position, description } = body ?? {};
+			const { username, email, password, name, avatar_url, position, description, department } = body ?? {};
 			if (!email || !password) {
 				return NextResponse.json({ error: "email and password are required" }, { status: 400 });
 			}
@@ -451,8 +454,9 @@ export async function POST(req: Request) {
 					avatar_url: avatar_url ?? null,
 					position: position ?? null,
 					description: description ?? null,
+					department: department ?? null,
 				})
-				.select("id, username, email, name, position, description, avatar_url")
+				.select("id, username, email, name, position, description, avatar_url, department")
 				.maybeSingle();
 
 			if (error) {
@@ -475,7 +479,7 @@ export async function POST(req: Request) {
 
 			const { data: user, error } = await client
 				.from("users")
-				.select("id, username, email, name, password, admin_access, description, position")
+				.select("id, username, email, name, password, admin_access, description, position, department")
 				.or(`username.eq.${loginId},email.eq.${loginId}`)
 				.limit(1)
 				.maybeSingle();
@@ -520,7 +524,7 @@ export async function POST(req: Request) {
 
 			const response = NextResponse.json({
 				token,
-				user: { id: user.id, username: user.username, email: user.email, name: user.name, admin_access: Boolean(user.admin_access), description: user.description, position: user.position },
+				user: { id: user.id, username: user.username, email: user.email, name: user.name, admin_access: Boolean(user.admin_access), description: user.description, position: user.position, department: user.department },
 			});
 
 			response.cookies.set({
@@ -597,7 +601,7 @@ export async function POST(req: Request) {
 
 			const { data: usersData, error } = await client
 				.from("users")
-				.select("id, username, email, name, admin_access, position, description, avatar_url")
+				.select("id, username, email, name, admin_access, position, description, avatar_url, department")
 				.order("created_at", { ascending: true });
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -640,7 +644,7 @@ export async function POST(req: Request) {
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-			const { targetUserId, username, email, name, password, admin_access, position, description } = body ?? {};
+			const { targetUserId, username, email, name, password, admin_access, position, description, department } = body ?? {};
 			if (!targetUserId) return NextResponse.json({ error: "targetUserId is required" }, { status: 400 });
 
 			const updates: Record<string, unknown> = {};
@@ -650,6 +654,7 @@ export async function POST(req: Request) {
 			if (admin_access !== undefined) updates.admin_access = Boolean(admin_access);
 			if (position !== undefined) updates.position = position || null;
 			if (description !== undefined) updates.description = description || null;
+			if (department !== undefined) updates.department = department || null;
 			if (password) updates.password = await bcrypt.hash(password, 10);
 
 			if (Object.keys(updates).length === 0) {
@@ -660,7 +665,7 @@ export async function POST(req: Request) {
 				.from("users")
 				.update(updates)
 				.eq("id", targetUserId)
-				.select("id, username, email, name, admin_access, position, description, avatar_url")
+				.select("id, username, email, name, admin_access, position, description, avatar_url, department")
 				.maybeSingle();
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -672,13 +677,14 @@ export async function POST(req: Request) {
 			const session = await getAuthenticatedUser();
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-			const { username, email, name, password, position, description } = body ?? {};
+			const { username, email, name, password, position, description, department } = body ?? {};
 			const updates: Record<string, unknown> = {};
 			if (username !== undefined) updates.username = username || null;
 			if (email !== undefined) updates.email = email ? email.toLowerCase() : null;
 			if (name !== undefined) updates.name = name || null;
 			if (position !== undefined) updates.position = position || null;
 			if (description !== undefined) updates.description = description || null;
+			if (department !== undefined) updates.department = department || null;
 			if (password) updates.password = await bcrypt.hash(password, 10);
 
 			if (Object.keys(updates).length === 0) {
@@ -689,7 +695,7 @@ export async function POST(req: Request) {
 				.from("users")
 				.update(updates)
 				.eq("id", session.user.id)
-				.select("id, username, email, name, admin_access, position, description, avatar_url")
+				.select("id, username, email, name, admin_access, position, description, avatar_url, department")
 				.maybeSingle();
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });

@@ -25,6 +25,7 @@ export default function AdminPage() {
     name: string | null;
     admin_access?: boolean | null;
     position?: string | null;
+    department?: string | null;
     description?: string | null;
     profilePicture?: string | null;
   };
@@ -86,8 +87,8 @@ export default function AdminPage() {
   const [publicUsers, setPublicUsers] = useState<PublicUserRow[]>([]);
   const [publicUsersOpen, setPublicUsersOpen] = useState(false);
   const [publicUsersLoading, setPublicUsersLoading] = useState(false);
-  const [selfForm, setSelfForm] = useState({ username: "", email: "", name: "", password: "", description: "" });
-  const [userEdits, setUserEdits] = useState<Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string }>>({});
+  const [selfForm, setSelfForm] = useState({ username: "", email: "", name: "", password: "", description: "", department: "" });
+  const [userEdits, setUserEdits] = useState<Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string; department: string }>>({});
   const [publicUserEdits, setPublicUserEdits] = useState<Record<string, { username: string; email: string; name: string; bio: string; password: string }>>({});
   const [savingSelf, setSavingSelf] = useState(false);
   const [savingUser, setSavingUser] = useState<Record<string, boolean>>({});
@@ -97,7 +98,7 @@ export default function AdminPage() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [userSearch, setUserSearch] = useState("");
   const [publicUserSearch, setPublicUserSearch] = useState("");
-  const [newUser, setNewUser] = useState({ username: "", email: "", name: "", password: "", position: "", description: "" });
+  const [newUser, setNewUser] = useState({ username: "", email: "", name: "", password: "", position: "", description: "", department: "" });
   const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
   const [submissionsLoading, setSubmissionsLoading] = useState(false);
   const [reviewing, setReviewing] = useState<Record<string, boolean>>({});
@@ -153,6 +154,7 @@ export default function AdminPage() {
               name: data.user.name ?? "",
               password: "",
               description: data.user.description ?? "",
+              department: data.user.department ?? "",
             });
           }
           const tasks: Array<Promise<unknown>> = [fetchSelfProfilePicture(), fetchDocsWithPictures({ silent: true })];
@@ -423,7 +425,7 @@ export default function AdminPage() {
       const data = await res.json().catch(() => ({}));
       if (res.ok && Array.isArray(data.users)) {
         setUsers(data.users);
-        const initialEdits: Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string }> = {};
+        const initialEdits: Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string; department: string }> = {};
         data.users.forEach((u: UserRow) => {
           initialEdits[u.id] = {
             username: u.username ?? "",
@@ -433,6 +435,7 @@ export default function AdminPage() {
             admin_access: Boolean(u.admin_access),
             position: u.position ?? "",
             description: u.description ?? "",
+            department: u.department ?? "",
           };
         });
         setUserEdits(initialEdits);
@@ -548,6 +551,7 @@ export default function AdminPage() {
         email: selfForm.email,
         name: selfForm.name,
         description: selfForm.description,
+        department: selfForm.department,
       };
       if (selfForm.password) body.password = selfForm.password;
 
@@ -568,6 +572,7 @@ export default function AdminPage() {
           name: data.user?.name ?? "",
           password: "",
           description: data.user?.description ?? "",
+          department: data.user?.department ?? "",
         });
         setSelfEditing(false);
       }
@@ -597,6 +602,7 @@ export default function AdminPage() {
         admin_access: edit.admin_access,
         position: edit.position,
         description: edit.description,
+        department: edit.department,
       };
       if (edit.password) body.password = edit.password;
 
@@ -638,13 +644,14 @@ export default function AdminPage() {
           password: newUser.password,
           position: newUser.position || undefined,
           description: newUser.description || undefined,
+          department: newUser.department || undefined,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(data?.error || "Create user failed");
       } else {
-        setNewUser({ username: "", email: "", name: "", password: "", position: "", description: "" });
+        setNewUser({ username: "", email: "", name: "", password: "", position: "", description: "", department: "" });
         await fetchUsers();
       }
     } catch (err) {
@@ -677,7 +684,7 @@ export default function AdminPage() {
     const term = userSearch.toLowerCase().trim();
     if (!term) return users;
     return users.filter((u) =>
-      [u.name, u.username, u.email, u.position]
+      [u.name, u.username, u.email, u.position, u.department]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(term))
     );
@@ -939,7 +946,8 @@ export default function AdminPage() {
                           <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Email</label><input className={`${inputClass} w-full`} placeholder="email@example.com" value={newUser.email} onChange={(e) => setNewUser(s => ({ ...s, email: e.target.value }))} /></div>
                           <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Password</label><input type="password" className={`${inputClass} w-full`} placeholder="Password" value={newUser.password} onChange={(e) => setNewUser(s => ({ ...s, password: e.target.value }))} /></div>
                           <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Position / Role</label><input className={`${inputClass} w-full`} placeholder="e.g. Research Lead" value={newUser.position} onChange={(e) => setNewUser(s => ({ ...s, position: e.target.value }))} /></div>
-                          <div className="space-y-1.5 md:col-span-2"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Description / Bio</label><textarea className={`${textareaClass} w-full !min-h-[80px]`} placeholder="Short bio or description..." value={newUser.description} onChange={(e) => setNewUser(s => ({ ...s, description: e.target.value }))} /></div>
+                          <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Department</label><input className={`${inputClass} w-full`} placeholder="e.g. Writers' Block" value={newUser.department} onChange={(e) => setNewUser(s => ({ ...s, department: e.target.value }))} /></div>
+                          <div className="space-y-1.5 md:col-span-1"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Description / Bio</label><textarea className={`${textareaClass} w-full !min-h-[80px]`} placeholder="Short bio or description..." value={newUser.description} onChange={(e) => setNewUser(s => ({ ...s, description: e.target.value }))} /></div>
                         </div>
                         <button className="mt-6 px-6 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-bold transition-all" onClick={async () => { await handleCreateUser(); setShowAddEmployee(false); }}>Register Employee</button>
                       </div>
@@ -951,6 +959,7 @@ export default function AdminPage() {
                           <tr className="border-b border-white/5">
                             <th className="text-left py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Contributor</th>
                             <th className="text-left py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Role</th>
+                            <th className="text-left py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Department</th>
                             <th className="text-center py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Access</th>
                             <th className="text-right py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Actions</th>
                           </tr>
@@ -999,6 +1008,7 @@ export default function AdminPage() {
                                     </div>
                                   </td>
                                   <td className="py-4 px-4 text-white/60">{u.position || "Staff"}</td>
+                                  <td className="py-4 px-4 text-white/60">{u.department || "-"}</td>
                                   <td className="py-4 px-4 text-center">
                                     <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${u.admin_access ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-white/5 text-white/30'}`}>
                                       {u.admin_access ? "Admin" : "Standard"}
@@ -1010,7 +1020,7 @@ export default function AdminPage() {
                                 </tr>
                                 {isExpanded && (
                                   <tr>
-                                    <td colSpan={4} className="p-6 bg-white/[0.01] border-b border-white/5">
+                                    <td colSpan={5} className="p-6 bg-white/[0.01] border-b border-white/5">
                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl">
                                         <div className="space-y-1.5">
                                           <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Full Name</label>
@@ -1028,7 +1038,11 @@ export default function AdminPage() {
                                           <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Position / Role</label>
                                           <input className={`${inputClass} w-full`} placeholder="e.g. Research Lead" value={edit.position} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, position: e.target.value } }))} />
                                         </div>
-                                        <div className="space-y-1.5 md:col-span-2">
+                                        <div className="space-y-1.5">
+                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Department</label>
+                                          <input className={`${inputClass} w-full`} placeholder="e.g. Biology" value={edit.department} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, department: e.target.value } }))} />
+                                        </div>
+                                        <div className="space-y-1.5 md:col-span-1">
                                           <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Description / Bio</label>
                                           <textarea className={`${textareaClass} w-full !min-h-[80px]`} placeholder="Short bio or description..." value={edit.description} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, description: e.target.value } }))} />
                                         </div>
