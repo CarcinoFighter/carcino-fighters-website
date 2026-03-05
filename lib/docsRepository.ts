@@ -53,11 +53,18 @@ export interface ArticleSummary {
 
 async function getDocBySlugUncached(slug: string): Promise<Article | null> {
   try {
-    const { data, error } = await supabase
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+    let q = supabase
       .from('cancer_docs')
-      .select('id, slug, title, content, author_user_id')
-      .eq('slug', slug)
-      .maybeSingle();
+      .select('id, slug, title, content, author_user_id');
+
+    if (isUuid) {
+      q = q.or(`slug.eq.${slug},id.eq.${slug}`);
+    } else {
+      q = q.eq('slug', slug);
+    }
+
+    const { data, error } = await q.maybeSingle();
 
     if (error || !data) {
       if (error) console.error('Error fetching document from Supabase:', error);
@@ -104,11 +111,18 @@ export async function getDocBySlug(slug: string): Promise<Article | null> {
 
 async function getDocBySlugWithAvatarUncached(slug: string): Promise<ArticleWithAvatar | null> {
   try {
-    const { data, error } = await supabase
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+    let q = supabase
       .from('cancer_docs')
-      .select('id, slug, title, content, author_user_id')
-      .eq('slug', slug)
-      .maybeSingle();
+      .select('id, slug, title, content, author_user_id');
+
+    if (isUuid) {
+      q = q.or(`slug.eq.${slug},id.eq.${slug}`);
+    } else {
+      q = q.eq('slug', slug);
+    }
+
+    const { data, error } = await q.maybeSingle();
 
     if (error || !data) {
       if (error) console.error('Error fetching document from Supabase:', error);
