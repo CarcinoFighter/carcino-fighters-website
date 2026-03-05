@@ -28,7 +28,7 @@ const SCROLL_SPEED = 40; // px/s auto-scroll speed
  * Sub-component for individual tribute card content.
  * Uses useMouseEnter hook from 3d-card context to drive height animation.
  */
-function TributeCardInner({ item }: { item: Tribute }) {
+function TributeCardInner({ item, containerRef }: { item: Tribute, containerRef: React.RefObject<HTMLDivElement | null> }) {
   const [isHovered] = useMouseEnter();
   const [isActuallyHovered, setIsActuallyHovered] = React.useState(false);
   const [isColorHovered, setIsColorHovered] = React.useState(false);
@@ -61,17 +61,16 @@ function TributeCardInner({ item }: { item: Tribute }) {
     setIsColorHovered(isHovered);
   }, [isHovered]);
 
-  // Auto-scroll logic: when card expands, ensure it's visible in the viewport
+  // Auto-scroll logic: when card expands, scroll to the absolute end of the page
   React.useEffect(() => {
     if (isActuallyHovered && contentRef.current) {
       const scrollTimeout = setTimeout(() => {
-        // Using block: 'nearest' ensures the card scrolls just enough to be fully visible
-        // without jumping to the top of the viewport if it's already mostly visible.
-        contentRef.current?.scrollIntoView({
+        // Scroll to the absolute end of the document/page
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
           behavior: 'smooth',
-          block: 'nearest',
         });
-      }, 150); // Small delay to sync with the start of the height animation
+      }, 200); // Increased delay to sync with the start of the height animation
       return () => clearTimeout(scrollTimeout);
     }
   }, [isActuallyHovered]);
@@ -347,7 +346,7 @@ export default function Home() {
       <div
         ref={containerRef}
         tabIndex={0}
-        className="flex flex-col relative lg:block lg:h-screen w-full overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background hide-scrollbar outline-none"
+        className="flex flex-col relative w-full items-start gap-20 bg-background hide-scrollbar outline-none"
       >
         <MotionConfig transition={{ duration: 1 }}>
           <motion.div
@@ -438,7 +437,7 @@ export default function Home() {
                             className="w-[280px] min-[400px]:w-[320px] sm:w-[420px] px-0 rounded-[44px]"
                             containerClassName="!items-start"
                           >
-                            <TributeCardInner item={item} />
+                            <TributeCardInner item={item} containerRef={containerRef} />
                           </CardContainer>
                         </motion.div>
                       </div>
