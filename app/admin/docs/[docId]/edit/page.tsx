@@ -16,6 +16,7 @@ type DocPayload = {
   slug: string;
   title: string;
   content: string;
+  color?: string | null;
   position?: string | null;
   author_user_id?: string | null;
   author_name?: string | null;
@@ -34,6 +35,7 @@ export default function DocEditPage() {
   const [slug, setSlug] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [ribbonColor, setRibbonColor] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +80,7 @@ export default function DocEditPage() {
         setSlug(data.doc?.slug ?? "");
         setTitle(data.doc?.title ?? "");
         setContent(data.doc?.content ?? "");
+        setRibbonColor(data.doc?.color ?? "");
       } catch (err) {
         console.error("get_doc error", err);
         setError("Failed to load article");
@@ -106,6 +109,7 @@ export default function DocEditPage() {
           slug,
           title,
           content,
+          color: ribbonColor,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -269,6 +273,22 @@ export default function DocEditPage() {
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-widest text-white/40 font-medium ml-1" htmlFor="ribbonColor">Ribbon Color</label>
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="h-12 w-12 rounded-xl border border-white/10 flex-shrink-0"
+                        style={{ backgroundColor: ribbonColor || "transparent" }}
+                      />
+                      <input
+                        id="ribbonColor"
+                        className="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-2xl h-12 px-4 transition-all text-white outline-none"
+                        value={ribbonColor}
+                        onChange={(e) => setRibbonColor(e.target.value)}
+                        placeholder="#9875c1"
+                      />
+                    </div>
                   </div>
                 </div>
 

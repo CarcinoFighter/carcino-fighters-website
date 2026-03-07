@@ -246,7 +246,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                       <div key={idx} className="flex flex-col sm:flex-row gap-6 items-center sm:items-start w-full">
                         <div className="relative z-10">
                           <Avatar className="w-20 h-20 shrink-0">
-                            <AvatarImage src={author.profilePicture || "/logo.png"} />
+                            <AvatarImage src={author.profilePicture || "/logo.png"} className="object-cover w-full h-full" />
                             <AvatarFallback>{author.name.slice(0, 2).toUpperCase()}</AvatarFallback>
                           </Avatar>
                         </div>
@@ -269,7 +269,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                     <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
                       <div className="relative z-10">
                         <Avatar className="w-20 h-20">
-                          <AvatarImage src={article.profilePicture || "/logo.png"} />
+                          <AvatarImage src={article.profilePicture || "/logo.png"} className="object-cover w-full h-full" />
                           <AvatarFallback>{authorLabel.slice(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                       </div>
