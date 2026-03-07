@@ -259,7 +259,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                             <p className="uppercase text-[13px] leading-[30px] text-[#C1C1C1]">{author.position}</p>
                           </div>
                           <p className="flex-[1.5] text-sm leading-[20px] sm:pr-15 text-center sm:text-left"
-                            style={article.color ? { color: '#ffffffff' }}>
+                            style={{ color: '#ffffffff' }}>
                             {author.description}
                           </p>
                         </div>
