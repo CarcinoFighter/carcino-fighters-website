@@ -32,7 +32,7 @@ export interface Article {
   slug: string;
   title: string;
   author: string | null;
-  content: string;
+  content?: string;
   position: string | null;
   authorDescription?: string | null;
   author_user_id?: string | null;
@@ -213,12 +213,12 @@ async function getAllDocsUncached(): Promise<Article[]> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('id, slug, title, content, author_user_id, color')
+      .select('id, slug, title, author_user_id, color')
       .order('title');
 
     if (!data) return [];
 
-    const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null; color: string | null }[];
+    const docs = data as { id: string; slug: string; title: string; author_user_id: string | null; color: string | null }[];
     const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
 
     let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null; description: string | null }> = {};
@@ -259,14 +259,14 @@ async function getAllDocsWithAvatarsUncached(): Promise<ArticleWithAvatar[]> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('id, slug, title, content, author_user_id, color')
+      .select('id, slug, title, author_user_id, color')
       .order('title');
 
     if (error) console.error('Error fetching documents from Supabase:', error);
 
     if (!data) return [];
 
-    const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null; color: string | null }[];
+    const docs = data as { id: string; slug: string; title: string; author_user_id: string | null; color: string | null }[];
     const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
 
     let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null; description: string | null }> = {};
