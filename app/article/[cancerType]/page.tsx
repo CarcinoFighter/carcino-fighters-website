@@ -52,7 +52,7 @@ export default async function ArticlePage({ params }: ArticlePageParams) {
 
     headline: article.title,
 
-    description: article.content
+    description: (article.content ?? "")
       .replace(/[#*_`>\-\[\]!\(\)]/g, "")
       .slice(0, 160),
 
