@@ -38,7 +38,11 @@ export function DynamicBackgroundHues({
         const margin = 800;
 
         // The primary color used for almost all hues
-        const primaryColor = baseColor ? `${baseColor}55` : "#D5B0FF26";
+        let safeColor = baseColor?.trim();
+        if (safeColor?.length === 4) {
+            safeColor = `#${safeColor[1]}${safeColor[1]}${safeColor[2]}${safeColor[2]}${safeColor[3]}${safeColor[3]}`;
+        }
+        const primaryColor = safeColor ? `${safeColor}55` : "#D5B0FF26";
         // Using the highly visible purple hue from the original survivor story page
         const finalPurpleHue = "#583B7A";
 

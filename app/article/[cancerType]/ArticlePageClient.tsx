@@ -65,9 +65,21 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
 
   return (
     <div ref={containerRef} className="relative w-full bg-[#2A292F] font-giest min-h-screen overflow-hidden">
-      <DynamicBackgroundHues containerRef={containerRef} />
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          ::selection {
+            background: ${article.color || '#70429b'};
+            color: white;
+          }
+          ::-moz-selection {
+            background: ${article.color || '#70429b'};
+            color: white;
+          }
+        `
+      }} />
+      <DynamicBackgroundHues containerRef={containerRef} baseColor={article.color || undefined} />
       <div className="w-full px-5 sm:px-20 sm:pt-[80px] relative gap-6 z-10">
-        <ScrollProgress className="hidden md:block" />
+        <ScrollProgress className="hidden md:block" color={article.color || undefined} />
         <div className="relative pt-10 flex flex-col justify-center ">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -81,12 +93,13 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
 
             <div className="max-w-4xl sm:px-10 sm:overflow-y-visible overflow-x-hidden">
               <h1
-                className="  text-5xl leading-[0.9]
-  sm:text-6xl sm:leading-[0.9]
-  lg:text-7xl lg:leading-[0.9] whitespace-pre-wrap
-  text-center font-wintersolace font-bold
-  bg-gradient-to-r from-[#70429b] from-8% to-[#dfcbf0] to-60%
-  bg-clip-text text-transparent py-4 px-10">
+                className={`text-5xl leading-[0.9] sm:text-6xl sm:leading-[0.9] lg:text-7xl lg:leading-[0.9] whitespace-pre-wrap text-center font-wintersolace font-bold py-4 px-10 bg-clip-text text-transparent`}
+                style={{
+                  backgroundImage: article.color
+                    ? `linear-gradient(to right, ${article.color} 8%, #dfcbf0 60%)`
+                    : `linear-gradient(to right, #70429b 8%, #dfcbf0 60%)`
+                }}
+              >
                 {article.title}
               </h1>
 
@@ -209,10 +222,12 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
 
             {/* AUTHOR SECTION */}
             <div className="flex flex-col gap-10 mt-20 items-center ">
-              <h2 className="sm:text-3xl text-4xl font-instrumentserifitalic bg-gradient-to-r
-  from-[#b793d8] from-8%
-  to-[#ffffff] to-60%
-  bg-clip-text text-transparent ">
+              <h2 className="sm:text-3xl text-4xl font-instrumentserifitalic bg-clip-text text-transparent"
+                style={{
+                  backgroundImage: article.color
+                    ? `linear-gradient(to right, ${article.color} 8%, #ffffff 60%)`
+                    : `linear-gradient(to right, #b793d8 8%, #ffffff 60%)`
+                }}>
                 About the {(article.authors && article.authors.length > 1) ? "Authors" : "Author"}
               </h2>
               <div className="relative text-left flex flex-col sm:flex-row gap-6  p-5 rounded-[40px] overflow-hidden ">
@@ -243,7 +258,8 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                             </h3>
                             <p className="uppercase text-[13px] leading-[30px] text-[#C1C1C1]">{author.position}</p>
                           </div>
-                          <p className="flex-[1.5] text-sm text-[#CDA8E8] leading-[20px] sm:pr-15 text-center sm:text-left">
+                          <p className="flex-[1.5] text-sm leading-[20px] sm:pr-15 text-center sm:text-left"
+                            style={article.color ? { color: article.color } : { color: '#CDA8E8' }}>
                             {author.description}
                           </p>
                         </div>
@@ -263,7 +279,8 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                         </h3>
                         <p className="uppercase text-[13px] leading-[30px]  text-[#C1C1C1]">{positionLabel}</p>
                       </div>
-                      <p className="text-sm text-[#CDA8E8] leading-[15px] p-5 relative z-10 sm:pr-15 ">
+                      <p className="text-sm leading-[15px] p-5 relative z-10 sm:pr-15"
+                        style={article.color ? { color: article.color } : { color: '#CDA8E8' }}>
                         {article.authorDescription || "Researcher at The Carcino Foundation."}
                       </p>
                     </div>
@@ -331,7 +348,8 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                             "
                           >
                             <div className="liquidGlass-effect pointer-events-none"></div>
-                            <div className="cardGlass-tint pointer-events-none opacity-0 group-hover/card:opacity-40 transition-opacity duration-300"></div>
+                            <div className="cardGlass-tint pointer-events-none opacity-0 group-hover/card:opacity-40 transition-opacity duration-300"
+                              style={a.color ? { backgroundColor: a.color } : {}}></div>
                             <div className="glass-noise"></div>
                             <div className="cardGlass-borders pointer-events-none"></div>
                             <div className="cardGlass-shine pointer-events-none"></div>
