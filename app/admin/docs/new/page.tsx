@@ -14,6 +14,7 @@ export default function NewDocPage() {
   const [slug, setSlug] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [ribbonColor, setRibbonColor] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -67,6 +68,7 @@ export default function NewDocPage() {
           slug,
           title,
           content,
+          color: ribbonColor,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -77,6 +79,7 @@ export default function NewDocPage() {
         setSlug("");
         setTitle("");
         setContent("");
+        setRibbonColor("");
         router.push("/admin");
       }
     } catch (err) {
@@ -230,6 +233,22 @@ export default function NewDocPage() {
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Enter article title..."
                   />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs uppercase tracking-widest text-white/40 font-medium ml-1" htmlFor="ribbonColor">Ribbon Color</label>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="h-12 w-12 rounded-xl border border-white/10 flex-shrink-0"
+                      style={{ backgroundColor: ribbonColor || "transparent" }}
+                    />
+                    <input
+                      id="ribbonColor"
+                      className="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-2xl h-12 px-4 transition-all text-white outline-none"
+                      value={ribbonColor}
+                      onChange={(e) => setRibbonColor(e.target.value)}
+                      placeholder="#9875c1"
+                    />
+                  </div>
                 </div>
               </div>
 
