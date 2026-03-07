@@ -49,6 +49,7 @@ type AuthBody = {
 	slug?: string;
 	title?: string;
 	content?: string;
+	color?: string;
 	authorId?: string;
 	submissionId?: string;
 	decision?: "approve" | "reject";
@@ -74,6 +75,7 @@ type DocSubmissionRow = {
 	slug: string;
 	title: string;
 	content: string;
+	color: string | null;
 	author_user_id: string;
 	status: "pending" | "approved" | "rejected";
 	reviewer_user_id?: string | null;
@@ -234,11 +236,12 @@ async function getAuthenticatedUser() {
 }
 
 async function applySubmissionToDocs(client: SupabaseClient<any, any, any>, submission: DocSubmissionRow, reviewerId: string | null) {
-	const { doc_id, slug, title, content, author_user_id } = submission;
+	const { doc_id, slug, title, content, color, author_user_id } = submission;
 	const payload = {
 		slug,
 		title,
 		content,
+		color,
 		author_user_id,
 	};
 
@@ -710,7 +713,7 @@ export async function POST(req: Request) {
 
 			const baseQuery = client
 				.from("cancer_docs")
-				.select("id, slug, title, content, position, author_user_id, created_at, updated_at");
+				.select("id, slug, title, content, color, position, author_user_id, created_at, updated_at");
 
 			const { forceOwn } = body ?? {};
 			const query = (session.user.admin_access && !forceOwn)
@@ -793,7 +796,7 @@ export async function POST(req: Request) {
 
 			const { data: docRow, error: docErr } = await client
 				.from("cancer_docs")
-				.select("id, slug, title, content, position, author_user_id, created_at, updated_at")
+				.select("id, slug, title, content, color, position, author_user_id, created_at, updated_at")
 				.eq("id", docId)
 				.limit(1)
 				.maybeSingle();
@@ -858,7 +861,7 @@ export async function POST(req: Request) {
 			const session = await getAuthenticatedUser();
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-			const { docId, slug, title, content } = body ?? {};
+			const { docId, slug, title, content, color } = body ?? {};
 			if (!slug || !title || !content) return NextResponse.json({ error: "slug, title, and content are required" }, { status: 400 });
 
 			if (docId) {
@@ -880,6 +883,7 @@ export async function POST(req: Request) {
 				slug,
 				title,
 				content,
+				color: color ?? null,
 				author_user_id: session.user.id,
 				status: "pending",
 			};
@@ -915,7 +919,7 @@ export async function POST(req: Request) {
 
 			const query = client
 				.from("cancer_doc_submissions")
-				.select("id, doc_id, slug, title, content, author_user_id, status, reviewer_user_id, reviewer_note, created_at, updated_at")
+				.select("id, doc_id, slug, title, content, color, author_user_id, status, reviewer_user_id, reviewer_note, created_at, updated_at")
 				.order("created_at", { ascending: true });
 
 			if (session.user.admin_access) {
@@ -1004,7 +1008,7 @@ export async function POST(req: Request) {
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-			const { slug, title, content, position, authorId } = body ?? {};
+			const { slug, title, content, color, position, authorId } = body ?? {};
 			if (!slug || !title || !content) {
 				return NextResponse.json({ error: "slug, title, and content are required" }, { status: 400 });
 			}
@@ -1015,10 +1019,11 @@ export async function POST(req: Request) {
 					slug,
 					title,
 					content,
+					color: color ?? null,
 					position: position ?? null,
 					author_user_id: authorId ?? session.user.id,
 				})
-				.select("id, slug, title, content, position, author_user_id")
+				.select("id, slug, title, content, color, position, author_user_id")
 				.maybeSingle();
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -1030,13 +1035,14 @@ export async function POST(req: Request) {
 			const session = await getAuthenticatedUser();
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-			const { docId, slug, title, content, position, authorId } = body ?? {};
+			const { docId, slug, title, content, color, position, authorId } = body ?? {};
 			if (!docId) return NextResponse.json({ error: "docId is required" }, { status: 400 });
 
 			const updates: Record<string, unknown> = {};
 			if (slug !== undefined) updates.slug = slug;
 			if (title !== undefined) updates.title = title;
 			if (content !== undefined) updates.content = content;
+			if (color !== undefined) updates.color = color;
 			if (position !== undefined) updates.position = position;
 			if (authorId !== undefined) {
 				if (!session.user.admin_access) {
@@ -1078,7 +1084,7 @@ export async function POST(req: Request) {
 				.from("cancer_docs")
 				.update(updates)
 				.eq("id", docId)
-				.select("id, slug, title, content, position, author_user_id")
+				.select("id, slug, title, content, color, position, author_user_id")
 				.maybeSingle();
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
