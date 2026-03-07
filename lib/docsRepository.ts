@@ -38,6 +38,7 @@ export interface Article {
   author_user_id?: string | null;
   avatar_url?: string | null;
   authors?: IndividualAuthor[];
+  color?: string | null;
 }
 
 export interface ArticleWithAvatar extends Article {
@@ -49,6 +50,7 @@ export interface ArticleSummary {
   slug: string;
   title: string;
   author: string | null;
+  color?: string | null;
 }
 
 async function getDocBySlugUncached(slug: string): Promise<Article | null> {
@@ -56,7 +58,7 @@ async function getDocBySlugUncached(slug: string): Promise<Article | null> {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
     let q = supabase
       .from('cancer_docs')
-      .select('id, slug, title, content, author_user_id');
+      .select('id, slug, title, content, author_user_id, color');
 
     if (isUuid) {
       q = q.or(`slug.eq.${slug},id.eq.${slug}`);
@@ -71,7 +73,7 @@ async function getDocBySlugUncached(slug: string): Promise<Article | null> {
       return null;
     }
 
-    const doc = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null };
+    const doc = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null; color: string | null };
 
     let author: string | null = null;
     let position: string | null = null;
@@ -114,7 +116,7 @@ async function getDocBySlugWithAvatarUncached(slug: string): Promise<ArticleWith
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
     let q = supabase
       .from('cancer_docs')
-      .select('id, slug, title, content, author_user_id');
+      .select('id, slug, title, content, author_user_id, color');
 
     if (isUuid) {
       q = q.or(`slug.eq.${slug},id.eq.${slug}`);
@@ -129,7 +131,7 @@ async function getDocBySlugWithAvatarUncached(slug: string): Promise<ArticleWith
       return null;
     }
 
-    const doc = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null };
+    const doc = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null; color: string | null };
 
     let author: string | null = null;
     let position: string | null = null;
@@ -211,12 +213,12 @@ async function getAllDocsUncached(): Promise<Article[]> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('id, slug, title, content, author_user_id')
+      .select('id, slug, title, content, author_user_id, color')
       .order('title');
 
     if (!data) return [];
 
-    const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null }[];
+    const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null; color: string | null }[];
     const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
 
     let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null; description: string | null }> = {};
@@ -257,14 +259,14 @@ async function getAllDocsWithAvatarsUncached(): Promise<ArticleWithAvatar[]> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('id, slug, title, content, author_user_id')
+      .select('id, slug, title, content, author_user_id, color')
       .order('title');
 
     if (error) console.error('Error fetching documents from Supabase:', error);
 
     if (!data) return [];
 
-    const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null }[];
+    const docs = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null; color: string | null }[];
     const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
 
     let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null; description: string | null }> = {};
@@ -329,7 +331,7 @@ async function getRandomArticleSummariesUncached(limit = 3, excludeSlug?: string
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('id, slug, title, author_user_id')
+      .select('id, slug, title, author_user_id, color')
       .limit(20);
 
     if (error || !data) {
@@ -339,7 +341,7 @@ async function getRandomArticleSummariesUncached(limit = 3, excludeSlug?: string
       return [];
     }
 
-    const docsRaw = data as { id: string; slug: string; title: string; author_user_id: string | null }[];
+    const docsRaw = data as { id: string; slug: string; title: string; author_user_id: string | null; color: string | null }[];
 
     const docs = excludeSlug ? docsRaw.filter(d => d.slug !== excludeSlug) : docsRaw;
 
@@ -367,7 +369,8 @@ async function getRandomArticleSummariesUncached(limit = 3, excludeSlug?: string
       id: d.id,
       slug: d.slug,
       title: d.title,
-      author: (d.author_user_id ? authorMap[d.author_user_id] : null) ?? "Unknown Author"
+      author: (d.author_user_id ? authorMap[d.author_user_id] : null) ?? "Unknown Author",
+      color: d.color
     }));
     return supabaseSummaries.sort(() => 0.5 - Math.random()).slice(0, limit);
 

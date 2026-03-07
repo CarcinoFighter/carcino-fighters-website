@@ -16,6 +16,8 @@ interface ArticleListClientProps {
 export function ArticleListClient({ articles }: ArticleListClientProps) {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [hoverColor, setHoverColor] = useState<string | null>(null);
+  const [activeColor, setActiveColor] = useState<string | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(query), 300);
@@ -76,6 +78,16 @@ export function ArticleListClient({ articles }: ArticleListClientProps) {
           zIndex: 0,
         }}
       >
+        <div
+          className="fixed inset-0 transition-opacity duration-700 ease-in-out pointer-events-none"
+          style={{
+            zIndex: 0,
+            opacity: hoverColor ? 1 : 0,
+            background: activeColor
+              ? `linear-gradient(314deg, transparent 40%, ${activeColor}44 78.5%), linear-gradient(0deg, #000 30%, ${activeColor}44 100%)`
+              : "none",
+          }}
+        />
         <div className="w-full h-full min-h-screen font-giest flex flex-col relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -147,6 +159,13 @@ export function ArticleListClient({ articles }: ArticleListClientProps) {
                     key={article.id}
                     href={article.slug ? `/article/${article.slug}` : `/article/${article.id}`}
                     className="h-full block"
+                    onMouseEnter={() => {
+                      let c = article.color?.trim();
+                      if (c?.length === 4) c = `#${c[1]}${c[1]}${c[2]}${c[2]}${c[3]}${c[3]}`;
+                      setHoverColor(c || null);
+                      if (c) setActiveColor(c);
+                    }}
+                    onMouseLeave={() => setHoverColor(null)}
                   >
                     <motion.div
                       className="h-full"
@@ -169,7 +188,8 @@ export function ArticleListClient({ articles }: ArticleListClientProps) {
                         "
                         >
                           <div className="liquidGlass-effect pointer-events-none"></div>
-                          <div className="cardGlass-tint pointer-events-none opacity-0 group-hover/card:opacity-40 transition-opacity duration-300"></div>
+                          <div className="cardGlass-tint pointer-events-none opacity-0 group-hover/card:opacity-40 transition-opacity duration-300"
+                            style={article.color ? { backgroundColor: article.color } : {}}></div>
                           <div className="glass-noise"></div>
                           <div className="cardGlass-borders pointer-events-none"></div>
                           <div className="cardGlass-shine pointer-events-none"></div>

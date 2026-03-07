@@ -58,6 +58,7 @@ interface Article {
   title: string;
   author: string | null;
   content: string;
+  color?: string | null;
 }
 
 // interface Position {
@@ -68,6 +69,8 @@ interface Article {
 export default function Home() {
   const [articles, setArticles] = React.useState<Article[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [hoverColor, setHoverColor] = React.useState<string | null>(null);
+  const [activeColor, setActiveColor] = React.useState<string | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const heroRef = React.useRef<HTMLDivElement | null>(null);
   const articlesRef = React.useRef<HTMLDivElement | null>(null);
@@ -181,6 +184,16 @@ export default function Home() {
         ref={containerRef}
         className=" flex flex-col relative lg:block lg:h-screen w-full overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background hide-scrollbar"
       >
+        <div
+          className="fixed inset-0 transition-opacity duration-700 ease-in-out pointer-events-none"
+          style={{
+            zIndex: 0,
+            opacity: hoverColor ? 1 : 0,
+            background: activeColor
+              ? `radial-gradient(circle at center, ${activeColor}88 0%, transparent 65%)`
+              : "none",
+          }}
+        />
         {/* <div
         className=" hidden sm:inline fixed inset-0 z-100 opacity-0 transition-opacity duration-500 ease-in-out pointer-events-none"
         style={{
@@ -461,6 +474,13 @@ export default function Home() {
                           : `/article/${article.id}`
                       }
                       className="h-full block"
+                      onMouseEnter={() => {
+                        let c = (article as any).color?.trim();
+                        if (c?.length === 4) c = `#${c[1]}${c[1]}${c[2]}${c[2]}${c[3]}${c[3]}`;
+                        setHoverColor(c || null);
+                        if (c) setActiveColor(c);
+                      }}
+                      onMouseLeave={() => setHoverColor(null)}
                     >
                       <motion.div
                         className="h-full"
@@ -491,7 +511,8 @@ export default function Home() {
                             "
                           >
                             <div className="liquidGlass-effect pointer-events-none"></div>
-                            <div className="cardGlass-tint pointer-events-none"></div>
+                            <div className="cardGlass-tint pointer-events-none opacity-0 group-hover/card:opacity-40 transition-opacity duration-300"
+                              style={(article as any).color ? { backgroundColor: (article as any).color } : {}}></div>
                             <div className="glass-noise"></div>
                             <div className="cardGlass-borders pointer-events-none"></div>
                             <div className="cardGlass-shine pointer-events-none"></div>
