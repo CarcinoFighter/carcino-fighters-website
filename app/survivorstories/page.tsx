@@ -220,7 +220,8 @@ export default function Home() {
                               backgroundImage: `url('${backgroundImage}')`,
                               backgroundColor: cardColor,
                               backgroundBlendMode: "overlay",
-                              filter: "saturate(0.8) brightness(1)",
+                              filter:
+                                "saturate(0.6) brightness(1) contrast(1.3)",
                             }}
                             className="
                               relative z-20
