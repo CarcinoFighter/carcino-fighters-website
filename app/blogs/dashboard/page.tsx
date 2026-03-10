@@ -29,6 +29,8 @@ type BlogEntry = {
   content: string | null;
   tags: string[] | null;
   created_at: string;
+  status?: string;
+  is_pending?: boolean;
 };
 
 export default function BlogsDashboard() {
@@ -221,6 +223,11 @@ export default function BlogsDashboard() {
     } finally {
       setPostSaving(false);
     }
+  }
+
+  async function handleResetForm() {
+    setEditingId(null);
+    setPostForm({ title: "", slug: "", content: "", tags: "" });
   }
 
   async function handleDelete(id: string) {
@@ -433,7 +440,7 @@ export default function BlogsDashboard() {
                       className="relative px-4 py-3 md:px-[22px] md:py-[22px] rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300 font-normal hover:bg-transparent"
                     >
                       <span className="relative z-10 flex items-center gap-2 text-[#e0e0e0] text-[12px] sm:text-[18px] font-light">
-                        {postSaving ? "Saving..." : editingId ? "Update Post" : "Publish Post"}
+                        {postSaving ? "Saving..." : editingId ? "Update Post" : "Submit for Review"}
                       </span>
 
                       {/* Liquid glass layers */}
@@ -450,7 +457,7 @@ export default function BlogsDashboard() {
 
         {/* Existing Posts Section */}
         <div className="space-y-6 pt-8">
-          <h2 className="text-2xl font-bold font-dmsans text-white/90 px-4">Your Published Stories</h2>
+          <h2 className="text-2xl font-bold font-dmsans text-white/90 px-4">Your Stories</h2>
 
           <div className="grid grid-cols-1 gap-6">
             {sortedPosts.length === 0 && (
@@ -467,7 +474,14 @@ export default function BlogsDashboard() {
                 <div className="cardGlass-tint pointer-events-none" />
                 <div className="relative z-10 p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div className="space-y-2 max-w-2xl">
-                    <p className="text-[10px] uppercase tracking-widest text-purple-400 font-bold">/{post.slug}</p>
+                    <div className="flex items-center gap-3">
+                      <p className="text-[10px] uppercase tracking-widest text-purple-400 font-bold">/{post.slug}</p>
+                      {post.is_pending ? (
+                        <span className="px-2 py-0.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-[9px] uppercase tracking-tighter text-yellow-500 font-bold">Pending Review</span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-[9px] uppercase tracking-tighter text-green-500 font-bold">Published</span>
+                      )}
+                    </div>
                     <h3 className="text-xl font-bold text-white group-hover:text-purple-300 transition-colors">{post.title}</h3>
                     <p className="text-sm text-white/50 line-clamp-2 leading-relaxed">
                       {contentExcerpt(post.content, 180)}

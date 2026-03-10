@@ -22,6 +22,8 @@ type Story = {
   created_at: string;
   image_url?: string | null;
   colour?: string | null;
+  status?: string;
+  is_pending?: boolean;
 };
 
 type AdminUser = {
@@ -78,7 +80,7 @@ export default function AdminSurvivorStories() {
         const res = await fetch("/api/admin", { method: "GET" });
         const data = await res.json().catch(() => ({}));
         if (!res.ok || !data?.authenticated) {
-          router.replace("/admin/login?redirectTo=/admin/survivor-stories");
+          router.replace("/sign-in?redirectTo=/admin-survivor-stories");
           return;
         }
         setUser(data.user);
@@ -302,7 +304,7 @@ export default function AdminSurvivorStories() {
           <div className="relative z-10 p-6 sm:p-10">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold font-wintersolace tracking-tight">
-                {editingId ? "Refine Your Story" : "Publish New Story"}
+                {editingId ? "Refine Your Story" : "Submit New Story"}
               </h2>
             </div>
 
@@ -475,7 +477,7 @@ export default function AdminSurvivorStories() {
                       className="relative px-4 py-2 md:px-6 md:py-3 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300 font-normal hover:bg-transparent"
                     >
                       <span className="relative z-10 flex items-center gap-2 text-[#e0e0e0] text-[12px] sm:text-[15px] font-light">
-                        {storySaving ? "Saving..." : editingId ? "Update Story" : "Publish Story"}
+                        {storySaving ? "Saving..." : editingId ? "Update Story" : "Submit for Review"}
                         <ArrowUpRight className="transition-transform mt-[1px]" />
                       </span>
 
@@ -494,7 +496,7 @@ export default function AdminSurvivorStories() {
         {/* Existing Stories Section */}
         <div className="space-y-6 pt-12">
           <div className="flex items-center justify-between px-4">
-            <h2 className="text-2xl font-bold font-wintersolace">Your Published Stories</h2>
+            <h2 className="text-2xl font-bold font-wintersolace">Your Stories</h2>
             <div className="text-[10px] uppercase tracking-widest text-white/30 font-bold">{sortedStories.length} Entries Found</div>
           </div>
 
@@ -521,7 +523,14 @@ export default function AdminSurvivorStories() {
                         </div>
                       )}
                       <div>
-                        <div className="text-[10px] uppercase tracking-widest text-white/30 font-bold mb-1">/{story.slug}</div>
+                        <div className="flex items-center gap-3 mb-1">
+                          <div className="text-[10px] uppercase tracking-widest text-white/30 font-bold">/{story.slug}</div>
+                          {story.is_pending ? (
+                            <span className="px-2 py-0.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-[9px] uppercase tracking-tighter text-yellow-500 font-bold">Pending Review</span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-[9px] uppercase tracking-tighter text-green-500 font-bold">Published</span>
+                          )}
+                        </div>
                         <h3 className="text-xl font-bold text-white/90">{story.title}</h3>
                         <div className="text-sm text-white/50 line-clamp-1 max-w-md mt-1 font-light">
                           {story.content?.replace(/#|\*|_|`/g, "") || "No content summary"}

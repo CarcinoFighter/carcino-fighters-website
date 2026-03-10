@@ -3,9 +3,24 @@ import Image from "next/image";
 import React, { useEffect, useMemo, useState, useRef, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  LayoutDashboard,
+  Users,
+  Globe,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  ArrowRight,
+  ChevronRight,
+  ShieldCheck,
+  FileText,
+  Heart,
+  MessageSquare,
+  Zap
+} from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { ProfilePictureEditor } from "@/components/admin/pfp-cropper";
-import { CancerDocsPanel } from "@/components/admin/cancer-docs-panel";
+import { AdminContentPanel } from "@/components/admin/admin-content-panel";
 import { DynamicBackgroundHues } from "@/components/ui/dynamic-background-hues";
 // Supabase client remains for storage (avatars). Data CRUD now goes through secured API.
 const supabase = createClient(
@@ -57,21 +72,28 @@ export default function AdminPage() {
 
   type SubmissionRow = {
     id: string;
-    doc_id: string | null;
+    doc_id?: string | null;
+    story_id?: string | null;
+    blog_id?: string | null;
     slug: string;
     title: string;
-    content: string;
-    author_user_id: string;
+    content: string | null;
+    image_url?: string | null;
+    colour?: string | null;
+    tags?: any;
+    author_user_id?: string;
+    user_id?: string;
     status: "pending" | "approved" | "rejected";
     reviewer_user_id?: string | null;
     reviewer_note?: string | null;
     created_at?: string;
     updated_at?: string;
+    contentType?: "articles" | "stories" | "blogs";
     author?: {
       name: string | null;
       username: string | null;
       email: string | null;
-      position: string | null;
+      position?: string | null;
     } | null;
   };
 
@@ -105,14 +127,19 @@ export default function AdminPage() {
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
   const [expandedPublicUserId, setExpandedPublicUserId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"action-centre" | "articles" | "survivors" | "system">("articles");
+  const [activeTab, setActiveTab] = useState<
+    "action-centre" | "articles" | "blogs" | "survivors" | "system"
+  >("action-centre");
+  const [blogs, setBlogs] = useState<any[]>([]);
+  const [stories, setStories] = useState<any[]>([]);
   const [systemCheckResults, setSystemCheckResults] = useState<any>(null);
   const [systemCheckLoading, setSystemCheckLoading] = useState(false);
+  const [activeReviewTab, setActiveReviewTab] = useState<"articles" | "stories" | "blogs">("articles"); // Keeping for internal logic if needed, but UI tabs are removed
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const cardClass = "rounded-[44px] border border-white/10 bg-white/0 backdrop-blur shadow-2xl";
+  const cardClass = "rounded-[44px] border border-white/10 shadow-2xl transition-all duration-500 overflow-hidden isolation-isolate group/card admin-card";
   const inputClass = "bg-white/5 border border-white/10 rounded-2xl px-3 py-2 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-[#6D54B5]";
   const textareaClass = `${inputClass} min-h-[100px]`;
   const primaryButton = "bg-[#6D54B5] hover:bg-[#5a45a0] text-white px-4 py-2 rounded-lg font-semibold shadow-lg shadow-[#6D54B5]/30 transition hover:cursor-pointer disabled:opacity-60";
@@ -169,18 +196,25 @@ export default function AdminPage() {
           setLoading(false);
         } else {
           setUnlocked(false);
-          router.replace("/admin/login");
+          router.replace("/sign-in?redirectTo=/admin");
         }
       } catch (err) {
         console.error("checkSession error", err);
         setUnlocked(false);
-        router.replace("/admin/login");
+        router.replace("/sign-in?redirectTo=/admin");
       } finally {
         setVerifying(false);
       }
     };
     checkSession();
   }, [router]);
+
+  useEffect(() => {
+    if (activeTab === "articles") fetchDocsWithPictures({ silent: true });
+    if (activeTab === "blogs") fetchBlogs({ silent: true });
+    if (activeTab === "survivors") fetchStories({ silent: true });
+    if (activeTab === "action-centre" && currentUser?.admin_access) fetchUsers();
+  }, [activeTab]);
 
   // async function fetchDocs() {
   //   setLoading(true);
@@ -228,6 +262,52 @@ export default function AdminPage() {
     }
   }
 
+  async function fetchBlogs(opts?: { silent?: boolean }) {
+    if (!opts?.silent) setLoading(true);
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "list_blogs" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error || "Failed to load blogs");
+        setBlogs([]);
+        return;
+      }
+      setBlogs(data.blogs ?? []);
+    } catch (err) {
+      console.error("fetchBlogs error", err);
+      setError("Failed to load blogs");
+    } finally {
+      if (!opts?.silent) setLoading(false);
+    }
+  }
+
+  async function fetchStories(opts?: { silent?: boolean }) {
+    if (!opts?.silent) setLoading(true);
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "list_stories" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error || "Failed to load stories");
+        setStories([]);
+        return;
+      }
+      setStories(data.stories ?? []);
+    } catch (err) {
+      console.error("fetchStories error", err);
+      setError("Failed to load stories");
+    } finally {
+      if (!opts?.silent) setLoading(false);
+    }
+  }
+
   async function fetchSelfProfilePicture() {
     try {
       const res = await fetch("/api/admin", {
@@ -244,18 +324,40 @@ export default function AdminPage() {
     }
   }
 
-  async function fetchSubmissions(status?: "pending" | "approved" | "rejected" | "all") {
+  async function fetchSubmissions(status: "pending" | "approved" | "rejected" | "all" = "pending") {
     setSubmissionsLoading(true);
     try {
-      const res = await fetch("/api/admin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "list_doc_submissions", status }),
+      const fetchType = async (type: "articles" | "stories" | "blogs") => {
+        const actionMap = {
+          articles: "list_doc_submissions",
+          stories: "list_story_submissions",
+          blogs: "list_blog_submissions"
+        };
+        const res = await fetch("/api/admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: actionMap[type], status }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && Array.isArray(data.submissions)) {
+          return data.submissions.map((s: any) => ({ ...s, contentType: type }));
+        }
+        return [];
+      };
+
+      const results = await Promise.all([
+        fetchType("articles"),
+        fetchType("stories"),
+        fetchType("blogs")
+      ]);
+
+      const allSubmissions = results.flat().sort((a, b) => {
+        const dateA = new Date(a.created_at || 0).getTime();
+        const dateB = new Date(b.created_at || 0).getTime();
+        return dateB - dateA; // Newest first
       });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && Array.isArray(data.submissions)) {
-        setSubmissions(data.submissions);
-      }
+
+      setSubmissions(allSubmissions);
     } catch (err) {
       console.error("fetchSubmissions error", err);
     } finally {
@@ -299,43 +401,67 @@ export default function AdminPage() {
       setUploading((s) => ({ ...s, [userId]: false }));
     }
   }
-  async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this article?")) return;
+
+  async function handleDeleteContent(id: string, type: "articles" | "blogs" | "survivors") {
+    const labels = { articles: "article", blogs: "blog post", survivors: "survivor story" };
+    if (!confirm(`Are you sure you want to hide this ${labels[type]}? It will no longer be visible to the public.`)) return;
+
     setLoading(true);
     try {
+      const actionMap = {
+        articles: "delete_doc",
+        blogs: "delete_blog",
+        survivors: "delete_story"
+      };
+
       const res = await fetch("/api/admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "delete_doc", docId: id }),
+        body: JSON.stringify({
+          action: actionMap[type],
+          docId: type === "articles" ? id : undefined,
+          blogId: type === "blogs" ? id : undefined,
+          storyId: type === "survivors" ? id : undefined
+        }),
       });
       const data = await res.json().catch(() => ({}));
-      setLastResponseDebug((prev) => `${prev || ''}\nDELETE_DOC:\n${JSON.stringify(data, null, 2)}`);
       if (!res.ok) {
-        setError(data?.error || "Delete failed");
+        setError(data?.error || `Delete failed for ${type}`);
+      } else {
+        if (type === "articles") await fetchDocsWithPictures({ silent: true });
+        if (type === "blogs") await fetchBlogs({ silent: true });
+        if (type === "survivors") await fetchStories({ silent: true });
       }
     } catch (err) {
-      console.error("delete doc error", err);
-      setError("Delete failed");
+      console.error(`delete ${type} error`, err);
+      setError(`Delete failed for ${type}`);
     } finally {
-      await fetchDocsWithPictures();
       setLoading(false);
     }
   }
 
-  async function handleReviewSubmission(submissionId: string, decision: "approve" | "reject") {
+  async function handleReviewSubmission(type: "articles" | "stories" | "blogs", submissionId: string, decision: "approve" | "reject") {
     setReviewing((s) => ({ ...s, [submissionId]: true }));
     try {
+      const actionMap = {
+        articles: "review_doc_submission",
+        stories: "review_story_submission",
+        blogs: "review_blog_submission"
+      };
+
       const res = await fetch("/api/admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "review_doc_submission", submissionId, decision }),
+        body: JSON.stringify({ action: actionMap[type], submissionId, decision }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(data?.error || "Review failed");
       } else {
         setSubmissions((subs) => subs.filter((s) => s.id !== submissionId));
-        await fetchDocsWithPictures({ silent: true });
+        if (type === "articles") {
+          await fetchDocsWithPictures({ silent: true });
+        }
       }
     } catch (err) {
       console.error("review submission error", err);
@@ -411,7 +537,7 @@ export default function AdminPage() {
       setDocs([]);
       setSelfEditing(false);
       setLoggingOut(false);
-      router.replace("/admin/login");
+      router.replace("/sign-in?redirectTo=/admin");
     }
   }
 
@@ -792,10 +918,19 @@ export default function AdminPage() {
               )}
             </button>
             <button
+              onClick={() => setActiveTab("blogs")}
+              className={`relative px-4 py-3 text-sm font-medium transition-all ${activeTab === "blogs" ? "text-white" : "text-white/50 hover:text-white/80"}`}
+            >
+              Blogs
+              {activeTab === "blogs" && (
+                <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
+              )}
+            </button>
+            <button
               onClick={() => setActiveTab("survivors")}
               className={`relative px-4 py-3 text-sm font-medium transition-all ${activeTab === "survivors" ? "text-white" : "text-white/50 hover:text-white/80"}`}
             >
-              Survivors
+              Stories
               {activeTab === "survivors" && (
                 <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
               )}
@@ -813,16 +948,214 @@ export default function AdminPage() {
             )}
           </div>
 
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {activeTab === "action-centre" && currentUser?.admin_access && (
-              <div className="space-y-8">
-                {/* Pending Submissions */}
-                <section className="flex flex-col gap-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              {activeTab === "action-centre" && currentUser?.admin_access && (
+                <div className="space-y-10">
+                  {/* Stats Overview */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[
+                      {
+                        label: "Pending Reviews",
+                        value: submissions.length,
+                        icon: Clock,
+                        color: "text-amber-400",
+                        bg: "bg-amber-400/10",
+                        description: "Awaiting administrative action"
+                      },
+                      {
+                        label: "Society Members",
+                        value: users.length,
+                        icon: Users,
+                        color: "text-purple-400",
+                        bg: "bg-purple-400/10",
+                        description: "Active employees & contributors"
+                      },
+                      {
+                        label: "Community",
+                        value: publicUsers.length,
+                        icon: Globe,
+                        color: "text-emerald-400",
+                        bg: "bg-emerald-400/10",
+                        description: "Registered public accounts"
+                      }
+                    ].map((stat, i) => (
+                      <motion.div
+                        key={stat.label}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className={`${cardClass} p-8 group relative`}
+                      >
+                        <div className="cardGlass-tint" />
+                        <div className="glass-noise" />
+                        <div className="cardGlass-borders pointer-events-none" />
+                        <div className="cardGlass-shine pointer-events-none" />
+                        <div className="relative z-10 flex items-start justify-between">
+                          <div className="space-y-1">
+                            <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">{stat.label}</p>
+                            <h3 className="text-4xl font-tttravelsnext font-bold">{stat.value}</h3>
+                            <p className="text-xs text-white/30 font-dmsans mt-2">{stat.description}</p>
+                          </div>
+                          <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform duration-500`}>
+                            <stat.icon size={24} strokeWidth={1.5} />
+                          </div>
+                        </div>
+                        <div className="absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent group-hover:w-full transition-all duration-700" />
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Pending Submissions */}
+                  <section className="flex flex-col gap-4">
+                    <div className={`${cardClass} p-8 relative overflow-hidden`}>
+                      <div className="glass-noise" />
+                      <div className="cardGlass-borders" />
+                      <div className="cardGlass-tint" />
+                      <div className="cardGlass-shine pointer-events-none" />
+
+                      <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-6">
+                          <div>
+                            <h2 className="text-xl font-wintersolace">Pending Submissions</h2>
+                            <p className="text-sm text-white/50 mt-1">Review and approve content from authors.</p>
+                          </div>
+                        </div>
+                        <button
+                          className="text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest font-bold"
+                          onClick={() => fetchSubmissions("pending")}
+                          disabled={submissionsLoading}
+                        >
+                          {submissionsLoading ? "Refreshing..." : "Refresh"}
+                        </button>
+                      </div>
+
+
+
+                      {submissionsLoading && submissions.length === 0 ? (
+                        <div className="flex flex-col items-center gap-4 py-16 justify-center">
+                          <div className="relative">
+                            <div className="h-16 w-16 animate-spin rounded-full border-2 border-white/5 border-t-purple-500" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Zap size={20} className="text-purple-400 animate-pulse" />
+                            </div>
+                          </div>
+                          <div className="space-y-1 text-center">
+                            <p className="text-sm font-bold text-white/80 uppercase tracking-widest">Scanning Data Vault</p>
+                            <p className="text-xs text-white/30">Retrieving latest submissions from the network...</p>
+                          </div>
+                        </div>
+                      ) : submissions.length === 0 ? (
+                        <div className="flex flex-col items-center gap-4 py-20 text-center">
+                          <div className="h-16 w-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/10">
+                            <ShieldCheck size={32} strokeWidth={1} />
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-sm font-bold text-white/60 uppercase tracking-widest">Safe & Secure</p>
+                            <p className="text-xs text-white/40 italic">Action centre is clear. All pending reviews processed.</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-4">
+                          {submissions.map((s, idx) => {
+                            const type = s.contentType || "articles";
+                            const isNew = type === "articles" ? !s.doc_id : type === "stories" ? !s.story_id : !s.blog_id;
+                            const kind = isNew ? "New Submission" : "Update Request";
+                            const authorLabel = type === "articles" ? (s.author?.name || s.author?.username || "Researcher") : (s.author?.name || s.author?.username || "Contributor");
+                            const isOwn = currentUser && (type === "articles" ? s.author_user_id === currentUser.id : s.user_id === currentUser.id);
+
+                            const TabIcon = type === "articles" ? FileText : type === "stories" ? Heart : MessageSquare;
+
+                            return (
+                              <motion.div
+                                layout
+                                key={s.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                                className="group/card relative overflow-hidden rounded-[44px] border border-white/5 p-6 hover:bg-white/[0.04] transition-all duration-300 isolation-isolate admin-card"
+                                style={{ "--card-radius": "44px" } as React.CSSProperties}
+                            >
+                                <div className="cardGlass-tint" />
+                                <div className="glass-noise" />
+                                <div className="cardGlass-borders pointer-events-none" />
+                                <div className="cardGlass-shine pointer-events-none" />
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                                  <div className="flex gap-5">
+                                    <div className={`mt-1 h-12 w-12 rounded-2xl flex items-center justify-center bg-white/5 text-white/40 border border-white/5 group-hover:bg-purple-500/10 group-hover:text-purple-400 group-hover:border-purple-500/20 transition-all duration-500`}>
+                                      <TabIcon size={22} strokeWidth={1.5} />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <div className="flex items-center gap-3">
+                                        <span className={`px-2 py-0.5 rounded-[6px] text-[10px] font-black uppercase tracking-wider ${isNew ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
+                                          {kind}
+                                        </span>
+                                        <span className="text-[10px] text-white/30 uppercase tracking-[0.1em] font-medium">By {authorLabel}</span>
+                                        {s.created_at && (
+                                          <span className="text-[10px] text-white/20">
+                                            • {new Date(s.created_at).toLocaleDateString()}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <h3 
+                                        className="text-lg font-bold text-white/90 transition-colors group-hover/card:text-[var(--hover-heading-color)]"
+                                        style={type === "articles" ? { "--hover-heading-color": (s.colour || "#d8b4fe") } as React.CSSProperties : {}}
+                                      >
+                                        {s.title}
+                                      </h3>
+                                      <p className="text-sm text-white/40 line-clamp-1 group-hover:text-white/60 transition-colors">{s.content}</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3 self-end md:self-center">
+                                    {isOwn ? (
+                                      <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
+                                        <ShieldCheck size={14} className="text-white/20" />
+                                        <span className="text-xs text-white/30 font-medium italic">Self-review restricted</span>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <motion.button
+                                          whileHover={{ scale: 1.05 }}
+                                          whileTap={{ scale: 0.95 }}
+                                          onClick={() => handleReviewSubmission(type, s.id, "reject")}
+                                          disabled={Boolean(reviewing[s.id])}
+                                          className="flex items-center gap-2 px-5 py-2.5 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 hover:border-red-500/20 text-red-400/60 hover:text-red-400 rounded-2xl text-sm font-bold transition-all duration-300 disabled:opacity-50"
+                                        >
+                                          <XCircle size={16} />
+                                          Reject
+                                        </motion.button>
+                                        <motion.button
+                                          whileHover={{ scale: 1.05, y: -2 }}
+                                          whileTap={{ scale: 0.95 }}
+                                          onClick={() => handleReviewSubmission(type, s.id, "approve")}
+                                          disabled={Boolean(reviewing[s.id])}
+                                          className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:border-emerald-500/40 text-emerald-400 rounded-2xl text-sm font-bold shadow-lg shadow-emerald-500/5 hover:shadow-emerald-500/10 transition-all duration-300 disabled:opacity-50"
+                                        >
+                                          <CheckCircle2 size={16} />
+                                          Approve
+                                        </motion.button>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <ArrowRight size={16} className="text-white/10" />
+                                </div>
+                              </motion.div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </section>
+
+                  {/* Employee Management Section */}
                   <div className={`${cardClass} p-8 relative overflow-hidden`}>
                     <div className="glass-noise" />
                     <div className="cardGlass-borders" />
@@ -830,552 +1163,547 @@ export default function AdminPage() {
                     <div className="cardGlass-shine pointer-events-none" />
 
                     <div className="relative z-10">
-                      <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center justify-between mb-8">
                         <div>
-                          <h2 className="text-xl font-wintersolace">Pending Submissions</h2>
-                          <p className="text-sm text-white/50 mt-1">Review and approve content from authors.</p>
+                          <h2 className="text-xl font-wintersolace">Employee Management</h2>
+                          <p className="text-sm text-white/50 mt-1">Manage society members and their administrative roles.</p>
                         </div>
-                        <button
-                          className="text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest font-bold"
-                          onClick={() => fetchSubmissions()}
-                          disabled={submissionsLoading}
-                        >
-                          {submissionsLoading ? "Refreshing..." : "Refresh"}
-                        </button>
+                        <div className="flex items-center gap-4">
+                          <input
+                            className={`${inputClass} !rounded-full !px-6 !py-2.5 !bg-black/20 w-64`}
+                            placeholder="Filter database..."
+                            value={userSearch}
+                            onChange={(e) => setUserSearch(e.target.value)}
+                          />
+                          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-flex">
+                            <button
+                              className="relative px-5 py-2.5 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300"
+                              onClick={() => setShowAddEmployee((v) => !v)}
+                            >
+                              <span className="relative z-10 flex items-center gap-2 text-white text-sm font-medium">
+                                {showAddEmployee ? "Cancel" : "Add Employee"}
+                              </span>
+                            </button>
+                          </motion.div>
+                        </div>
                       </div>
 
-                      {submissionsLoading && submissions.length === 0 ? (
-                        <div className="flex items-center gap-3 text-sm text-white/40 py-8 justify-center">
-                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-                          Scanning database...
-                        </div>
-                      ) : submissions.length === 0 ? (
-                        <div className="text-center py-10">
-                          <p className="text-white/30 italic text-sm">Action centre is clear. No pending reviews.</p>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 gap-4">
-                          {submissions.map((s) => {
-                            const authorLabel = s.author?.name || s.author?.username || s.author?.email || "Unknown";
-                            const kind = s.doc_id ? "Edit" : "New";
-                            const isOwn = s.author_user_id === currentUser?.id;
-                            return (
-                              <div key={s.id} className="relative overflow-hidden rounded-[32px] border border-white/5 bg-white/[0.02] p-6 hover:bg-white/[0.04] transition-all">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                  <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                      <span className="px-2 py-0.5 rounded text-[10px] bg-purple-500/20 text-purple-300 font-bold uppercase tracking-wider">{kind}</span>
-                                      <span className="text-[10px] text-white/30 uppercase tracking-widest">Author: {authorLabel}</span>
-                                    </div>
-                                    <h3 className="text-lg font-bold">{s.title}</h3>
-                                    <p className="text-sm text-white/50 line-clamp-1">{s.content}</p>
-                                  </div>
-                                  <div className="flex items-center gap-3">
-                                    {isOwn ? (
-                                      <span className="text-xs text-white/30 italic">Self-review restricted</span>
-                                    ) : (
-                                      <>
-                                        <button
-                                          onClick={() => handleReviewSubmission(s.id, "approve")}
-                                          disabled={Boolean(reviewing[s.id])}
-                                          className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-sm font-bold hover:bg-emerald-500/20 transition-all"
-                                        >
-                                          Approve
-                                        </button>
-                                        <button
-                                          onClick={() => handleReviewSubmission(s.id, "reject")}
-                                          disabled={Boolean(reviewing[s.id])}
-                                          className="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm font-bold hover:bg-red-500/20 transition-all"
-                                        >
-                                          Reject
-                                        </button>
-                                      </>
-                                    )}
-                                  </div>
+                      <AnimatePresence>
+                        {showAddEmployee && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                            animate={{ opacity: 1, height: "auto", marginBottom: 40 }}
+                            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="p-8 rounded-[44px] border border-white/10 bg-white/[0.03] backdrop-blur-3xl relative group" style={{ "--card-radius": "44px" } as React.CSSProperties}>
+                              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                                <div className="space-y-2">
+                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">Full Name</label>
+                                  <input className={`${inputClass} w-full focus:ring-purple-500/50`} placeholder="E.g. Dr. John Doe" value={newUser.name} onChange={(e) => setNewUser(s => ({ ...s, name: e.target.value }))} />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">Username</label>
+                                  <input className={`${inputClass} w-full focus:ring-purple-500/50`} placeholder="@username" value={newUser.username} onChange={(e) => setNewUser(s => ({ ...s, username: e.target.value }))} />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">Email Address</label>
+                                  <input className={`${inputClass} w-full focus:ring-purple-500/50`} placeholder="email@example.com" value={newUser.email} onChange={(e) => setNewUser(s => ({ ...s, email: e.target.value }))} />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">Secure Password</label>
+                                  <input type="password" className={`${inputClass} w-full focus:ring-purple-500/50`} placeholder="••••••••" value={newUser.password} onChange={(e) => setNewUser(s => ({ ...s, password: e.target.value }))} />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">Professional Role</label>
+                                  <input className={`${inputClass} w-full focus:ring-purple-500/50`} placeholder="e.g. Research Lead" value={newUser.position} onChange={(e) => setNewUser(s => ({ ...s, position: e.target.value }))} />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">Department</label>
+                                  <input className={`${inputClass} w-full focus:ring-purple-500/50`} placeholder="e.g. Writers' Block" value={newUser.department} onChange={(e) => setNewUser(s => ({ ...s, department: e.target.value }))} />
+                                </div>
+                                <div className="space-y-2 md:col-span-3">
+                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">Contributor Bio</label>
+                                  <textarea className={`${textareaClass} w-full !min-h-[100px] focus:ring-purple-500/50`} placeholder="Short biography for the research community..." value={newUser.description} onChange={(e) => setNewUser(s => ({ ...s, description: e.target.value }))} />
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </section>
+                              <div className="mt-8 flex justify-end relative z-10">
+                                <button
+                                  className="px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl text-sm font-bold shadow-xl shadow-purple-900/20 transition-all duration-300 transform active:scale-95"
+                                  onClick={async () => { await handleCreateUser(); setShowAddEmployee(false); }}
+                                >
+                                  Authorize Contributor
+                                </button>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
 
-                {/* Employee Management Section */}
-                <div className={`${cardClass} p-8 relative overflow-hidden`}>
-                  <div className="glass-noise" />
-                  <div className="cardGlass-borders" />
-                  <div className="cardGlass-tint" />
-                  <div className="cardGlass-shine pointer-events-none" />
-
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-8">
-                      <div>
-                        <h2 className="text-xl font-wintersolace">Employee Management</h2>
-                        <p className="text-sm text-white/50 mt-1">Manage society members and their administrative roles.</p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <input
-                          className={`${inputClass} !rounded-full !px-6 !py-2.5 !bg-black/20 w-64`}
-                          placeholder="Filter database..."
-                          value={userSearch}
-                          onChange={(e) => setUserSearch(e.target.value)}
-                        />
-                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-flex">
-                          <button
-                            className="relative px-5 py-2.5 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300"
-                            onClick={() => setShowAddEmployee((v) => !v)}
-                          >
-                            <span className="relative z-10 flex items-center gap-2 text-white text-sm font-medium">
-                              {showAddEmployee ? "Cancel" : "Add Employee"}
-                            </span>
-                            {/* Liquid glass layers */}
-                            <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-                            <div className="liquidGlass-shine relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
-                          </button>
-                        </motion.div>
-                      </div>
-                    </div>
-
-                    {showAddEmployee && (
-                      <div className="mb-10 p-6 rounded-2xl border border-white/10 bg-white/[0.02]">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                          <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Name</label><input className={`${inputClass} w-full`} placeholder="Full name" value={newUser.name} onChange={(e) => setNewUser(s => ({ ...s, name: e.target.value }))} /></div>
-                          <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Username</label><input className={`${inputClass} w-full`} placeholder="@username" value={newUser.username} onChange={(e) => setNewUser(s => ({ ...s, username: e.target.value }))} /></div>
-                          <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Email</label><input className={`${inputClass} w-full`} placeholder="email@example.com" value={newUser.email} onChange={(e) => setNewUser(s => ({ ...s, email: e.target.value }))} /></div>
-                          <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Password</label><input type="password" className={`${inputClass} w-full`} placeholder="Password" value={newUser.password} onChange={(e) => setNewUser(s => ({ ...s, password: e.target.value }))} /></div>
-                          <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Position / Role</label><input className={`${inputClass} w-full`} placeholder="e.g. Research Lead" value={newUser.position} onChange={(e) => setNewUser(s => ({ ...s, position: e.target.value }))} /></div>
-                          <div className="space-y-1.5"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Department</label><input className={`${inputClass} w-full`} placeholder="e.g. Writers' Block" value={newUser.department} onChange={(e) => setNewUser(s => ({ ...s, department: e.target.value }))} /></div>
-                          <div className="space-y-1.5 md:col-span-1"><label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Description / Bio</label><textarea className={`${textareaClass} w-full !min-h-[80px]`} placeholder="Short bio or description..." value={newUser.description} onChange={(e) => setNewUser(s => ({ ...s, description: e.target.value }))} /></div>
-                        </div>
-                        <button className="mt-6 px-6 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-bold transition-all" onClick={async () => { await handleCreateUser(); setShowAddEmployee(false); }}>Register Employee</button>
-                      </div>
-                    )}
-
-                    <div className="overflow-x-auto no-scrollbar">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-white/5">
-                            <th className="text-left py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Contributor</th>
-                            <th className="text-left py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Role</th>
-                            <th className="text-left py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Department</th>
-                            <th className="text-center py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Access</th>
-                            <th className="text-right py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredUsers.map((u) => {
-                            const isExpanded = expandedUserId === u.id;
-                            const edit = userEdits[u.id] ?? {};
-                            return (
-                              <React.Fragment key={u.id}>
-                                <tr className={`group hover:bg-white/[0.02] transition-colors cursor-pointer ${isExpanded ? 'bg-white/[0.02]' : ''}`} onClick={() => setExpandedUserId(isExpanded ? null : u.id)}>
-                                  <td className="py-4 px-4">
-                                    <div className="flex items-center gap-4">
-                                      <div className="group/avatar relative h-10 w-10 rounded-full bg-white/5 border border-white/10 overflow-hidden ring-4 ring-white/[0.02] cursor-pointer" onClick={(e) => e.stopPropagation()}>
-                                        {u.profilePicture ? (
-                                          <img src={u.profilePicture} className="w-full h-full object-cover transition-transform group-hover/avatar:scale-110" alt="" />
-                                        ) : (
-                                          <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-white/20">
-                                            {u.name?.[0] || u.username?.[0] || "?"}
-                                          </div>
-                                        )}
-                                        <label className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer">
-                                          <input
-                                            type="file"
-                                            className="hidden"
-                                            accept="image/*"
-                                            onChange={(e) => {
-                                              const f = e.target.files?.[0];
-                                              if (f) {
-                                                setCroppingUserId(u.id);
-                                                const reader = new FileReader();
-                                                reader.onload = (ev) => {
-                                                  setCroppingImage(ev.target?.result as string);
-                                                };
-                                                reader.readAsDataURL(f);
-                                              }
-                                            }}
-                                          />
-                                          <div className="text-[8px] font-black uppercase tracking-tighter text-white">Edit</div>
-                                        </label>
-                                      </div>
-                                      <div>
-                                        <div className="font-bold text-white/90">{u.name || u.username}</div>
-                                        <div className="text-[10px] text-white/40 lowercase">{u.email}</div>
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td className="py-4 px-4 text-white/60">{u.position || "Staff"}</td>
-                                  <td className="py-4 px-4 text-white/60">{u.department || "-"}</td>
-                                  <td className="py-4 px-4 text-center">
-                                    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${u.admin_access ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-white/5 text-white/30'}`}>
-                                      {u.admin_access ? "Admin" : "Standard"}
-                                    </span>
-                                  </td>
-                                  <td className="py-4 px-4 text-right group-hover:text-white transition-all text-white/40 text-[10px] font-bold uppercase tracking-widest">
-                                    {isExpanded ? "Close" : "Modify"}
-                                  </td>
-                                </tr>
-                                {isExpanded && (
-                                  <tr>
-                                    <td colSpan={5} className="p-6 bg-white/[0.01] border-b border-white/5">
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl">
-                                        <div className="space-y-1.5">
-                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Full Name</label>
-                                          <input className={`${inputClass} w-full`} placeholder="Full name" value={edit.name} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, name: e.target.value } }))} />
+                      <div className="overflow-x-auto no-scrollbar">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-white/5">
+                              <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Contributor</th>
+                              <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Role & Department</th>
+                              <th className="text-center py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Auth Level</th>
+                              <th className="text-right py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/[0.02]">
+                            {filteredUsers.map((u, i) => {
+                              const isExpanded = expandedUserId === u.id;
+                              const edit = userEdits[u.id] ?? {};
+                              return (
+                                <React.Fragment key={u.id}>
+                                  <motion.tr
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: i * 0.03 }}
+                                    className={`group hover:bg-white/[0.03] transition-all cursor-pointer ${isExpanded ? 'bg-white/[0.03]' : ''}`}
+                                    onClick={() => setExpandedUserId(isExpanded ? null : u.id)}
+                                  >
+                                    <td className="py-5 px-6">
+                                      <div className="flex items-center gap-4">
+                                        <div className="relative h-11 w-11 rounded-full bg-white/5 border border-white/10 overflow-hidden ring-4 ring-white/[0.02] transition-transform group-hover:scale-105">
+                                          {u.profilePicture ? (
+                                            <img src={u.profilePicture} className="w-full h-full object-cover" alt="" />
+                                          ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-xs font-black text-white/20">
+                                              {u.name?.[0] || u.username?.[0] || "?"}
+                                            </div>
+                                          )}
                                         </div>
-                                        <div className="space-y-1.5">
-                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Username</label>
-                                          <input className={`${inputClass} w-full`} placeholder="@username" value={edit.username} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, username: e.target.value } }))} />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Email</label>
-                                          <input type="email" className={`${inputClass} w-full`} placeholder="email@example.com" value={edit.email} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, email: e.target.value } }))} />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Position / Role</label>
-                                          <input className={`${inputClass} w-full`} placeholder="e.g. Research Lead" value={edit.position} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, position: e.target.value } }))} />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Department</label>
-                                          <input className={`${inputClass} w-full`} placeholder="e.g. Biology" value={edit.department} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, department: e.target.value } }))} />
-                                        </div>
-                                        <div className="space-y-1.5 md:col-span-1">
-                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Description / Bio</label>
-                                          <textarea className={`${textareaClass} w-full !min-h-[80px]`} placeholder="Short bio or description..." value={edit.description} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, description: e.target.value } }))} />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">New Password</label>
-                                          <input type="password" className={`${inputClass} w-full`} placeholder="Leave blank to keep current" value={edit.password} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, password: e.target.value } }))} />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                          <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Confirm Password</label>
-                                          <input type="password" className={`${inputClass} w-full`} placeholder="Repeat new password" onChange={(e) => {/* confirm is local UI only – validated on save */ }} />
-                                        </div>
-                                        <div className="space-y-1.5 flex items-center gap-4 pb-2 pt-2">
-                                          <input type="checkbox" id={`admin-${u.id}`} className="accent-purple-500 h-4 w-4" checked={edit.admin_access} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, admin_access: e.target.checked } }))} />
-                                          <label htmlFor={`admin-${u.id}`} className="text-xs font-bold uppercase tracking-widest text-white/80 cursor-pointer">Grant Admin Authorization</label>
-                                        </div>
-                                        <div className="flex justify-end gap-3 items-center">
-                                          <button onClick={() => handleDeleteUser(u.id)} className="text-xs font-bold text-red-400/60 hover:text-red-400 transition-colors uppercase tracking-widest mr-4">Purge User</button>
-                                          <button onClick={() => handleUpdateUser(u.id)} disabled={Boolean(savingUser[u.id])} className="px-6 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all">{savingUser[u.id] ? "Saving..." : "Apply Changes"}</button>
+                                        <div>
+                                          <div className="font-bold text-white/90 group-hover:text-white transition-colors">{u.name || u.username}</div>
+                                          <div className="text-[10px] text-white/30 lowercase font-medium">{u.email}</div>
                                         </div>
                                       </div>
                                     </td>
-                                  </tr>
-                                )}
-                              </React.Fragment>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Public Users Table */}
-                <div className={`${cardClass} p-8 relative overflow-hidden`}>
-                  <div className="glass-noise" />
-                  <div className="cardGlass-borders" />
-                  <div className="cardGlass-tint" />
-                  <div className="cardGlass-shine pointer-events-none" />
-
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-8">
-                      <div>
-                        <h2 className="text-xl font-wintersolace">Public Community</h2>
-                        <p className="text-sm text-white/50 mt-1">Monitor registered community members and subscribers.</p>
-                      </div>
-                      <input
-                        className={`${inputClass} !rounded-full !px-6 !py-2.5 !bg-black/20 w-64`}
-                        placeholder="Search community..."
-                        value={publicUserSearch}
-                        onChange={(e) => setPublicUserSearch(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="overflow-x-auto no-scrollbar">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-white/5">
-                            <th className="text-left py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Display Profile</th>
-                            <th className="text-center py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Community Role</th>
-                            <th className="text-right py-4 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredPublicUsers.map((u) => {
-                            const isExpanded = expandedPublicUserId === u.id;
-                            return (
-                              <React.Fragment key={u.id}>
-                                <tr className={`group hover:bg-white/[0.02] transition-colors cursor-pointer ${isExpanded ? 'bg-white/[0.02]' : ''}`} onClick={() => setExpandedPublicUserId(isExpanded ? null : u.id)}>
-                                  <td className="py-4 px-4">
-                                    <div className="flex items-center gap-4">
-                                      <div className="h-10 w-10 rounded-full bg-white/5 border border-white/10 overflow-hidden ring-4 ring-white/[0.02]">
-                                        {u.avatar_url && <img src={u.avatar_url} className="w-full h-full object-cover" alt="" />}
+                                    <td className="py-5 px-6">
+                                      <div className="space-y-0.5">
+                                        <div className="text-sm font-bold text-white/70">{u.position || "Staff"}</div>
+                                        <div className="text-[10px] text-white/30 uppercase tracking-widest font-black">{u.department || "Unassigned"}</div>
                                       </div>
-                                      <div>
-                                        <div className="font-bold text-white/90">{u.name || u.username || "Anonymous User"}</div>
-                                        <div className="text-[10px] text-white/40 lowercase">{u.email}</div>
+                                    </td>
+                                    <td className="py-5 px-6 text-center">
+                                      <div className="inline-flex">
+                                        {u.admin_access ? (
+                                          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                                            <ShieldCheck size={10} />
+                                            Administrator
+                                          </span>
+                                        ) : (
+                                          <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/5 text-white/30 border border-white/5">
+                                            Standard Access
+                                          </span>
+                                        )}
                                       </div>
-                                    </div>
-                                  </td>
-                                  <td className="py-4 px-4 text-center">
-                                    {u.is_employee ? (
-                                      <span className="px-2 py-0.5 rounded text-[8px] bg-purple-500/20 text-purple-300 border border-purple-500/30 font-black uppercase tracking-wider">Employee</span>
-                                    ) : (
-                                      <span className="px-2 py-0.5 rounded text-[8px] bg-white/5 text-white/30 font-black uppercase tracking-wider">Public</span>
-                                    )}
-                                  </td>
-                                  <td className="py-4 px-4 text-right group-hover:text-white transition-all text-white/40 text-[10px] font-bold uppercase tracking-widest">
-                                    {isExpanded ? "Close" : "Control"}
-                                  </td>
-                                </tr>
-                                {isExpanded && (() => {
-                                  const pubEdit = publicUserEdits[u.id] ?? { username: u.username ?? "", email: u.email ?? "", name: u.name ?? "", bio: u.bio ?? "", password: "" };
-                                  return (
+                                    </td>
+                                    <td className="py-5 px-6 text-right">
+                                      <div className="flex items-center justify-end gap-2 text-[10px] font-black uppercase tracking-widest text-white/30 group-hover:text-white transition-all">
+                                        {isExpanded ? "Close" : "Modify"}
+                                        <ChevronRight size={14} className={`transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`} />
+                                      </div>
+                                    </td>
+                                  </motion.tr>
+                                  {isExpanded && (
                                     <tr>
-                                      <td colSpan={3} className="p-6 bg-white/[0.01] border-b border-white/5">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mb-6">
+                                      <td colSpan={5} className="p-6 bg-white/[0.01] border-b border-white/5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl">
                                           <div className="space-y-1.5">
-                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Display Name</label>
-                                            <input className={`${inputClass} w-full`} placeholder="Full name" value={pubEdit.name} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, name: e.target.value } }))} />
+                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Full Name</label>
+                                            <input className={`${inputClass} w-full`} placeholder="Full name" value={edit.name} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, name: e.target.value } }))} />
                                           </div>
                                           <div className="space-y-1.5">
                                             <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Username</label>
-                                            <input className={`${inputClass} w-full`} placeholder="@username" value={pubEdit.username} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, username: e.target.value } }))} />
+                                            <input className={`${inputClass} w-full`} placeholder="@username" value={edit.username} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, username: e.target.value } }))} />
                                           </div>
                                           <div className="space-y-1.5">
                                             <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Email</label>
-                                            <input type="email" className={`${inputClass} w-full`} placeholder="email@example.com" value={pubEdit.email} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, email: e.target.value } }))} />
+                                            <input type="email" className={`${inputClass} w-full`} placeholder="email@example.com" value={edit.email} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, email: e.target.value } }))} />
                                           </div>
-                                          <div className="space-y-1.5 md:col-span-2">
-                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Bio</label>
-                                            <textarea className={`${textareaClass} w-full !min-h-[80px]`} placeholder="Short bio..." value={pubEdit.bio} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, bio: e.target.value } }))} />
+                                          <div className="space-y-1.5">
+                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Position / Role</label>
+                                            <input className={`${inputClass} w-full`} placeholder="e.g. Research Lead" value={edit.position} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, position: e.target.value } }))} />
+                                          </div>
+                                          <div className="space-y-1.5">
+                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Department</label>
+                                            <input className={`${inputClass} w-full`} placeholder="e.g. Biology" value={edit.department} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, department: e.target.value } }))} />
+                                          </div>
+                                          <div className="space-y-1.5 md:col-span-1">
+                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Description / Bio</label>
+                                            <textarea className={`${textareaClass} w-full !min-h-[80px]`} placeholder="Short bio or description..." value={edit.description} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, description: e.target.value } }))} />
                                           </div>
                                           <div className="space-y-1.5">
                                             <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">New Password</label>
-                                            <input type="password" className={`${inputClass} w-full`} placeholder="Leave blank to keep current" value={pubEdit.password} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, password: e.target.value } }))} />
+                                            <input type="password" className={`${inputClass} w-full`} placeholder="Leave blank to keep current" value={edit.password} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, password: e.target.value } }))} />
                                           </div>
                                           <div className="space-y-1.5">
                                             <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Confirm Password</label>
-                                            <input type="password" className={`${inputClass} w-full`} placeholder="Repeat new password" />
+                                            <input type="password" className={`${inputClass} w-full`} placeholder="Repeat new password" onChange={(e) => {/* confirm is local UI only – validated on save */ }} />
                                           </div>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                          <div className="flex items-center gap-3">
-                                            <button onClick={() => handleDeletePublicUser(u.id)} className="px-5 py-2.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 transition-all uppercase tracking-widest">Suspend Account</button>
-                                            <p className="text-[10px] text-white/20 italic">Registered on {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'Unknown date'}</p>
+                                          <div className="space-y-1.5 flex items-center gap-4 pb-2 pt-2">
+                                            <input type="checkbox" id={`admin-${u.id}`} className="accent-purple-500 h-4 w-4" checked={edit.admin_access} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, admin_access: e.target.checked } }))} />
+                                            <label htmlFor={`admin-${u.id}`} className="text-xs font-bold uppercase tracking-widest text-white/80 cursor-pointer">Grant Admin Authorization</label>
                                           </div>
-                                          <button onClick={() => handleUpdatePublicUser(u.id)} disabled={Boolean(savingPublicUser[u.id])} className="px-6 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all">{savingPublicUser[u.id] ? "Saving..." : "Save Changes"}</button>
+                                          <div className="flex justify-end gap-3 items-center">
+                                            <button onClick={() => handleDeleteUser(u.id)} className="text-xs font-bold text-red-400/60 hover:text-red-400 transition-colors uppercase tracking-widest mr-4">Purge User</button>
+                                            <button onClick={() => handleUpdateUser(u.id)} disabled={Boolean(savingUser[u.id])} className="px-6 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all">{savingUser[u.id] ? "Saving..." : "Apply Changes"}</button>
+                                          </div>
                                         </div>
                                       </td>
                                     </tr>
-                                  );
-                                })()}
-                              </React.Fragment>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                                  )}
+                                </React.Fragment>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            )}
 
-            {activeTab === "articles" && (
-              <div className="space-y-8">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                  <div>
-                    <h2 className="text-2xl font-wintersolace">Research Articles</h2>
-                    <p className="text-sm text-white/50 mt-1">Manage our growing database of cancer research and information.</p>
-                  </div>
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="inline-flex"
-                  >
-                    <button
-                      className="relative px-6 py-3 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300 group"
-                      onClick={() => router.push("/admin/docs/new")}
-                    >
-                      <span className="relative z-10 flex items-center gap-2 text-white font-medium">
-                        + Add New Article
-                      </span>
-                      {/* Liquid glass layers */}
-                      <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-                      <div className="liquidGlass-shine relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
-                    </button>
-                  </motion.div>
-                </div>
-
-                <CancerDocsPanel
-                  docs={currentUser?.admin_access ? docs : docs.filter(d => d.author_user_id === currentUser?.id)}
-                  currentUser={currentUser}
-                  onDelete={handleDelete}
-                  users={users}
-                  loading={loading}
-                />
-              </div>
-            )}
-
-            {activeTab === "survivors" && (
-              <div className="space-y-8">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                  <div>
-                    <h2 className="text-2xl  font-wintersolace">Survivor Stories</h2>
-                    <p className="text-sm text-white/50 mt-1">Publish and manage narratives of resilience and hope.</p>
-                  </div>
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="inline-flex"
-                  >
-                    <button
-                      className="relative px-6 py-3 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300"
-                      onClick={() => router.push("/admin/survivor-stories")}
-                    >
-                      <span className="relative z-10 flex items-center gap-2 text-white font-medium">
-                        + Post Survivor Story
-                      </span>
-                      {/* Liquid glass layers */}
-                      <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-                      <div className="liquidGlass-shine relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
-                    </button>
-                  </motion.div>
-                </div>
-
-                {/* Survivor stories list simplified for the dashboard view */}
-                <div className="grid grid-cols-1 gap-4">
-                  <div className={`${cardClass} p-8 text-center py-20 relative overflow-hidden`}>
+                  {/* Public Users Table */}
+                  <div className={`${cardClass} p-8 relative overflow-hidden`}>
                     <div className="glass-noise" />
                     <div className="cardGlass-borders" />
                     <div className="cardGlass-tint" />
                     <div className="cardGlass-shine pointer-events-none" />
 
-                    <div className="relative z-10 max-w-md mx-auto space-y-4">
-                      <h3 className="text-xl font-bold font-wintersolace">Survivor Stories Hub</h3>
-                      <p className="text-sm text-white/50">To manage the full collection of survivor stories, visit our dedicated storytelling workspace.</p>
-                      <button
-                        className="mt-4 px-8 py-3 bg-white/5 border border-white/10 rounded-full text-sm font-bold hover:bg-white/10 transition-all uppercase tracking-widest"
-                        onClick={() => router.push("/admin/survivor-stories")}
-                      >
-                        Enter Storytelling Lab
-                      </button>
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between mb-8">
+                        <div>
+                          <h2 className="text-xl font-wintersolace">Public Community</h2>
+                          <p className="text-sm text-white/50 mt-1">Monitor registered community members and subscribers.</p>
+                        </div>
+                        <input
+                          className={`${inputClass} !rounded-full !px-6 !py-2.5 !bg-black/20 w-64`}
+                          placeholder="Search community..."
+                          value={publicUserSearch}
+                          onChange={(e) => setPublicUserSearch(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="overflow-x-auto no-scrollbar">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-white/5">
+                              <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Community Profile</th>
+                              <th className="text-center py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Access Level</th>
+                              <th className="text-right py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/[0.02]">
+                            {filteredPublicUsers.map((u, i) => {
+                              const isExpanded = expandedPublicUserId === u.id;
+                              return (
+                                <React.Fragment key={u.id}>
+                                  <motion.tr
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: i * 0.03 }}
+                                    className={`group hover:bg-white/[0.03] transition-all cursor-pointer ${isExpanded ? 'bg-white/[0.03]' : ''}`}
+                                    onClick={() => setExpandedPublicUserId(isExpanded ? null : u.id)}
+                                  >
+                                    <td className="py-5 px-6">
+                                      <div className="flex items-center gap-4">
+                                        <div className="h-11 w-11 rounded-full bg-white/5 border border-white/10 overflow-hidden ring-4 ring-white/[0.02] transition-transform group-hover:scale-105">
+                                          {u.avatar_url && <img src={u.avatar_url} className="w-full h-full object-cover" alt="" />}
+                                        </div>
+                                        <div>
+                                          <div className="font-bold text-white/90 group-hover:text-white transition-colors">{u.name || u.username || "Anonymous User"}</div>
+                                          <div className="text-[10px] text-white/30 lowercase font-medium">{u.email}</div>
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="py-5 px-6 text-center">
+                                      <div className="inline-flex">
+                                        {u.is_employee ? (
+                                          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                                            Society Contributor
+                                          </span>
+                                        ) : (
+                                          <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/5 text-white/30 border border-white/5">
+                                            Public Member
+                                          </span>
+                                        )}
+                                      </div>
+                                    </td>
+                                    <td className="py-5 px-6 text-right">
+                                      <div className="flex items-center justify-end gap-2 text-[10px] font-black uppercase tracking-widest text-white/30 group-hover:text-white transition-all">
+                                        {isExpanded ? "Close" : "Control"}
+                                        <ChevronRight size={14} className={`transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`} />
+                                      </div>
+                                    </td>
+                                  </motion.tr>
+                                  {isExpanded && (() => {
+                                    const pubEdit = publicUserEdits[u.id] ?? { username: u.username ?? "", email: u.email ?? "", name: u.name ?? "", bio: u.bio ?? "", password: "" };
+                                    return (
+                                      <tr>
+                                        <td colSpan={3} className="p-6 bg-white/[0.01] border-b border-white/5">
+                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mb-6">
+                                            <div className="space-y-1.5">
+                                              <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Display Name</label>
+                                              <input className={`${inputClass} w-full`} placeholder="Full name" value={pubEdit.name} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, name: e.target.value } }))} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                              <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Username</label>
+                                              <input className={`${inputClass} w-full`} placeholder="@username" value={pubEdit.username} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, username: e.target.value } }))} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                              <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Email</label>
+                                              <input type="email" className={`${inputClass} w-full`} placeholder="email@example.com" value={pubEdit.email} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, email: e.target.value } }))} />
+                                            </div>
+                                            <div className="space-y-1.5 md:col-span-2">
+                                              <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Bio</label>
+                                              <textarea className={`${textareaClass} w-full !min-h-[80px]`} placeholder="Short bio..." value={pubEdit.bio} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, bio: e.target.value } }))} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                              <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">New Password</label>
+                                              <input type="password" className={`${inputClass} w-full`} placeholder="Leave blank to keep current" value={pubEdit.password} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, password: e.target.value } }))} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                              <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Confirm Password</label>
+                                              <input type="password" className={`${inputClass} w-full`} placeholder="Repeat new password" />
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                              <button onClick={() => handleDeletePublicUser(u.id)} className="px-5 py-2.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 transition-all uppercase tracking-widest">Suspend Account</button>
+                                              <p className="text-[10px] text-white/20 italic">Registered on {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'Unknown date'}</p>
+                                            </div>
+                                            <button onClick={() => handleUpdatePublicUser(u.id)} disabled={Boolean(savingPublicUser[u.id])} className="px-6 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all">{savingPublicUser[u.id] ? "Saving..." : "Save Changes"}</button>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })()}
+                                </React.Fragment>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {activeTab === "system" && currentUser?.admin_access && (
-              <div className="space-y-8">
-                {/* Maintenance Mode Card */}
-                <section className={`${cardClass} p-8 relative overflow-hidden`}>
-                  <div className="glass-noise" />
-                  <div className="cardGlass-borders" />
-                  <div className="cardGlass-tint" />
-                  <div className="cardGlass-shine pointer-events-none" />
-
-                  <div className="relative z-10 space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="text-2xl font-wintersolace text-white">Maintenance Mode</h2>
-                        <p className="text-sm text-white/50 mt-1">Restrict public access to the website while performing updates.</p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        {maintenanceLoading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />}
-                        <button
-                          onClick={toggleMaintenanceMode}
-                          disabled={maintenanceLoading}
-                          className={`relative w-14 h-7 rounded-full transition-colors duration-300 ${maintenanceMode ? "bg-red-500" : "bg-white/10"}`}
-                        >
-                          <motion.div
-                            animate={{ x: maintenanceMode ? 32 : 4 }}
-                            className="absolute top-1 w-5 h-5 bg-white rounded-full shadow-lg"
-                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                          />
-                        </button>
-                      </div>
+              {activeTab === "articles" && (
+                <div className="space-y-8">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                    <div>
+                      <h2 className="text-2xl font-wintersolace">Research Articles</h2>
+                      <p className="text-sm text-white/50 mt-1">Manage our growing database of cancer research and information.</p>
                     </div>
-                    <div className="mt-2 p-4 rounded-2xl bg-white/[0.03] border border-white/5">
-                      <p className="text-xs text-white/40 leading-relaxed font-dmsans">
-                        <span className="text-white font-bold uppercase tracking-wider block mb-1">Warning:</span>
-                        When enabled, visitors will be redirected to the maintenance page. Admin panel and API will remain accessible.
-                        Make sure to toggle it off once your work is complete.
-                      </p>
-                    </div>
-                  </div>
-                </section>
-
-                <section className={`${cardClass} p-8 relative overflow-hidden`}>
-                  <div className="glass-noise" />
-                  <div className="cardGlass-borders" />
-                  <div className="cardGlass-tint" />
-                  <div className="cardGlass-shine pointer-events-none" />
-
-                  <div className="relative z-10 space-y-6">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-2xl font-wintersolace text-white">System Verification</h2>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="inline-flex"
+                    >
                       <button
-                        onClick={async () => {
-                          setSystemCheckLoading(true);
-                          try {
-                            const res = await fetch("/api/admin", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ action: "system_check" }),
-                            });
-                            const data = await res.json();
-                            setSystemCheckResults(data.results);
-                          } catch (err) {
-                            setError("Failed to run system check");
-                          } finally {
-                            setSystemCheckLoading(false);
-                          }
-                        }}
-                        disabled={systemCheckLoading}
-                        className={primaryButton}
+                        className="relative px-6 py-3 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300 group"
+                        onClick={() => router.push("/admin/docs/new")}
                       >
-                        {systemCheckLoading ? "Running..." : "Run System Check"}
+                        <span className="relative z-10 flex items-center gap-2 text-white font-medium">
+                          + Add New Article
+                        </span>
+                        {/* Liquid glass layers */}
+                        <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+                        <div className="liquidGlass-shine relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
                       </button>
-                    </div>
+                    </motion.div>
+                  </div>
 
-                    {systemCheckResults && (
-                      <div className="space-y-4">
-                        <div className="rounded-2xl bg-black/40 p-4 font-mono text-xs overflow-auto max-h-[500px] border border-white/5">
-                          <pre className="text-purple-300">
-                            {JSON.stringify(systemCheckResults, null, 2)}
-                          </pre>
+                  <AdminContentPanel
+                    items={docs as any}
+                    type="articles"
+                    currentUser={currentUser}
+                    onDelete={handleDeleteContent}
+                    loading={loading}
+                  />
+                </div>
+              )}
+
+              {activeTab === "blogs" && (
+                <div className="space-y-8">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                    <div>
+                      <h2 className="text-2xl font-wintersolace">Blogger's Hub</h2>
+                      <p className="text-sm text-white/50 mt-1">Manage community blog posts and updates.</p>
+                    </div>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="inline-flex"
+                    >
+                      <button
+                        className="relative px-6 py-3 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300 group"
+                        onClick={() => router.push("/blogs/dashboard")}
+                      >
+                        <span className="relative z-10 flex items-center gap-2 text-white font-medium">
+                          + Write New Post
+                        </span>
+                        <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+                        <div className="liquidGlass-shine relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
+                      </button>
+                    </motion.div>
+                  </div>
+
+                  <AdminContentPanel
+                    items={blogs}
+                    type="blogs"
+                    currentUser={currentUser}
+                    onDelete={handleDeleteContent}
+                    loading={loading}
+                  />
+                </div>
+              )}
+
+              {activeTab === "survivors" && (
+                <div className="space-y-8">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                    <div>
+                      <h2 className="text-2xl  font-wintersolace">Survivor Stories</h2>
+                      <p className="text-sm text-white/50 mt-1">Publish and manage narratives of resilience and hope.</p>
+                    </div>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="inline-flex"
+                    >
+                      <button
+                        className="relative px-6 py-3 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300"
+                        onClick={() => router.push("/admin/survivor-stories")}
+                      >
+                        <span className="relative z-10 flex items-center gap-2 text-white font-medium">
+                          + Post Survivor Story
+                        </span>
+                        <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+                        <div className="liquidGlass-shine relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
+                      </button>
+                    </motion.div>
+                  </div>
+
+                  <AdminContentPanel
+                    items={stories}
+                    type="survivors"
+                    currentUser={currentUser}
+                    onDelete={handleDeleteContent}
+                    loading={loading}
+                  />
+                </div>
+              )}
+
+              {activeTab === "system" && currentUser?.admin_access && (
+                <div className="space-y-8">
+                  {/* Maintenance Mode Card */}
+                  <section className={`${cardClass} p-8 relative overflow-hidden`}>
+                    <div className="glass-noise" />
+                    <div className="cardGlass-borders" />
+                    <div className="cardGlass-tint" />
+                    <div className="cardGlass-shine pointer-events-none" />
+
+                    <div className="relative z-10 space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-2xl font-wintersolace text-white">Maintenance Mode</h2>
+                          <p className="text-sm text-white/50 mt-1">Restrict public access to the website while performing updates.</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          {maintenanceLoading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />}
+                          <button
+                            onClick={toggleMaintenanceMode}
+                            disabled={maintenanceLoading}
+                            className={`relative w-14 h-7 rounded-full transition-colors duration-300 ${maintenanceMode ? "bg-red-500" : "bg-white/10"}`}
+                          >
+                            <motion.div
+                              animate={{ x: maintenanceMode ? 32 : 4 }}
+                              className="absolute top-1 w-5 h-5 bg-white rounded-full shadow-lg"
+                              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                            />
+                          </button>
                         </div>
                       </div>
-                    )}
-                  </div>
-                </section>
-              </div>
+                      <div className="mt-2 p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+                        <p className="text-xs text-white/40 leading-relaxed font-dmsans">
+                          <span className="text-white font-bold uppercase tracking-wider block mb-1">Warning:</span>
+                          When enabled, visitors will be redirected to the maintenance page. Admin panel and API will remain accessible.
+                          Make sure to toggle it off once your work is complete.
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className={`${cardClass} p-8 relative overflow-hidden`}>
+                    <div className="glass-noise" />
+                    <div className="cardGlass-borders" />
+                    <div className="cardGlass-tint" />
+                    <div className="cardGlass-shine pointer-events-none" />
+
+                    <div className="relative z-10 space-y-6">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-2xl font-wintersolace text-white">System Verification</h2>
+                        <button
+                          onClick={async () => {
+                            setSystemCheckLoading(true);
+                            try {
+                              const res = await fetch("/api/admin", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ action: "system_check" }),
+                              });
+                              const data = await res.json();
+                              setSystemCheckResults(data.results);
+                            } catch (err) {
+                              setError("Failed to run system check");
+                            } finally {
+                              setSystemCheckLoading(false);
+                            }
+                          }}
+                          disabled={systemCheckLoading}
+                          className={primaryButton}
+                        >
+                          {systemCheckLoading ? "Running..." : "Run System Check"}
+                        </button>
+                      </div>
+
+                      {systemCheckResults && (
+                        <div className="space-y-4">
+                          <div className="rounded-2xl bg-black/40 p-4 font-mono text-xs overflow-auto max-h-[500px] border border-white/5">
+                            <pre className="text-purple-300">
+                              {JSON.stringify(systemCheckResults, null, 2)}
+                            </pre>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {croppingImage && (
+              <ProfilePictureEditor
+                imageSrc={croppingImage}
+                onCrop={(file) => {
+                  handleUpload(file, croppingUserId || currentUser?.id);
+                  setCroppingImage(null);
+                  setCroppingUserId(null);
+                }}
+                onCancel={() => {
+                  setCroppingImage(null);
+                  setCroppingUserId(null);
+                }}
+              />
             )}
-          </motion.div>
+          </AnimatePresence>
         </div>
       </div>
-      <AnimatePresence>
-        {croppingImage && (
-          <ProfilePictureEditor
-            imageSrc={croppingImage}
-            onCrop={(file) => {
-              handleUpload(file, croppingUserId || currentUser?.id);
-              setCroppingImage(null);
-              setCroppingUserId(null);
-            }}
-            onCancel={() => {
-              setCroppingImage(null);
-              setCroppingUserId(null);
-            }}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }

@@ -35,7 +35,19 @@ type AuthBody = {
 	| "delete_public_user"
 	| "system_check"
 	| "get_site_settings"
-	| "update_site_settings";
+	| "update_site_settings"
+	| "list_story_submissions"
+	| "review_story_submission"
+	| "review_blog_submission"
+	| "list_blogs"
+	| "get_blog"
+	| "update_blog"
+	| "delete_blog"
+	| "list_stories"
+	| "get_story"
+	| "update_story"
+	| "delete_story"
+	| "list_blog_submissions";
 	username?: string;
 	email?: string;
 	password?: string;
@@ -50,6 +62,7 @@ type AuthBody = {
 	title?: string;
 	content?: string;
 	color?: string;
+	colour?: string;
 	authorId?: string;
 	submissionId?: string;
 	decision?: "approve" | "reject";
@@ -59,6 +72,11 @@ type AuthBody = {
 	department?: string;
 	bio?: string;
 	forceOwn?: boolean;
+	hidden?: boolean;
+	blogId?: string;
+	storyId?: string;
+	tags?: string[];
+	image_url?: string;
 };
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -77,6 +95,38 @@ type DocSubmissionRow = {
 	content: string;
 	color: string | null;
 	author_user_id: string;
+	status: "pending" | "approved" | "rejected";
+	reviewer_user_id?: string | null;
+	reviewer_note?: string | null;
+	created_at?: string;
+	updated_at?: string;
+};
+
+type StorySubmissionRow = {
+	id: string;
+	story_id: string | null;
+	user_id: string;
+	slug: string;
+	title: string;
+	content: string | null;
+	image_url: string | null;
+	colour: string | null;
+	tags: any;
+	status: "pending" | "approved" | "rejected";
+	reviewer_user_id?: string | null;
+	reviewer_note?: string | null;
+	created_at?: string;
+	updated_at?: string;
+};
+
+type BlogSubmissionRow = {
+	id: string;
+	blog_id: string | null;
+	user_id: string;
+	slug: string;
+	title: string;
+	content: string | null;
+	tags: any;
 	status: "pending" | "approved" | "rejected";
 	reviewer_user_id?: string | null;
 	reviewer_note?: string | null;
@@ -298,6 +348,90 @@ async function applySubmissionToDocs(client: SupabaseClient<any, any, any>, subm
 	return { applied, submission: updatedSubmission };
 }
 
+async function applyStorySubmission(client: SupabaseClient<any, any, any>, submission: StorySubmissionRow, reviewerId: string | null) {
+	const { story_id, slug, title, content, image_url, colour, tags, user_id } = submission;
+	const payload = {
+		slug,
+		title,
+		content,
+		image_url,
+		colour,
+		tags,
+		user_id,
+	};
+
+	let applied;
+	if (story_id) {
+		const { data, error } = await client
+			.from("survivorstories")
+			.update(payload)
+			.eq("id", story_id)
+			.select()
+			.maybeSingle();
+		if (error) throw error;
+		applied = data;
+	} else {
+		const { data, error } = await client
+			.from("survivorstories")
+			.insert({ ...payload })
+			.select()
+			.maybeSingle();
+		if (error) throw error;
+		applied = data;
+	}
+
+	const { data: updatedSubmission, error: subErr } = await client
+		.from("survivor_story_submissions")
+		.update({ status: "approved", reviewer_user_id: reviewerId, reviewer_note: null })
+		.eq("id", submission.id)
+		.select()
+		.maybeSingle();
+	if (subErr) throw subErr;
+
+	return { applied, submission: updatedSubmission };
+}
+
+async function applyBlogSubmission(client: SupabaseClient<any, any, any>, submission: BlogSubmissionRow, reviewerId: string | null) {
+	const { blog_id, slug, title, content, tags, user_id } = submission;
+	const payload = {
+		slug,
+		title,
+		content,
+		tags,
+		user_id,
+	};
+
+	let applied;
+	if (blog_id) {
+		const { data, error } = await client
+			.from("blogs")
+			.update(payload)
+			.eq("id", blog_id)
+			.select()
+			.maybeSingle();
+		if (error) throw error;
+		applied = data;
+	} else {
+		const { data, error } = await client
+			.from("blogs")
+			.insert({ ...payload })
+			.select()
+			.maybeSingle();
+		if (error) throw error;
+		applied = data;
+	}
+
+	const { data: updatedSubmission, error: subErr } = await client
+		.from("blog_submissions")
+		.update({ status: "approved", reviewer_user_id: reviewerId, reviewer_note: null })
+		.eq("id", submission.id)
+		.select()
+		.maybeSingle();
+	if (subErr) throw subErr;
+
+	return { applied, submission: updatedSubmission };
+}
+
 
 
 async function handleUploadAvatar(req: Request) {
@@ -390,15 +524,9 @@ export async function GET() {
 			return NextResponse.json({ error: "JWT secret not configured" }, { status: 500 });
 		}
 
-		const token = (await cookies()).get(COOKIE_NAME)?.value;
-		if (!token) {
-			vlog("get.no_cookie");
-			return NextResponse.json({ authenticated: false }, { status: 401 });
-		}
-
-		const session = await validateSessionFromToken(token);
+		const session = await getAuthenticatedUser();
 		if (!session) {
-			vlog("get.invalid_session");
+			vlog("get.no_session");
 			return NextResponse.json({ authenticated: false }, { status: 401 });
 		}
 
@@ -439,6 +567,74 @@ export async function POST(req: Request) {
 			return NextResponse.json({ error: "action is required" }, { status: 400 });
 		}
 
+		if (action === "login") {
+			const identifier = body.identifier ?? body.username ?? body.email;
+			const password = body.password;
+			if (!identifier || !password) {
+				return NextResponse.json({ error: "identifier and password required" }, { status: 400 });
+			}
+
+			// find user by username or email (case-insensitive)
+			const { data: user, error } = await client
+				.from("users")
+				.select("id, username, email, name, password, admin_access, description, position, department")
+				.or(`username.eq.${identifier},email.eq.${identifier}`)
+				.limit(1)
+				.maybeSingle();
+
+			if (error) {
+				return NextResponse.json({ error: error.message }, { status: 500 });
+			}
+			if (!user) {
+				return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+			}
+
+			const valid = await bcrypt.compare(password, user.password ?? "");
+			if (!valid) {
+				return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+			}
+
+			const token = jwt.sign(
+				{
+					sub: user.id,
+					username: user.username,
+					email: user.email,
+					name: user.name,
+				},
+				jwtSecret,
+				{ expiresIn: "7d" }
+			);
+
+			const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+			await createSessionRow(user.id, token, expiresAt, req);
+
+			const response = NextResponse.json({
+				authenticated: true,
+				user: {
+					id: user.id,
+					username: user.username,
+					email: user.email,
+					name: user.name,
+					admin_access: Boolean(user.admin_access),
+					description: user.description,
+					position: user.position,
+					department: user.department,
+				},
+			});
+
+			response.cookies.set({
+				name: COOKIE_NAME,
+				value: token,
+				httpOnly: true,
+				secure: process.env.NODE_ENV === "production",
+				sameSite: "lax",
+				path: "/",
+				maxAge: 60 * 60 * 24 * 7,
+			});
+
+			return response;
+		}
+
 		if (action === "register") {
 			const { username, email, password, name, avatar_url, position, description, department } = body ?? {};
 			if (!email || !password) {
@@ -472,78 +668,6 @@ export async function POST(req: Request) {
 			return NextResponse.json({ user: data }, { status: 201 });
 		}
 
-		if (action === "login") {
-			const loginId = body?.identifier || body?.username || body?.email;
-			const password = body?.password;
-
-			if (!loginId || !password) {
-				return NextResponse.json({ error: "username/email and password are required" }, { status: 400 });
-			}
-			vlog("login.start", { loginId });
-
-			const { data: user, error } = await client
-				.from("users")
-				.select("id, username, email, name, password, admin_access, description, position, department")
-				.or(`username.eq.${loginId},email.eq.${loginId}`)
-				.limit(1)
-				.maybeSingle();
-
-			if (error) {
-				vlog("login.error_query", { loginId, message: error.message });
-				return NextResponse.json({ error: error.message }, { status: 500 });
-			}
-
-			if (!user) {
-				vlog("login.no_user", { loginId });
-				return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
-			}
-
-			const isValidPassword = await bcrypt.compare(password, user.password ?? "");
-
-			if (!isValidPassword) {
-				vlog("login.bad_password", { userId: user.id });
-				return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
-			}
-
-			const token = jwt.sign(
-				{
-					sub: user.id,
-					username: user.username,
-					email: user.email,
-					name: user.name,
-					admin_access: Boolean(user.admin_access),
-				},
-				jwtSecret,
-				{ expiresIn: "7d" },
-			);
-
-			const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-			try {
-				await createSessionRow(user.id, token, expiresAt, req);
-			} catch (err: unknown) {
-				vlog("login.session_error", { userId: user.id, err: err instanceof Error ? err.message : err });
-				throw err;
-			}
-			vlog("login.session_created", { userId: user.id });
-
-			const response = NextResponse.json({
-				token,
-				user: { id: user.id, username: user.username, email: user.email, name: user.name, admin_access: Boolean(user.admin_access), description: user.description, position: user.position, department: user.department },
-			});
-
-			response.cookies.set({
-				name: COOKIE_NAME,
-				value: token,
-				httpOnly: true,
-				secure: process.env.NODE_ENV === "production",
-				sameSite: "lax",
-				path: "/",
-				maxAge: 60 * 60 * 24 * 7,
-			});
-
-			vlog("login.ok", { userId: user.id });
-			return response;
-		}
 
 		if (action === "upsert") {
 			const { username, email, name, avatar_url } = body ?? {};
@@ -713,12 +837,16 @@ export async function POST(req: Request) {
 
 			const baseQuery = client
 				.from("cancer_docs")
-				.select("id, slug, title, content, color, position, author_user_id, created_at, updated_at");
+				.select("id, slug, title, content, color, position, author_user_id, hidden, created_at, updated_at");
 
 			const { forceOwn } = body ?? {};
-			const query = (session.user.admin_access && !forceOwn)
+			let query = (session.user.admin_access && !forceOwn)
 				? baseQuery
 				: baseQuery.eq("author_user_id", session.user.id);
+
+			if (!session.user.admin_access) {
+				query = query.neq("hidden", true);
+			}
 
 			// Hide docs whose author is not in users table
 			const { data, error } = await query;
@@ -796,7 +924,7 @@ export async function POST(req: Request) {
 
 			const { data: docRow, error: docErr } = await client
 				.from("cancer_docs")
-				.select("id, slug, title, content, color, position, author_user_id, created_at, updated_at")
+				.select("id, slug, title, content, color, position, author_user_id, hidden, created_at, updated_at")
 				.eq("id", docId)
 				.limit(1)
 				.maybeSingle();
@@ -1002,6 +1130,180 @@ export async function POST(req: Request) {
 			return NextResponse.json({ submission: updated, status: "rejected" });
 		}
 
+		if (action === "list_story_submissions") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+			const statusFilter = (body?.status as "pending" | "approved" | "rejected" | "all" | undefined) ?? (session.user.admin_access ? "pending" : "all");
+
+			const query = client
+				.from("survivor_story_submissions")
+				.select("*")
+				.order("created_at", { ascending: true });
+
+			if (session.user.admin_access) {
+				if (statusFilter && statusFilter !== "all") query.eq("status", statusFilter);
+			} else {
+				query.eq("user_id", session.user.id);
+				if (statusFilter && statusFilter !== "all") query.eq("status", statusFilter);
+			}
+
+			const { data, error } = await query;
+			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+			const authorIds = Array.from(new Set((data ?? []).map((d: any) => d.user_id).filter(Boolean)));
+			let authors: Record<string, { username: string | null; name: string | null; email: string | null }> = {};
+			if (authorIds.length) {
+				const { data: usersRows } = await client
+					.from("users_public")
+					.select("id, username, name, email")
+					.in("id", authorIds);
+				(usersRows ?? []).forEach((u: any) => {
+					authors[u.id] = {
+						username: u.username ?? null,
+						name: u.name ?? null,
+						email: u.email ?? null,
+					};
+				});
+			}
+
+			const submissions = (data ?? []).map((d: any) => ({
+				...d,
+				author: authors[d.user_id] ?? null,
+			}));
+
+			return NextResponse.json({ submissions });
+		}
+
+		if (action === "review_story_submission") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+			const submissionId = body?.submissionId;
+			const decision = body?.decision;
+			const reviewerNote = body?.reviewerNote ?? null;
+			if (!submissionId || !decision) return NextResponse.json({ error: "submissionId and decision are required" }, { status: 400 });
+
+			const { data: submission, error: subErr } = await client
+				.from("survivor_story_submissions")
+				.select("*")
+				.eq("id", submissionId)
+				.maybeSingle();
+
+			if (subErr) return NextResponse.json({ error: subErr.message }, { status: 400 });
+			if (!submission) return NextResponse.json({ error: "Submission not found" }, { status: 404 });
+			if (submission.status !== "pending") return NextResponse.json({ error: "Submission already reviewed" }, { status: 400 });
+			if (submission.user_id === session.user.id) return NextResponse.json({ error: "You cannot review your own submission" }, { status: 403 });
+
+			if (decision === "approve") {
+				try {
+					const result = await applyStorySubmission(client, submission as StorySubmissionRow, session.user.id);
+					revalidatePath('/survivor-stories', 'layout');
+					return NextResponse.json({ submission: result.submission, story: result.applied, status: "approved" });
+				} catch (err) {
+					return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 400 });
+				}
+			}
+
+			const { data: updated, error: rejectErr } = await client
+				.from("survivor_story_submissions")
+				.update({ status: "rejected", reviewer_user_id: session.user.id, reviewer_note: reviewerNote })
+				.eq("id", submissionId)
+				.select()
+				.maybeSingle();
+
+			if (rejectErr) return NextResponse.json({ error: rejectErr.message }, { status: 400 });
+			return NextResponse.json({ submission: updated, status: "rejected" });
+		}
+
+		if (action === "list_blog_submissions") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+			const statusFilter = (body?.status as "pending" | "approved" | "rejected" | "all" | undefined) ?? (session.user.admin_access ? "pending" : "all");
+
+			const query = client
+				.from("blog_submissions")
+				.select("*")
+				.order("created_at", { ascending: true });
+
+			if (session.user.admin_access) {
+				if (statusFilter && statusFilter !== "all") query.eq("status", statusFilter);
+			} else {
+				query.eq("user_id", session.user.id);
+				if (statusFilter && statusFilter !== "all") query.eq("status", statusFilter);
+			}
+
+			const { data, error } = await query;
+			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+			const authorIds = Array.from(new Set((data ?? []).map((d: any) => d.user_id).filter(Boolean)));
+			let authors: Record<string, { username: string | null; name: string | null; email: string | null }> = {};
+			if (authorIds.length) {
+				const { data: usersRows } = await client
+					.from("users_public")
+					.select("id, username, name, email")
+					.in("id", authorIds);
+				(usersRows ?? []).forEach((u: any) => {
+					authors[u.id] = {
+						username: u.username ?? null,
+						name: u.name ?? null,
+						email: u.email ?? null,
+					};
+				});
+			}
+
+			const submissions = (data ?? []).map((d: any) => ({
+				...d,
+				author: authors[d.user_id] ?? null,
+			}));
+
+			return NextResponse.json({ submissions });
+		}
+
+		if (action === "review_blog_submission") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+			const submissionId = body?.submissionId;
+			const decision = body?.decision;
+			const reviewerNote = body?.reviewerNote ?? null;
+			if (!submissionId || !decision) return NextResponse.json({ error: "submissionId and decision are required" }, { status: 400 });
+
+			const { data: submission, error: subErr } = await client
+				.from("blog_submissions")
+				.select("*")
+				.eq("id", submissionId)
+				.maybeSingle();
+
+			if (subErr) return NextResponse.json({ error: subErr.message }, { status: 400 });
+			if (!submission) return NextResponse.json({ error: "Submission not found" }, { status: 404 });
+			if (submission.status !== "pending") return NextResponse.json({ error: "Submission already reviewed" }, { status: 400 });
+			if (submission.user_id === session.user.id) return NextResponse.json({ error: "You cannot review your own submission" }, { status: 403 });
+
+			if (decision === "approve") {
+				try {
+					const result = await applyBlogSubmission(client, submission as BlogSubmissionRow, session.user.id);
+					revalidatePath('/blogs', 'layout');
+					return NextResponse.json({ submission: result.submission, blog: result.applied, status: "approved" });
+				} catch (err) {
+					return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 400 });
+				}
+			}
+
+			const { data: updated, error: rejectErr } = await client
+				.from("blog_submissions")
+				.update({ status: "rejected", reviewer_user_id: session.user.id, reviewer_note: reviewerNote })
+				.eq("id", submissionId)
+				.select()
+				.maybeSingle();
+
+			if (rejectErr) return NextResponse.json({ error: rejectErr.message }, { status: 400 });
+			return NextResponse.json({ submission: updated, status: "rejected" });
+		}
+
 
 		if (action === "create_doc") {
 			const session = await getAuthenticatedUser();
@@ -1035,7 +1337,7 @@ export async function POST(req: Request) {
 			const session = await getAuthenticatedUser();
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-			const { docId, slug, title, content, color, position, authorId } = body ?? {};
+			const { docId, slug, title, content, color, position, authorId, hidden } = body ?? {};
 			if (!docId) return NextResponse.json({ error: "docId is required" }, { status: 400 });
 
 			const updates: Record<string, unknown> = {};
@@ -1044,6 +1346,7 @@ export async function POST(req: Request) {
 			if (content !== undefined) updates.content = content;
 			if (color !== undefined) updates.color = color;
 			if (position !== undefined) updates.position = position;
+			if (hidden !== undefined) updates.hidden = hidden;
 			if (authorId !== undefined) {
 				if (!session.user.admin_access) {
 					return NextResponse.json({ error: "Only admins can change author" }, { status: 403 });
@@ -1084,7 +1387,7 @@ export async function POST(req: Request) {
 				.from("cancer_docs")
 				.update(updates)
 				.eq("id", docId)
-				.select("id, slug, title, content, color, position, author_user_id")
+				.select("id, slug, title, content, color, position, author_user_id, hidden")
 				.maybeSingle();
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -1100,8 +1403,185 @@ export async function POST(req: Request) {
 			const { docId } = body ?? {};
 			if (!docId) return NextResponse.json({ error: "docId is required" }, { status: 400 });
 
-			const { error } = await client.from("cancer_docs").delete().eq("id", docId); if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+			const { error } = await client.from("cancer_docs").update({ hidden: true }).eq("id", docId); if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 			revalidatePath('/article', 'layout');
+			return NextResponse.json({ ok: true });
+		}
+
+		if (action === "list_blogs") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+			const { forceOwn } = body ?? {};
+			let query = client
+				.from("blogs")
+				.select("*, users_public(name, username, avatar_url, bio)")
+				.order("created_at", { ascending: false });
+
+			if (!session.user.admin_access || forceOwn) {
+				// We need to find the users_public ID for this employee
+				const { data: pubUser } = await client
+					.from("users_public")
+					.select("id")
+					.eq("email", session.user.email.toLowerCase())
+					.maybeSingle();
+				if (pubUser) query = query.eq("user_id", pubUser.id);
+				else return NextResponse.json({ blogs: [] });
+			}
+
+			const { data, error } = await query;
+			if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+			return NextResponse.json({ blogs: data });
+		}
+
+		if (action === "get_blog") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+			const { blogId } = body ?? {};
+			if (!blogId) return NextResponse.json({ error: "blogId is required" }, { status: 400 });
+
+			const { data, error } = await client
+				.from("blogs")
+				.select("*, users_public(name, username, avatar_url, bio)")
+				.eq("id", blogId)
+				.maybeSingle();
+
+			if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+			if (!data) return NextResponse.json({ error: "Blog not found" }, { status: 404 });
+
+			return NextResponse.json({ blog: data });
+		}
+
+		if (action === "update_blog") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+			const { blogId, title, slug, content, tags, hidden } = body ?? {};
+			if (!blogId) return NextResponse.json({ error: "blogId is required" }, { status: 400 });
+
+			const updates: any = {};
+			if (title !== undefined) updates.title = title;
+			if (slug !== undefined) updates.slug = slug;
+			if (content !== undefined) updates.content = content;
+			if (tags !== undefined) updates.tags = tags;
+			if (hidden !== undefined) updates.deleted = hidden; // Use 'deleted' for consistency with existing soft-delete
+
+			const { data: existing } = await client.from("blogs").select("user_id").eq("id", blogId).maybeSingle();
+			if (!existing) return NextResponse.json({ error: "Blog not found" }, { status: 404 });
+
+			if (!session.user.admin_access) {
+				const { data: pubUser } = await client.from("users_public").select("id").eq("email", session.user.email.toLowerCase()).maybeSingle();
+				if (!pubUser || existing.user_id !== pubUser.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+			}
+
+			const { data, error } = await client.from("blogs").update(updates).eq("id", blogId).select().maybeSingle();
+			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+			revalidatePath('/blogs', 'layout');
+			return NextResponse.json({ blog: data });
+		}
+
+		if (action === "delete_blog") {
+			const session = await getAuthenticatedUser();
+			if (!session || !session.user.admin_access) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+			const { blogId } = body ?? {};
+			if (!blogId) return NextResponse.json({ error: "blogId is required" }, { status: 400 });
+
+			const { error } = await client.from("blogs").update({ deleted: true }).eq("id", blogId);
+			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+			revalidatePath('/blogs', 'layout');
+			return NextResponse.json({ ok: true });
+		}
+
+		if (action === "list_stories") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+			const { forceOwn } = body ?? {};
+			let query = client
+				.from("survivorstories")
+				.select("*, users_public:user_id(name, username, avatar_url, bio:description)")
+				.order("created_at", { ascending: false });
+
+			if (!session.user.admin_access || forceOwn) {
+				const { data: pubUser } = await client
+					.from("users_public")
+					.select("id")
+					.eq("email", session.user.email.toLowerCase())
+					.maybeSingle();
+				if (pubUser) query = query.eq("user_id", pubUser.id);
+				else return NextResponse.json({ stories: [] });
+			}
+
+			const { data, error } = await query;
+			if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+			return NextResponse.json({ stories: data });
+		}
+
+		if (action === "get_story") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+			const { storyId } = body ?? {};
+			if (!storyId) return NextResponse.json({ error: "storyId is required" }, { status: 400 });
+
+			const { data, error } = await client
+				.from("survivorstories")
+				.select("*, users_public:user_id(name, username, avatar_url, bio:description)")
+				.eq("id", storyId)
+				.maybeSingle();
+
+			if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+			if (!data) return NextResponse.json({ error: "Story not found" }, { status: 404 });
+
+			return NextResponse.json({ story: data });
+		}
+
+		if (action === "update_story") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+			const { storyId, title, slug, content, tags, image_url, colour, hidden } = body ?? {};
+			if (!storyId) return NextResponse.json({ error: "storyId is required" }, { status: 400 });
+
+			const updates: any = {};
+			if (title !== undefined) updates.title = title;
+			if (slug !== undefined) updates.slug = slug;
+			if (content !== undefined) updates.content = content;
+			if (tags !== undefined) updates.tags = tags;
+			if (image_url !== undefined) updates.image_url = image_url;
+			if (colour !== undefined) updates.colour = colour;
+			if (hidden !== undefined) updates.deleted = hidden;
+
+			const { data: existing } = await client.from("survivorstories").select("user_id").eq("id", storyId).maybeSingle();
+			if (!existing) return NextResponse.json({ error: "Story not found" }, { status: 404 });
+
+			if (!session.user.admin_access) {
+				const { data: pubUser } = await client.from("users_public").select("id").eq("email", session.user.email.toLowerCase()).maybeSingle();
+				if (!pubUser || existing.user_id !== pubUser.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+			}
+
+			const { data, error } = await client.from("survivorstories").update(updates).eq("id", storyId).select().maybeSingle();
+			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+			revalidatePath('/survivor-stories', 'layout');
+			return NextResponse.json({ story: data });
+		}
+
+		if (action === "delete_story") {
+			const session = await getAuthenticatedUser();
+			if (!session || !session.user.admin_access) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+			const { storyId } = body ?? {};
+			if (!storyId) return NextResponse.json({ error: "storyId is required" }, { status: 400 });
+
+			const { error } = await client.from("survivorstories").update({ deleted: true }).eq("id", storyId);
+			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+			revalidatePath('/survivor-stories', 'layout');
 			return NextResponse.json({ ok: true });
 		}
 
@@ -1428,12 +1908,6 @@ export async function POST(req: Request) {
 			}
 
 			return NextResponse.json({ error: "Unsupported setting key" }, { status: 400 });
-		}
-
-		if (action === "system_check") {
-			// This was missing from the POST but mentioned in the type, let's add a placeholder or check if it was elsewhere
-			// For now, let's just return something to avoid 400
-			return NextResponse.json({ status: "ok", time: new Date().toISOString() });
 		}
 
 		return NextResponse.json({ error: "Unknown action" }, { status: 400 });

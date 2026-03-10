@@ -533,7 +533,7 @@ export default function Home() {
                               </div>
 
                               <h3
-                                className={`${getTitleFontSize(article.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}
+                                className={`${getTitleFontSize(article.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white transition-colors duration-300`}
                               >
                                 {article.title}
                               </h3>

@@ -65,6 +65,7 @@ async function getDocBySlugUncached(slug: string): Promise<Article | null> {
     } else {
       q = q.eq('slug', slug);
     }
+    q = q.neq('hidden', true);
 
     const { data, error } = await q.maybeSingle();
 
@@ -123,6 +124,7 @@ async function getDocBySlugWithAvatarUncached(slug: string): Promise<ArticleWith
     } else {
       q = q.eq('slug', slug);
     }
+    q = q.neq('hidden', true);
 
     const { data, error } = await q.maybeSingle();
 
@@ -214,6 +216,7 @@ async function getAllDocsUncached(): Promise<Article[]> {
     const { data, error } = await supabase
       .from('cancer_docs')
       .select('id, slug, title, author_user_id, color')
+      .neq('hidden', true)
       .order('title');
 
     if (!data) return [];
@@ -260,6 +263,7 @@ async function getAllDocsWithAvatarsUncached(): Promise<ArticleWithAvatar[]> {
     const { data, error } = await supabase
       .from('cancer_docs')
       .select('id, slug, title, author_user_id, color')
+      .neq('hidden', true)
       .order('title');
 
     if (error) console.error('Error fetching documents from Supabase:', error);
@@ -332,6 +336,7 @@ async function getRandomArticleSummariesUncached(limit = 3, excludeSlug?: string
     const { data, error } = await supabase
       .from('cancer_docs')
       .select('id, slug, title, author_user_id, color')
+      .neq('hidden', true)
       .limit(20);
 
     if (error || !data) {
