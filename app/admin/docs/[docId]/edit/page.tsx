@@ -69,7 +69,7 @@ export default function DocEditPage() {
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           if (res.status === 401) {
-            router.replace("/admin/login");
+            router.replace("/sign-in?redirectTo=/admin");
             return;
           }
           setError(data?.error || "Failed to load article");

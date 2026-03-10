@@ -39,12 +39,12 @@ export default function NewDocPage() {
       try {
         const res = await fetch("/api/admin", { method: "GET" });
         if (!res.ok) {
-          router.replace("/admin/login");
+          router.replace("/sign-in?redirectTo=/admin");
           return;
         }
       } catch (err) {
         console.error("auth check error", err);
-        router.replace("/admin/login");
+        router.replace("/sign-in?redirectTo=/admin");
         return;
       } finally {
         setVerifying(false);

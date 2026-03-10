@@ -21,10 +21,12 @@ export const CardContainer = ({
   children,
   className,
   containerClassName,
+  ...rest
 }: {
   children?: React.ReactNode;
   className?: string;
   containerClassName?: string;
+  [key: string]: any;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMouseEntered, setIsMouseEntered] = useState(false);
@@ -70,7 +72,9 @@ export const CardContainer = ({
           )}
           style={{
             transformStyle: "preserve-3d",
+            ...rest.style,
           }}
+          {...rest}
         >
           {children}
         </div>
@@ -82,9 +86,11 @@ export const CardContainer = ({
 export const CardBody = ({
   children,
   className,
+  ...rest
 }: {
   children: React.ReactNode;
   className?: string;
+  [key: string]: any;
 }) => {
   return (
     <div
@@ -92,6 +98,7 @@ export const CardBody = ({
         "h-fit w-96 [transform-style:preserve-3d]  *:[transform-style:preserve-3d]",
         className
       )}
+      {...rest}
     >
       {children}
     </div>

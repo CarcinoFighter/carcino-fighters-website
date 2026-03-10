@@ -48,22 +48,96 @@ async function ensureUniqueSlug(baseSlug: string) {
   return candidate;
 }
 
+async function hashToken(token: string) {
+  const crypto = await import("node:crypto");
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
 async function getSession() {
-  if (missingConfig()) return null;
-  const token = (await cookies()).get(COOKIE_NAME)?.value;
+  if (missingConfig() || !jwtSecret) return null;
+  const cookieStore = await cookies();
+  let token = cookieStore.get("jwt")?.value;
+  let isPublicJwt = false;
+
+  if (!token) {
+    token = cookieStore.get("public_jwt")?.value;
+    isPublicJwt = true;
+  }
+
   if (!token) return null;
 
   try {
-    const payload = jwt.verify(token, jwtSecret!) as jwt.JwtPayload & { sub: string };
-    const { data: user, error } = await sb!
-      .from("users_public")
-      .select("id, username, name, bio, avatar_url, deleted")
-      .eq("id", payload.sub)
-      .limit(1)
-      .maybeSingle();
+    const payload = jwt.verify(token, jwtSecret) as jwt.JwtPayload & { sub: string };
 
-    if (error || !user || user.deleted) return null;
-    return { id: user.id, username: user.username, name: user.name, bio: user.bio, avatar_url: user.avatar_url };
+    if (isPublicJwt) {
+      const { data: user, error } = await sb!
+        .from("users_public")
+        .select("id, username, name, email, avatar_url, bio, deleted")
+        .eq("id", payload.sub)
+        .limit(1)
+        .maybeSingle();
+
+      if (error || !user || user.deleted) return null;
+
+      const { data: empUser } = await sb!
+        .from("users")
+        .select("id, admin_access")
+        .eq("email", user.email.toLowerCase())
+        .maybeSingle();
+
+      return {
+        id: user.id, // This is the users_public ID
+        username: user.username,
+        email: user.email.toLowerCase(),
+        avatar_url: user.avatar_url,
+        bio: user.bio,
+        admin_access: Boolean(empUser?.admin_access),
+        is_public_session: true,
+      };
+    } else {
+      const tokenHash = await hashToken(token);
+      const { data: sessionRow } = await (sb!
+        .from("login_sessions")
+        .select("user_id, expires_at")
+        .eq("token_hash", tokenHash)
+        .maybeSingle() as any);
+
+      if (!sessionRow) return null;
+      if (sessionRow.expires_at && new Date(sessionRow.expires_at).getTime() < Date.now()) return null;
+      if (sessionRow.user_id !== payload.sub) return null;
+
+      // payload.sub here is from the 'jwt' cookie, which is the employee table ID
+      // We NEED the users_public table ID for the 'blogs' and 'blog_submissions' foreign keys.
+      const { data: empUser, error: empErr } = await sb!
+        .from("users")
+        .select("id, email, admin_access")
+        .eq("id", payload.sub)
+        .limit(1)
+        .maybeSingle();
+
+      if (empErr || !empUser) return null;
+
+      const { data: pubUser } = await sb!
+        .from("users_public")
+        .select("id, username, name, avatar_url, bio")
+        .eq("email", empUser.email.toLowerCase())
+        .limit(1)
+        .maybeSingle();
+
+      if (!pubUser) return null; // Every employee should have a public profile
+
+      return {
+        id: pubUser.id, // ALWAYS return the public user ID for database operations
+        emp_id: empUser.id,
+        username: pubUser.username,
+        name: pubUser.name,
+        email: empUser.email.toLowerCase(),
+        avatar_url: pubUser.avatar_url,
+        bio: pubUser.bio,
+        admin_access: Boolean(empUser?.admin_access),
+        is_public_session: false,
+      };
+    }
   } catch (e) {
     return null;
   }
@@ -123,6 +197,34 @@ export async function GET(req: Request) {
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
     const blogs = (data ?? []).map(mapBlog);
+
+    // If 'mine', also fetch pending submissions
+    if (mine && session?.id) {
+      const { data: submissions, error: subErr } = await sb!
+        .from("blog_submissions")
+        .select("id, blog_id, title, slug, content, tags, status, created_at, updated_at")
+        .eq("user_id", session.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+
+      if (!subErr && submissions) {
+        const pendingBlogs = submissions.map((s) => ({
+          id: s.id,
+          submission_id: s.id,
+          blog_id: s.blog_id,
+          title: s.title,
+          slug: s.slug,
+          content: s.content,
+          tags: s.tags,
+          status: "pending",
+          created_at: s.created_at,
+          is_pending: true,
+        }));
+        // Merge them at the beginning
+        return NextResponse.json({ blogs: [...pendingBlogs, ...blogs] });
+      }
+    }
+
     return NextResponse.json({ blogs });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Unknown error";
@@ -150,85 +252,60 @@ export async function POST(req: Request) {
         ? body.tags.split(",").map((t) => t.trim()).filter(Boolean)
         : null;
 
-    if (action === "create") {
-      if (!body.title) return NextResponse.json({ error: "title is required" }, { status: 400 });
-      const baseSlug = body.slug ? slugify(body.slug) : slugify(body.title);
-      const uniqueSlug = await ensureUniqueSlug(baseSlug);
+    if (action === "create" || action === "update") {
+      const submissionPayload: any = {
+        user_id: session.id,
+        title: body.title,
+        slug: body.slug ? slugify(body.slug) : (body.title ? slugify(body.title) : undefined),
+        content: body.content ?? null,
+        tags: normalizedTags,
+        status: "pending",
+      };
+      if (action === "update") {
+        if (!body.id) return NextResponse.json({ error: "id is required for update submission" }, { status: 400 });
+        // Check if body.id is a submission or a blog
+        const { data: isBlog } = await sb!.from("blogs").select("id").eq("id", body.id).maybeSingle();
+        if (isBlog) {
+          submissionPayload.blog_id = body.id;
+        } else {
+          // If it's already a submission, we update that submission instead of creating a new one?
+          // For simplicity, let's just delete the old one and create new, or just reject if it exists.
+          // Actually, let's just update the existing submission if it exists.
+          const { error: updateErr } = await sb!
+            .from("blog_submissions")
+            .update(submissionPayload)
+            .eq("id", body.id)
+            .eq("user_id", session.id)
+            .eq("status", "pending");
 
-      const { data, error } = await sb!
-        .from("blogs")
-        .insert({
-          user_id: session.id,
-          title: body.title,
-          slug: uniqueSlug,
-          content: body.content ?? null,
-          tags: normalizedTags,
-        })
-        .select(
-          "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
-        )
-        .maybeSingle();
-
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-      return NextResponse.json({ blog: mapBlog(data) }, { status: 201 });
-    }
-
-    if (action === "update") {
-      if (!body.id) return NextResponse.json({ error: "id is required" }, { status: 400 });
-
-      const { data: existing, error: fetchErr } = await sb!
-        .from("blogs")
-        .select("id, user_id, slug")
-        .eq("id", body.id)
-        .limit(1)
-        .maybeSingle();
-
-      if (fetchErr) return NextResponse.json({ error: fetchErr.message }, { status: 400 });
-      if (!existing || existing.user_id !== session.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
-      const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
-      if (body.title !== undefined) updates.title = body.title;
-      if (body.content !== undefined) updates.content = body.content;
-      if (body.tags !== undefined) updates.tags = normalizedTags;
-
-      if (body.slug !== undefined) {
-        const candidate = body.slug ? slugify(body.slug) : existing.slug;
-        updates.slug = await ensureUniqueSlug(candidate);
+          if (!updateErr) return NextResponse.json({ message: "Submission updated" }, { status: 202 });
+        }
       }
 
       const { data, error } = await sb!
-        .from("blogs")
-        .update(updates)
-        .eq("id", body.id)
-        .select(
-          "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
-        )
+        .from("blog_submissions")
+        .insert(submissionPayload)
+        .select()
         .maybeSingle();
 
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-      return NextResponse.json({ blog: mapBlog(data) });
+      return NextResponse.json({ submission: data, message: "Blog post submitted for review" }, { status: 202 });
     }
 
     if (action === "delete") {
       if (!body.id) return NextResponse.json({ error: "id is required" }, { status: 400 });
 
-      const { data: existing, error: fetchErr } = await sb!
-        .from("blogs")
-        .select("id, user_id")
-        .eq("id", body.id)
-        .limit(1)
-        .maybeSingle();
+      // Can delete own submission if it's pending
+      const { data: sub } = await sb!.from("blog_submissions").select("id").eq("id", body.id).eq("user_id", session.id).eq("status", "pending").maybeSingle();
+      if (sub) {
+        await sb!.from("blog_submissions").delete().eq("id", body.id);
+        return NextResponse.json({ ok: true });
+      }
 
-      if (fetchErr) return NextResponse.json({ error: fetchErr.message }, { status: 400 });
-      if (!existing || existing.user_id !== session.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
-      const { error } = await sb!
-        .from("blogs")
-        .update({ deleted: true, updated_at: new Date().toISOString() })
-        .eq("id", body.id);
-
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-      return NextResponse.json({ ok: true });
+      // If it's a published blog, it falls through to admin check or forbidden
+      if (!session.admin_access) {
+        return NextResponse.json({ error: "Only admins can delete blogs directly" }, { status: 403 });
+      }
     }
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });

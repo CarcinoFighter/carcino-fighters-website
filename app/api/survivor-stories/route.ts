@@ -57,45 +57,94 @@ async function hashToken(token: string) {
   return crypto.createHash("sha256").update(token).digest("hex");
 }
 
-async function getAdminSession() {
+async function getSession() {
   if (missingConfig() || !jwtSecret) return null;
-  const token = (await cookies()).get(COOKIE_NAME)?.value;
+  const cookieStore = await cookies();
+  let token = cookieStore.get("jwt")?.value;
+  let isPublicJwt = false;
+
+  if (!token) {
+    token = cookieStore.get("public_jwt")?.value;
+    isPublicJwt = true;
+  }
+
   if (!token) return null;
 
   try {
     const payload = jwt.verify(token, jwtSecret) as jwt.JwtPayload & { sub: string };
     const tokenHash = await hashToken(token);
 
-    const { data: sessionRow, error: sessionErr } = await (sb!
-      .from("login_sessions")
-      .select("user_id, expires_at")
-      .eq("token_hash", tokenHash)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle() as any);
+    if (isPublicJwt) {
+      const { data: user, error } = await sb!
+        .from("users_public")
+        .select("id, username, name, email, avatar_url, bio")
+        .eq("id", payload.sub)
+        .limit(1)
+        .maybeSingle();
 
-    if (sessionErr || !sessionRow) return null;
-    if (sessionRow.expires_at && new Date(sessionRow.expires_at).getTime() < Date.now()) return null;
-    if (sessionRow.user_id !== payload.sub) return null;
+      if (error || !user) return null;
 
-    const { data: user, error: userErr } = await sb!
-      .from("users")
-      .select("id, username, name, email, avatar_url, description, position")
-      .eq("id", payload.sub)
-      .limit(1)
-      .maybeSingle();
+      const { data: empUser } = await sb!
+        .from("users")
+        .select("id, admin_access")
+        .eq("email", user.email.toLowerCase())
+        .maybeSingle();
 
-    if (userErr || !user) return null;
+      return {
+        id: user.id, // This is users_public ID
+        username: user.username,
+        name: user.name,
+        email: user.email,
+        avatar_url: user.avatar_url,
+        bio: user.bio,
+        admin_access: Boolean(empUser?.admin_access),
+        employee_id: empUser?.id || null,
+        is_public_session: true,
+      };
+    } else {
+      const { data: sessionRow, error: sessionErr } = await (sb!
+        .from("login_sessions")
+        .select("user_id, expires_at")
+        .eq("token_hash", tokenHash)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle() as any);
 
-    return {
-      id: user.id,
-      username: user.username,
-      name: user.name,
-      email: user.email,
-      avatar_url: user.avatar_url,
-      bio: user.description ?? null,
-      position: user.position ?? null,
-    };
+      if (sessionErr || !sessionRow) return null;
+      if (sessionRow.expires_at && new Date(sessionRow.expires_at).getTime() < Date.now()) return null;
+      if (sessionRow.user_id !== payload.sub) return null;
+
+      // payload.sub is the employee ID from jwt cookie
+      const { data: empUser, error: empErr } = await sb!
+        .from("users")
+        .select("id, email, admin_access")
+        .eq("id", payload.sub)
+        .limit(1)
+        .maybeSingle();
+
+      if (empErr || !empUser) return null;
+
+      const { data: pubUser } = await sb!
+        .from("users_public")
+        .select("id, username, name, avatar_url, bio")
+        .eq("email", empUser.email.toLowerCase())
+        .limit(1)
+        .maybeSingle();
+
+      if (!pubUser) return null;
+
+      return {
+        id: pubUser.id, // IMPORTANT: Use public ID for consistency
+        username: pubUser.username,
+        name: pubUser.name,
+        email: empUser.email,
+        avatar_url: pubUser.avatar_url,
+        bio: pubUser.bio,
+        admin_access: Boolean(empUser.admin_access),
+        employee_id: empUser.id,
+        is_public_session: false,
+      };
+    }
   } catch (e) {
     return null;
   }
@@ -106,7 +155,7 @@ async function handleUploadImage(req: Request) {
     return NextResponse.json({ error: "Supabase credentials not configured" }, { status: 500 });
   }
 
-  const session = await getAdminSession();
+  const session = await getSession();
   if (!session?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const formData = await req.formData();
@@ -159,7 +208,7 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const mine = searchParams.get("mine") === "true";
-    const session = mine ? await getAdminSession() : null;
+    const session = mine ? await getSession() : null;
     if (mine && !session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const query = sb!
@@ -178,6 +227,34 @@ export async function GET(req: Request) {
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
     const stories = (data ?? []).map(mapStory);
+
+    if (mine && session?.id) {
+      const { data: submissions, error: subErr } = await sb!
+        .from("survivor_story_submissions")
+        .select("id, story_id, title, slug, content, image_url, colour, tags, status, created_at, updated_at")
+        .eq("user_id", session.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+
+      if (!subErr && submissions) {
+        const pendingStories = submissions.map((s: any) => ({
+          id: s.id,
+          submission_id: s.id,
+          story_id: s.story_id,
+          title: s.title,
+          slug: s.slug,
+          content: s.content,
+          image_url: transformSupabaseUrl(s.image_url),
+          colour: s.colour,
+          tags: s.tags,
+          status: "pending",
+          created_at: s.created_at,
+          is_pending: true,
+        }));
+        return NextResponse.json({ stories: [...pendingStories, ...stories] });
+      }
+    }
+
     return NextResponse.json({ stories });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Unknown error";
@@ -193,7 +270,7 @@ export async function POST(req: Request) {
     }
 
     if (missingConfig()) return NextResponse.json({ error: "Supabase credentials not configured" }, { status: 500 });
-    const session = await getAdminSession();
+    const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = (await req.json().catch(() => ({}))) as StoryBody;
@@ -205,92 +282,63 @@ export async function POST(req: Request) {
         ? body.tags.split(",").map((t: any) => t.trim()).filter(Boolean)
         : null;
 
-    if (action === "create") {
-      if (!body.title) return NextResponse.json({ error: "title is required" }, { status: 400 });
-      const baseSlug = body.slug ? slugify(body.slug) : slugify(body.title);
-      const uniqueSlug = await ensureUniqueSlug(baseSlug);
+    if (action === "create" || action === "update") {
+      const submissionPayload: any = {
+        user_id: session.id,
+        title: body.title,
+        slug: body.slug ? slugify(body.slug) : (body.title ? slugify(body.title) : undefined),
+        content: body.content ?? null,
+        image_url: body.image_url ?? null,
+        colour: body.colour ?? null,
+        tags: normalizedTags,
+        status: "pending",
+      };
+      if (action === "update") {
+        if (!body.id) return NextResponse.json({ error: "id is required for update submission" }, { status: 400 });
 
-      const { data, error } = await sb!
-        .from("survivorstories")
-        .insert({
-          user_id: session.id,
-          title: body.title,
-          slug: uniqueSlug,
-          content: body.content ?? null,
-          image_url: body.image_url ?? null,
-          colour: body.colour ?? null,
-          tags: normalizedTags,
-        })
-        .select(
-          "id, user_id, title, slug, content, image_url, colour, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
-        )
-        .maybeSingle();
+        // Check if it's a story or a submission
+        const { data: isStory } = await sb!.from("survivorstories").select("id").eq("id", body.id).maybeSingle();
+        if (isStory) {
+          submissionPayload.story_id = body.id;
+        } else {
+          // It's a submission update
+          const { error: updateErr } = await sb!
+            .from("survivor_story_submissions")
+            .update(submissionPayload)
+            .eq("id", body.id)
+            .eq("user_id", session.id)
+            .eq("status", "pending");
 
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-      return NextResponse.json({ story: mapStory(data) }, { status: 201 });
-    }
-
-    if (action === "update") {
-      if (!body.id) return NextResponse.json({ error: "id is required" }, { status: 400 });
-
-      const { data: existing, error: fetchErr } = await sb!
-        .from("survivorstories")
-        .select("id, user_id, slug")
-        .eq("id", body.id)
-        .limit(1)
-        .maybeSingle();
-
-      if (fetchErr) return NextResponse.json({ error: fetchErr.message }, { status: 400 });
-      if (!existing || existing.user_id !== session.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
-      const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
-      if (body.title !== undefined) updates.title = body.title;
-      if (body.content !== undefined) updates.content = body.content;
-      if (body.image_url !== undefined) updates.image_url = body.image_url;
-      if (body.colour !== undefined) updates.colour = body.colour;
-      if (body.tags !== undefined) updates.tags = normalizedTags;
-
-      if (body.slug !== undefined) {
-        const candidate = body.slug ? slugify(body.slug) : existing.slug;
-        updates.slug = await ensureUniqueSlug(candidate);
+          if (!updateErr) return NextResponse.json({ message: "Submission updated" }, { status: 202 });
+        }
       }
 
       const { data, error } = await sb!
-        .from("survivorstories")
-        .update(updates)
-        .eq("id", body.id)
-        .select(
-          "id, user_id, title, slug, content, image_url, colour, tags, views, likes, created_at, updated_at, deleted, users(name, username, avatar_url, description)"
-        )
+        .from("survivor_story_submissions")
+        .insert(submissionPayload)
+        .select()
         .maybeSingle();
 
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-      return NextResponse.json({ story: mapStory(data) });
+      return NextResponse.json({ submission: data, message: "Story submitted for review" }, { status: 202 });
     }
 
     if (action === "delete") {
       if (!body.id) return NextResponse.json({ error: "id is required" }, { status: 400 });
 
-      const { data: existing, error: fetchErr } = await sb!
-        .from("survivorstories")
-        .select("id, user_id")
-        .eq("id", body.id)
-        .limit(1)
-        .maybeSingle();
+      // Can delete own submission if pending
+      const { data: sub } = await sb!.from("survivor_story_submissions").select("id").eq("id", body.id).eq("user_id", session.id).eq("status", "pending").maybeSingle();
+      if (sub) {
+        await sb!.from("survivor_story_submissions").delete().eq("id", body.id);
+        return NextResponse.json({ ok: true });
+      }
 
-      if (fetchErr) return NextResponse.json({ error: fetchErr.message }, { status: 400 });
-      if (!existing || existing.user_id !== session.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
-      const { error } = await sb!
-        .from("survivorstories")
-        .update({ deleted: true, updated_at: new Date().toISOString() })
-        .eq("id", body.id);
-
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-      return NextResponse.json({ ok: true });
+      if (!session.admin_access) {
+        return NextResponse.json({ error: "Only admins can delete stories directly" }, { status: 403 });
+      }
     }
 
-    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+    return NextResponse.json({ error: "Unknown action or unauthorized" }, { status: 400 });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

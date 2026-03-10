@@ -43,7 +43,7 @@ export async function GET(
     const { data, error } = await sb
       .from("survivorstories")
       .select(
-        "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+        "id, user_id, title, slug, content, image_url, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio:description)"
       )
       .eq("deleted", false)
       .or(`slug.eq.${slug},id.eq.${slug}`)
