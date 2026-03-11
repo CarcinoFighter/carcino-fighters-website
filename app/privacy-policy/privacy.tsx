@@ -39,7 +39,7 @@ function MarkdownImage({ src, alt }: { src: string; alt: string }) {
 const markdownContent = `
 ## Privacy Policy
 
-**Last Updated: 09/02/2026**
+**Last Updated: 11/03/2026**
 
 The Carcino Foundation values your trust, and we understand the importance of protecting your privacy. We want to make sure that you understand how your information is collected and used by us. This Privacy Statement describes 
 
@@ -83,7 +83,26 @@ Your IP address is automatically assigned to your computer by your Internet Serv
 - **Employment Information:** Professional history and qualifications (relevant to staff and volunteers).
 - **Internet Activity:** Data collected through cookies and tracking technologies regarding how you use our site (unless you choose to opt-out).
 
-### How We Collect Information
+## Image Usage and Licensing:
+
+All images, photographs, illustrations, graphics, and visual media displayed on this website are either the property of the organization, created by members of our team, or obtained through authorized third-party sources and used in accordance with their respective licensing terms.
+
+- Images owned or created by the organization are protected by applicable copyright and intellectual property laws. Visitors and users of the website are not permitted to be copied, downloaded, reproduced, modified, distributed, transmitted, or otherwise used for commercial or public purposes without prior written permission from the organization or explicit authorization granted by the organization or the respective copyright holder.
+- Certain images used on the website may be sourced from third-party stock image platforms or partner organizations. Such images remain the intellectual property of their respective creators or licensors and are used on this website in compliance with the licensing agreements provided by those platforms. Where required, the license terms, proper attribution or credit is provided to the original creators.
+
+## User-Submitted Images and Media:
+
+Certain sections of this website, including blogs, articles, or community submissions, may allow users or contributors to upload and share their own images, photographs, or other visual media.
+
+- By submitting or uploading images to the website, the user confirms and warrants that they either own the rights to the submitted content or have obtained all necessary permissions from the rightful copyright holder to share and publish the material.
+- The act of uploading such images grants the organization a non-exclusive, royalty-free license to display, reproduce, and publish the submitted content on the website or related platforms for informational, promotional, or educational purposes in connection with the associated blog post, article, or content submission. This permission is granted solely for the purpose of operating, promoting, and displaying the content on the platform.
+- Users remain solely responsible for the images they submit. The organization does not claim ownership of user-submitted images; however, the organization reserves the right to review, remove, or restrict any content that violates copyright laws, intellectual property rights, community guidelines, or applicable regulations.
+
+*If any third party believes that a user-submitted image infringes upon their intellectual property rights, they may contact the organization using the provided contact information.* 
+
+Upon receiving a valid complaint and verification of such claims, the organization will review the matter and take appropriate action, which may include removal Or modification of the disputed content where necessary. 
+
+### How We Collect Information:
 
 We collect data through several primary channels:
 
@@ -153,7 +172,7 @@ If you have any queries about our privacy policy, or if you wish to update/corre
 
 **E-mail:** [support@carcino.work](mailto:support@carcino.work)
 
-**Telephone:** +91 87774 29831`;
+**Telephone:** +91 87774 29831`
 
 export function Privacy() {
     return (
