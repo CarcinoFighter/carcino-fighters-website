@@ -57,6 +57,7 @@ export type SurvivorStorySummary = {
   slug: string;
   title: string;
   authorName: string | null;
+  colour?: string | null;
 };
 
 function mapRow(row: RawStoryRow | null): SurvivorStory | null {
@@ -163,6 +164,7 @@ async function getRandomStoriesRaw(limit = 3, excludeSlug?: string) {
       slug: mapped?.slug ?? row.slug,
       title: mapped?.title ?? row.title,
       authorName: mapped?.authorName ?? mapped?.authorUsername ?? null,
+      colour: mapped?.colour ?? row.colour ?? null,
     } as SurvivorStorySummary;
   });
 }

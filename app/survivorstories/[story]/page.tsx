@@ -71,10 +71,11 @@ export default async function Page({ params }: Props) {
 
   // Derive the same color that was assigned to this card on the listing page
   const storyIndex = allStories.findIndex((s) => s.id === storyData!.id);
-  const cardColor =
+  const fallbackColor =
     storyIndex !== -1
       ? CARD_COLORS[storyIndex % CARD_COLORS.length]
       : CARD_COLORS[0];
+  const cardColor = storyData.colour || fallbackColor;
 
   const moreArticles: SurvivorStorySummary[] =
     (await getRandomSurvivorStories(3, storyData.slug)) || [];

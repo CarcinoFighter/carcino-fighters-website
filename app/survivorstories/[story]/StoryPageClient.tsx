@@ -251,7 +251,8 @@ export default function StoryPageClient({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {related.map((r, i) => {
                 const colorsleft = colors.filter((c) => c !== cardColor);
-                const relatedCardColor = colorsleft[i % colorsleft.length];
+                const fallbackColor = colorsleft[i % colorsleft.length];
+                const relatedCardColor = r.colour || fallbackColor;
                 const backgroundImage = r.image_url || "/sfs_bg.png";
 
                 return (
@@ -274,7 +275,7 @@ export default function StoryPageClient({
                           backgroundImage: `url('${backgroundImage}')`,
                           backgroundColor: relatedCardColor,
                           backgroundBlendMode: "multiply",
-                          filter: "saturate(1.2) brightness(1) contrast(0.8)",
+                          filter: "saturate(1.25) brightness(1.1) contrast(0.75)",
                         }}
                         className="
                           relative
