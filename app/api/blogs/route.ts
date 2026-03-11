@@ -156,7 +156,7 @@ function mapBlog(row: any) {
     likes: row.likes,
     created_at: row.created_at,
     updated_at: row.updated_at,
-    deleted: row.deleted,
+    hidden: row.hidden,
     authorName: author?.name ?? author?.username ?? null,
     authorUsername: author?.username ?? null,
     authorBio: author?.bio ?? null,
@@ -177,9 +177,9 @@ export async function GET(req: Request) {
     const query = sb!
       .from("blogs")
       .select(
-        "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+        "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, hidden, users_public(name, username, avatar_url, bio)"
       )
-      .eq("deleted", false)
+      .eq("hidden", false)
       .order("created_at", { ascending: false });
 
     if (mine && session?.id) {
