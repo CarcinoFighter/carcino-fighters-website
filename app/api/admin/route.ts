@@ -1465,7 +1465,7 @@ export async function POST(req: Request) {
 			if (slug !== undefined) updates.slug = slug;
 			if (content !== undefined) updates.content = content;
 			if (tags !== undefined) updates.tags = tags;
-			if (hidden !== undefined) updates.deleted = hidden; // Use 'deleted' for consistency with existing soft-delete
+			if (hidden !== undefined) updates.hidden = hidden; // Use 'hidden' for consistency with blogs table schema
 
 			const { data: existing } = await client.from("blogs").select("user_id").eq("id", blogId).maybeSingle();
 			if (!existing) return NextResponse.json({ error: "Blog not found" }, { status: 404 });
@@ -1489,7 +1489,7 @@ export async function POST(req: Request) {
 			const { blogId } = body ?? {};
 			if (!blogId) return NextResponse.json({ error: "blogId is required" }, { status: 400 });
 
-			const { error } = await client.from("blogs").update({ deleted: true }).eq("id", blogId);
+			const { error } = await client.from("blogs").update({ hidden: true }).eq("id", blogId);
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
 			revalidatePath('/blogs', 'layout');
