@@ -36,14 +36,7 @@ interface StoryPageClientProps {
 function MDImage({ src, alt }: { src?: string; alt?: string }) {
   const [ok, setOk] = useState(true);
   if (!src) return null;
-  if (!ok)
-    return (
-      <img
-        src={src}
-        alt={alt}
-        className="rounded-lg shadow-lg my-8 max-w-full overflow-hidden h-auto w-full object-cover"
-      />
-    );
+  if (!ok) return null;
   return (
     <Image
       src={src}
@@ -108,6 +101,12 @@ export default function StoryPageClient({
     })();
   }, []);
 
+  const getMainTitleFontSize = (title: string) => {
+    if (title.length > 50) return "text-2xl sm:text-4xl md:text-5xl lg:text-6xl";
+    if (title.length > 30) return "text-3xl sm:text-5xl md:text-6xl lg:text-7xl";
+    return "text-4xl sm:text-6xl lg:text-7xl";
+  };
+
   const getTitleFontSize = (title: string) => {
     const words = title.split(/\s+/);
     const maxWordLength = Math.max(...words.map((w) => w.length));
@@ -128,10 +127,10 @@ export default function StoryPageClient({
         baseColor={cardColor}
       />
       <ScrollProgress className="hidden md:block" />
-      <main className="max-w-[80%] md:max-w-5xl mx-auto p-6 relative z-10 mt-32 items-center justify-center self-center">
+      <main className="w-full max-w-5xl mx-auto p-4 sm:p-6 relative z-10 mt-24 sm:mt-32 flex flex-col items-center justify-center self-center">
         <header className="mb-8 text-center">
           <h1
-            className="text-4xl md:text-6xl font-wintersolace font-bold leading-tight"
+            className={`${getMainTitleFontSize(story.title)} font-wintersolace font-bold leading-tight break-words [hyphens:auto]`}
             style={{ color: cardColor }}
           >
             {story.title}
@@ -143,9 +142,10 @@ export default function StoryPageClient({
               prose
               prose-sm sm:prose-base lg:prose-lg
               relative
-              max-w-full sm:max-w-5xl
+              w-full max-w-none sm:max-w-5xl
               dark:prose-invert
               font-dmsans 
+              break-words [overflow-wrap:anywhere] overflow-hidden
               ${expanded ? "" : "max-h-[60vh] sm:max-h-[80vh] overflow-hidden"}
             `}
           style={
@@ -164,28 +164,31 @@ export default function StoryPageClient({
             rehypePlugins={[rehypeRaw]}
             components={{
               h1: (props) => (
-                <h1 className="text-3xl font-bold mt-8 mb-4" {...props} />
+                <h1 className="text-2xl sm:text-3xl font-bold mt-8 mb-4 break-words [overflow-wrap:anywhere]" {...props} />
               ),
               h2: (props) => (
-                <h2 className="text-2xl font-bold mt-8 mb-4" {...props} />
+                <h2 className="text-xl sm:text-2xl font-bold mt-8 mb-4 break-words [overflow-wrap:anywhere]" {...props} />
               ),
               h3: (props) => (
-                <h3 className="text-xl font-bold mt-6 mb-3" {...props} />
+                <h3 className="text-lg sm:text-xl font-bold mt-6 mb-3 break-words [overflow-wrap:anywhere]" {...props} />
               ),
               p: (props) => (
-                <p className="mb-4 last:mb-0 leading-relaxed" {...props} />
+                <p className="mb-4 last:mb-0 leading-relaxed break-words [overflow-wrap:anywhere]" {...props} />
               ),
               a: (props) => (
                 <a
-                  className="text-primary hover:text-primary/80 underline"
+                  className="text-primary hover:text-primary/80 underline break-words [overflow-wrap:anywhere]"
                   {...props}
                 />
               ),
               ul: (props) => (
-                <ul className="list-disc list-inside my-4" {...props} />
+                <ul className="list-disc list-outside ml-6 my-4 space-y-2 break-words [overflow-wrap:anywhere]" {...props} />
+              ),
+              li: (props) => (
+                <li className="break-words [overflow-wrap:anywhere]" {...props} />
               ),
               ol: (props) => (
-                <ol className="list-decimal pl-6 my-4 space-y-1" {...props} />
+                <ol className="list-decimal list-outside ml-6 my-4 space-y-2 break-words [overflow-wrap:anywhere]" {...props} />
               ),
               blockquote: (props) => (
                 <blockquote
@@ -201,9 +204,21 @@ export default function StoryPageClient({
               ),
               pre: (props) => (
                 <pre
-                  className="bg-muted p-4 rounded-lg overflow-x-auto my-4"
+                  className="bg-muted p-4 rounded-lg overflow-x-auto my-4 w-full max-w-full break-normal"
                   {...props}
                 />
+              ),
+              table: (props) => (
+                <div className="my-8 overflow-x-auto rounded-xl border border-white/10 bg-white/5 backdrop-blur-md">
+                  <table className="min-w-full divide-y divide-white/10" {...props} />
+                </div>
+              ),
+              thead: (props) => <thead className="bg-white/5" {...props} />,
+              th: (props) => (
+                <th className="px-4 py-3 text-left text-xs font-bold text-white/70 uppercase tracking-wider" {...props} />
+              ),
+              td: (props) => (
+                <td className="px-4 py-3 text-sm text-white/50 border-t border-white/5" {...props} />
               ),
               img: ({ src, alt }) => (
                 <MDImage
