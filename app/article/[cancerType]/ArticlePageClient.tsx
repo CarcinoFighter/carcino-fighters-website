@@ -3,6 +3,7 @@
 import { useState, useRef, type ImgHTMLAttributes } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,14 +25,7 @@ const easeSoft = [0.33, 1, 0.68, 1] as const;
 function MarkdownImage({ src, alt }: { src: string; alt: string }) {
   const [error, setError] = useState(false);
   if (error) {
-    return (
-      <img
-        src={src}
-        alt={alt}
-        className="rounded-lg shadow-lg my-8 max-w-full overflow-hidden h-auto w-full object-cover"
-        loading="lazy"
-      />
-    );
+    return null;
   }
   return (
     <Image
@@ -61,6 +55,12 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
       y: 0,
       transition: { duration: 0.65, ease: easeSoft },
     },
+  };
+
+  const getMainTitleFontSize = (title: string) => {
+    if (title.length > 50) return "text-2xl sm:text-4xl md:text-5xl lg:text-6xl";
+    if (title.length > 30) return "text-3xl sm:text-5xl md:text-6xl lg:text-7xl";
+    return "text-4xl sm:text-6xl lg:text-7xl";
   };
 
   return (
@@ -93,7 +93,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
 
             <div className="max-w-4xl sm:px-10 sm:overflow-y-visible overflow-x-hidden">
               <h1
-                className={`text-5xl leading-[0.9] sm:text-6xl sm:leading-[0.9] lg:text-7xl lg:leading-[0.9] whitespace-pre-wrap text-center font-wintersolace font-bold py-4 px-10 bg-clip-text text-transparent`}
+                className={`${getMainTitleFontSize(article.title)} leading-[0.9] whitespace-pre-wrap text-center font-wintersolace font-bold py-4 px-4 sm:px-10 bg-clip-text text-transparent break-words [hyphens:auto]`}
                 style={{
                   backgroundImage: article.color
                     ? `linear-gradient(to right, ${article.color} 8%, #dfcbf0 60%)`
@@ -139,17 +139,18 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
             initial={false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="flex flex-col w-full px-3 pt-12"
+            className="flex flex-col items-center w-full px-4 pt-12"
           >
-            <div className="relative max-w-4xl mx-auto px-2 sm:px-0 overflow-hidden">
+            <div className="relative w-full max-w-4xl px-4 sm:px-0 overflow-hidden">
               <article
                 className={`
   prose
   prose-sm sm:prose-base lg:prose-lg
   relative
-  max-w-full sm:max-w-4xl
+  w-full max-w-none sm:max-w-4xl
   dark:prose-invert
   font-dmsans
+  break-words [overflow-wrap:anywhere] overflow-hidden
   ${readmore ? "" : "max-h-[50vh] sm:max-h-[60vh] overflow-hidden"}
 `}
                 style={
@@ -163,16 +164,18 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
               >
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeRaw]}
                   components={{
-                    h1: (props) => <h1 className="text-3xl font-bold mt-8 mb-4" {...props} />,
-                    h2: (props) => <h2 className="text-2xl font-bold mt-8 mb-4" {...props} />,
-                    h3: (props) => <h3 className="text-xl font-bold mt-6 mb-3" {...props} />,
-                    p: (props) => <p className="mb-4 last:mb-0 leading-relaxed" {...props} />,
+                    h1: (props) => <h1 className="text-2xl sm:text-3xl font-bold mt-8 mb-4 break-words [overflow-wrap:anywhere]" {...props} />,
+                    h2: (props) => <h2 className="text-xl sm:text-2xl font-bold mt-8 mb-4 break-words [overflow-wrap:anywhere]" {...props} />,
+                    h3: (props) => <h3 className="text-lg sm:text-xl font-bold mt-6 mb-3 break-words [overflow-wrap:anywhere]" {...props} />,
+                    p: (props) => <p className="mb-4 last:mb-0 leading-relaxed break-words [overflow-wrap:anywhere]" {...props} />,
                     a: (props) => (
-                      <a className="text-primary hover:text-primary/80 underline" {...props} />
+                      <a className="text-primary hover:text-primary/80 underline break-words [overflow-wrap:anywhere]" {...props} />
                     ),
-                    ul: (props) => <ul className="list-disc list-inside my-4" {...props} />,
-                    ol: (props) => <ol className="list-decimal pl-6 my-4 space-y-1" {...props} />,
+                    ul: (props) => <ul className="list-disc list-outside ml-6 my-4 space-y-2 break-words [overflow-wrap:anywhere]" {...props} />,
+                    li: (props) => <li className="break-words [overflow-wrap:anywhere]" {...props} />,
+                    ol: (props) => <ol className="list-decimal list-outside ml-6 my-4 space-y-2 break-words [overflow-wrap:anywhere]" {...props} />,
                     blockquote: (props) => (
                       <blockquote className="border-l-4 border-primary/30 pl-4 italic my-4" {...props} />
                     ),
@@ -180,7 +183,19 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                       <code className="bg-muted text-muted-foreground px-1.5 py-0.5 rounded" {...props} />
                     ),
                     pre: (props) => (
-                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto my-4" {...props} />
+                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto my-4 w-full max-w-full break-normal" {...props} />
+                    ),
+                    table: (props) => (
+                      <div className="my-8 overflow-x-auto rounded-xl border border-white/10 bg-white/5 backdrop-blur-md">
+                        <table className="min-w-full divide-y divide-white/10" {...props} />
+                      </div>
+                    ),
+                    thead: (props) => <thead className="bg-white/5" {...props} />,
+                    th: (props) => (
+                      <th className="px-4 py-3 text-left text-xs font-bold text-white/70 uppercase tracking-wider" {...props} />
+                    ),
+                    td: (props) => (
+                      <td className="px-4 py-3 text-sm text-white/50 border-t border-white/5" {...props} />
                     ),
                     img: (props: ImgHTMLAttributes<HTMLImageElement>) => {
                       const src = typeof props.src === "string" ? props.src : undefined;

@@ -35,14 +35,7 @@ interface BlogPageClientProps {
 function MDImage({ src, alt }: { src?: string; alt?: string }) {
   const [ok, setOk] = useState(true);
   if (!src) return null;
-  if (!ok)
-    return (
-      <img
-        src={src}
-        alt={alt}
-        className="rounded-lg shadow-lg my-8 max-w-full overflow-hidden h-auto w-full object-cover"
-      />
-    );
+  if (!ok) return null;
   return (
     <Image
       src={src}
@@ -91,23 +84,29 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
       .catch(() => { });
   }, [entry.id]);
 
+  const getMainTitleFontSize = (title: string) => {
+    if (title.length > 50) return "text-2xl sm:text-4xl md:text-5xl lg:text-6xl";
+    if (title.length > 30) return "text-3xl sm:text-5xl md:text-6xl lg:text-7xl";
+    return "text-4xl sm:text-6xl lg:text-7xl";
+  };
+
   return (
     <div ref={containerRef} className="min-h-screen text-foreground bg-[#2A292F] relative overflow-hidden">
       <DynamicBackgroundHues containerRef={containerRef} />
       <ScrollProgress className="hidden md:block" />
-      <main className="max-w-[80%] md:max-w-5xl mx-auto p-6 relative z-10 mt-32 items-center justify-center self-center">
+      <main className="w-full max-w-5xl mx-auto p-4 sm:p-6 relative z-10 mt-24 sm:mt-32 flex flex-col items-center justify-center self-center">
         <header className="mb-8 text-center px-4">
           <h1
-            className="text-5xl leading-[0.9] sm:text-6xl sm:leading-[0.9] lg:text-7xl lg:leading-[0.9] whitespace-pre-wrap text-center font-wintersolace font-bold bg-gradient-to-r from-[#70429b] from-8% to-[#dfcbf0] to-60% bg-clip-text text-transparent py-4"
+            className={`${getMainTitleFontSize(entry.title)} leading-[0.9] whitespace-pre-wrap text-center font-wintersolace font-bold bg-gradient-to-r from-[#70429b] from-8% to-[#dfcbf0] to-60% bg-clip-text text-transparent py-4 break-words [hyphens:auto]`}
           >
             {entry.title}
           </h1>
-          <div className="flex items-center justify-between px-5 py-3 mt-4">
-            <span className="text-xs sm:text-sm font-inter text-white/70">
+          <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-4 px-5 py-3 mt-4">
+            <span className="text-xs sm:text-sm font-inter text-white/70 text-center sm:text-left">
               {entry.authorName || "The Carcino Foundation"}
             </span>
             {/* Glass slab – view & like only */}
-            <div className="relative flex items-center gap-4 px-4 py-2 rounded-full overflow-hidden isolate">
+            <div className="relative flex items-center gap-4 px-5 py-2 rounded-full overflow-hidden isolate">
               <div className="liquidGlass-shine relative w-[102.5%] h-[100%] !top-[-0.1px] !left-[-2.3px]"></div>
               <span className="relative z-10 inline-flex items-center gap-1.5 text-white/40 text-xs sm:text-sm font-dmsans">
                 <Eye className="w-4 h-4" />
@@ -125,9 +124,10 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
               prose
               prose-sm sm:prose-base lg:prose-lg
               relative
-              max-w-full sm:max-w-5xl
+              w-full max-w-none sm:max-w-5xl
               dark:prose-invert
               font-dmsans
+              break-words [overflow-wrap:anywhere] overflow-hidden
               ${expanded ? "" : "max-h-[60vh] sm:max-h-[80vh] overflow-hidden"}
             `}
           style={
@@ -143,17 +143,29 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeRaw]}
             components={{
-              h1: (props) => <h1 className="text-3xl font-bold mt-8 mb-4" {...props} />,
-              h2: (props) => <h2 className="text-2xl font-bold mt-8 mb-4" {...props} />,
-              h3: (props) => <h3 className="text-xl font-bold mt-6 mb-3" {...props} />,
-              p: (props) => <p className="mb-4 last:mb-0 leading-relaxed text-white/80" {...props} />,
-              a: (props) => <a className="text-primary hover:text-primary/80 underline" {...props} />,
-              ul: (props) => <ul className="list-disc list-outside pl-6 my-4 space-y-2 text-white/70" {...props} />,
-              li: (props) => <li className="leading-relaxed" {...props} />,
-              ol: (props) => <ol className="list-decimal pl-6 my-4 space-y-1 text-white/70" {...props} />,
-              blockquote: (props) => <blockquote className="border-l-4 border-primary/30 pl-4 italic my-4 text-white/60" {...props} />,
+              h1: (props) => <h1 className="text-2xl sm:text-3xl font-bold mt-8 mb-4 break-words [overflow-wrap:anywhere]" {...props} />,
+              h2: (props) => <h2 className="text-xl sm:text-2xl font-bold mt-8 mb-4 break-words [overflow-wrap:anywhere]" {...props} />,
+              h3: (props) => <h3 className="text-lg sm:text-xl font-bold mt-6 mb-3 break-words [overflow-wrap:anywhere]" {...props} />,
+              p: (props) => <p className="mb-4 last:mb-0 leading-relaxed text-white/80 break-words [overflow-wrap:anywhere]" {...props} />,
+              a: (props) => <a className="text-primary hover:text-primary/80 underline break-words [overflow-wrap:anywhere]" {...props} />,
+              ul: (props) => <ul className="list-disc list-outside ml-6 my-4 space-y-2 text-white/70 break-words [overflow-wrap:anywhere]" {...props} />,
+              li: (props) => <li className="leading-relaxed break-words [overflow-wrap:anywhere]" {...props} />,
+              ol: (props) => <ol className="list-decimal list-outside ml-6 my-4 space-y-2 text-white/70 break-words [overflow-wrap:anywhere]" {...props} />,
+              blockquote: (props) => <blockquote className="border-l-4 border-primary/30 pl-4 italic my-4 text-white/60 w-full break-words [overflow-wrap:anywhere]" {...props} />,
               code: (props) => <code className="bg-white/5 text-white/90 px-1.5 py-0.5 rounded" {...props} />,
-              pre: (props) => <pre className="bg-white/5 p-4 rounded-lg overflow-x-auto my-4 border border-white/10" {...props} />,
+              pre: (props) => <pre className="bg-white/5 p-4 rounded-lg overflow-x-auto my-4 border border-white/10 w-full max-w-full break-normal" {...props} />,
+              table: (props) => (
+                <div className="my-8 overflow-x-auto rounded-xl border border-white/10 bg-white/5 backdrop-blur-md">
+                  <table className="min-w-full divide-y divide-white/10" {...props} />
+                </div>
+              ),
+              thead: (props) => <thead className="bg-white/5" {...props} />,
+              th: (props) => (
+                <th className="px-4 py-3 text-left text-xs font-bold text-white/70 uppercase tracking-wider" {...props} />
+              ),
+              td: (props) => (
+                <td className="px-4 py-3 text-sm text-white/50 border-t border-white/5" {...props} />
+              ),
               img: ({ src, alt }) => <MDImage src={typeof src === "string" ? src : undefined} alt={alt} />,
             }}
           >
