@@ -71,6 +71,9 @@ export default function Home() {
   const [loading, setLoading] = React.useState(true);
   const [hoverColor, setHoverColor] = React.useState<string | null>(null);
   const [activeColor, setActiveColor] = React.useState<string | null>(null);
+  const [ctaHoverColor, setCtaHoverColor] = React.useState<string | null>(null);
+  const [ctaActiveColor, setCtaActiveColor] = React.useState<string | null>(null);
+  const [ctaHoverIcon, setCtaHoverIcon] = React.useState<string | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const heroRef = React.useRef<HTMLDivElement | null>(null);
   const articlesRef = React.useRef<HTMLDivElement | null>(null);
@@ -763,6 +766,17 @@ export default function Home() {
               {/* Background blur & tint */}
               <div className="absolute inset-0 bg-linear-180 blur-3xl from-[#F0F0FF]/30 via-[#D5B0FF]/30 to-[#F0F0FF]/30 dark:from-[#2C2C2C]/30 dark:via-[#471F77]/30 dark:to-[#2C2C2C]/30"></div>
 
+              {/* Local Hover Hue */}
+              <div 
+                className="absolute inset-0 transition-opacity duration-700 ease-in-out pointer-events-none z-0"
+                style={{
+                  opacity: ctaHoverColor ? 0.6 : 0,
+                  background: ctaActiveColor 
+                    ? `radial-gradient(circle at center, ${ctaActiveColor}66 0%, transparent 70%)` 
+                    : "none"
+                }}
+              />
+
               {/* Liquid glass layers */}
               <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
               <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[-0.1px] !left-[-0.5px]"></div>
@@ -770,16 +784,15 @@ export default function Home() {
 
               {/* Content */}
               <div className="text-white flex flex-col items-center xl:items-start xl:max-w-[60%] justify-center gap-6 w-full h-fit lg:px-14 md:px-10 px-6 py-10 sm:py-14 md:py-18 lg:py-20 relative z-10">
-                <h1
-                  className="        text-4xl sm:text-5xl lg:text-6xl xl:text-7xl
-        leading-[0.95]
-        font-instrumentserifitalic
-        bg-gradient-to-r from-[#70429b] to-[#dfcbf0]
-        bg-clip-text text-transparent sm:ml-10 
-        max-w-full py-2 sm:max-w-[70%]"
+                <motion.h1
+                  className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl leading-[0.95] font-instrumentserifitalic sm:ml-10 max-w-full py-2 sm:max-w-[70%] bg-clip-text text-transparent"
+                  animate={{
+                    backgroundImage: `linear-gradient(to right, ${ctaHoverColor ? ctaActiveColor : '#70429b'} 0%, #dfcbf0 100%)`
+                  }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
                 >
                   Lets change the world together!
-                </h1>
+                </motion.h1>
                 <p
                   className=" text-base sm:text-lg
         font-dmsans
@@ -796,6 +809,8 @@ export default function Home() {
                   <Button
                     variant="ghost"
                     className="flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+                    onMouseEnter={() => { setCtaHoverColor("#ECA92B"); setCtaActiveColor("#ECA92B"); setCtaHoverIcon("/icons/research.svg"); }}
+                    onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
                   >
                     <Link
                       href="/internship/writer"
@@ -805,7 +820,6 @@ export default function Home() {
                       <ArrowUpRight className="transition-transform" />
                     </Link>
                     <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-                    <div className="absolute inset-0 liquidGlass-tint pointer-events-none !bg-[rgba(32,2,51,0.84)]"></div>
                     <div className="liquidGlass-shine  relative w-[101%] h-[100%] !top-[0px] !left-[-1px]"></div>
                     <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
                   </Button>
@@ -814,6 +828,8 @@ export default function Home() {
                   <Button
                     variant="ghost"
                     className="flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+                    onMouseEnter={() => { setCtaHoverColor("#39C69C"); setCtaActiveColor("#39C69C"); setCtaHoverIcon("/icons/development.svg"); }}
+                    onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
                   >
                     <Link
                       href="/internship/tech"
@@ -823,7 +839,6 @@ export default function Home() {
                       <ArrowUpRight className="transition-transform" />
                     </Link>
                     <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-                    <div className="absolute inset-0 liquidGlass-tint pointer-events-none !bg-[rgba(32,2,51,0.84)]"></div>
                     <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
                     <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
                   </Button>
@@ -832,6 +847,8 @@ export default function Home() {
                   <Button
                     variant="ghost"
                     className="flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+                    onMouseEnter={() => { setCtaHoverColor("#3373F2"); setCtaActiveColor("#3373F2"); setCtaHoverIcon("/icons/design.svg"); }}
+                    onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
                   >
                     <Link
                       href="/internship/design"
@@ -841,7 +858,6 @@ export default function Home() {
                       <ArrowUpRight className="transition-transform" />
                     </Link>
                     <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-                    <div className="absolute inset-0 liquidGlass-tint pointer-events-none !bg-[rgba(32,2,51,0.84)]"></div>
                     <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
                     <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
                   </Button>
@@ -850,6 +866,8 @@ export default function Home() {
                   <Button
                     variant="ghost"
                     className="flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+                    onMouseEnter={() => { setCtaHoverColor("#EC3C6E"); setCtaActiveColor("#EC3C6E"); setCtaHoverIcon("/icons/marketing.svg"); }}
+                    onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
                   >
                     <Link
                       href="/internship/marketing"
@@ -859,7 +877,6 @@ export default function Home() {
                       <ArrowUpRight className="transition-transform" />
                     </Link>
                     <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-                    <div className="absolute inset-0 liquidGlass-tint pointer-events-none !bg-[rgba(32,2,51,0.84)]"></div>
                     <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
                     <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
                   </Button>
@@ -867,15 +884,46 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Image */}
-              <div className="hidden xl:inline my-10 mr-20 relative z-10">
-                <Image
-                  src={`/logo-outline.png`}
-                  height={300}
-                  width={300}
-                  alt=""
-                  className="object-contain h-full"
-                />
+              <div className="hidden xl:flex my-10 mr-20 relative z-10 w-[300px] h-[300px] items-center justify-center">
+                {/* Default Logo Layer */}
+                <motion.div
+                  className="absolute inset-0 flex items-center justify-center"
+                  initial={false}
+                  animate={{ 
+                    opacity: ctaHoverIcon ? 0 : 0.8,
+                    scale: ctaHoverIcon ? 0.9 : 1
+                  }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }}
+                >
+                  <Image
+                    src="/logo-outline.png"
+                    height={300}
+                    width={300}
+                    alt=""
+                    className="object-contain"
+                  />
+                </motion.div>
+
+                {/* Department Icon Layer */}
+                <motion.div
+                   className="absolute inset-0 flex items-center justify-center"
+                   initial={false}
+                   animate={{ 
+                     opacity: ctaHoverIcon ? 1 : 0,
+                     scale: ctaHoverIcon ? 1.1 : 1
+                   }}
+                   transition={{ duration: 0.6, ease: "easeInOut" }}
+                >
+                  {ctaHoverIcon && (
+                    <Image
+                      src={ctaHoverIcon}
+                      height={200}
+                      width={200}
+                      alt=""
+                      className="object-contain"
+                    />
+                  )}
+                </motion.div>
               </div>
             </div>
           </motion.div>
