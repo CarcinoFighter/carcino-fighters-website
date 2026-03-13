@@ -119,7 +119,7 @@ export default function RegistrationPage() {
         <h1 className="text-4xl lg:text-5xl xl:text-6xl font-wintersolace bg-clip-text text-transparent bg-gradient-to-r from-[#39C69C] from-8% via-[#dfcbf0] to-white to-90% drop-shadow-[0_0_25px_rgba(16,185,129,0.3)] tracking-wide py-5 px-2">
           Join the Development Team
         </h1>
-        <p className="text-sm sm:text-lg font-light text-white max-w-[40%] leading-[1.2]  mt-6">
+        <p className="text-sm sm:text-lg font-light text-white max-w-[85%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%] leading-[1.2] mt-6">
           Become part of our growing community working to educate the world
           about cancer prevention and awareness.
         </p>
@@ -127,7 +127,7 @@ export default function RegistrationPage() {
 
       {/* Form Section */}
       <div className="w-full flex flex-col items-center justify-center bg-transparent z-10 pb-24">
-        <div className="w-full lg:max-w-[75%] xl:max-w-[65%] h-fit lg:px-6">
+        <div className="w-full lg:max-w-[75%] xl:max-w-[65%] h-fit px-4 lg:px-6">
           <Card className="w-full border-none bg-transparent relative overflow-hidden rounded-[40px] liquid-glass min-h-[600px]">
             {/* CardGlass Effects */}
             {/* <div className="liquidGlass-effect pointer-events-none"></div>
@@ -136,7 +136,7 @@ export default function RegistrationPage() {
             <div className="cardGlass-borders pointer-events-none"></div>
             <div className="cardGlass-shine pointer-events-none"></div>
 
-            <CardContent className={`relative z-10 w-full p-4 md:p-8 lg:p-12 ${submitted ? 'hidden' : ''}`}>
+            <CardContent className={`relative z-10 w-full p-6 md:p-8 lg:p-12 ${submitted ? 'hidden' : ''}`}>
               <form onSubmit={handleSubmit} className="flex flex-col gap-10 lg:gap-12">
                 {/* Top Section: Info */}
                 <div className="space-y-2">
