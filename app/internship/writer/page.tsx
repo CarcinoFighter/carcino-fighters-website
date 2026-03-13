@@ -1,12 +1,14 @@
+/* eslint react/no-unescaped-entities: "off" */
 "use client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { ArrowUpRight, LoaderCircle, Check } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import { InternshipFooter } from "@/components/InternshipFooter";
 
 export default function RegistrationPage() {
   const [experience, setExperience] = useState("");
@@ -20,7 +22,34 @@ export default function RegistrationPage() {
   const [age, setAge] = useState("");
   const [time, setTime] = useState("");
   const [criticism, setCriticism] = useState("");
-  const [writing, setWriting] = useState<string[]>([]);
+
+  const DRAFT_KEY = "writer_internship_draft";
+
+  useEffect(() => {
+    const savedDraft = localStorage.getItem(DRAFT_KEY);
+    if (savedDraft) {
+      try {
+        const parsed = JSON.parse(savedDraft);
+        if (parsed.fullName) setFullName(parsed.fullName);
+        if (parsed.email) setEmail(parsed.email);
+        if (parsed.phone) setPhone(parsed.phone);
+        if (parsed.school) setSchool(parsed.school);
+        if (parsed.grade) setGrade(parsed.grade);
+        if (parsed.age) setAge(parsed.age);
+        if (parsed.time) setTime(parsed.time);
+        if (parsed.experience) setExperience(parsed.experience);
+        if (parsed.criticism) setCriticism(parsed.criticism);
+      } catch (e) {
+        console.error("Failed to parse draft", e);
+      }
+    }
+  }, []);
+
+  const saveDraft = () => {
+    const draft = { fullName, email, phone, school, grade, age, time, experience, criticism };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    toast.success("Draft saved locally!");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,12 +66,12 @@ export default function RegistrationPage() {
         Time: time,
         Experience: experience,
         Criticism: criticism,
-        Writing: writing,
       });
 
       if (response.status === 200) {
         toast.success("Submitted successfully!");
         setSubmitted(true);
+        localStorage.removeItem(DRAFT_KEY);
       } else {
         throw new Error(response.data.message || "Submission failed");
       }
@@ -71,348 +100,254 @@ export default function RegistrationPage() {
   };
 
   return (
-    <div className="flex flex-col items-start min-h-screen bg-background">
-      <div className="w-full h-[100svh]  bg-radial-[at_50%_0%] from-[-20%] dark:from-[#471F77] from-[#e5cfff] to-background to-[70%] blur-lg fixed"></div>
+    <div className="flex flex-col items-center min-h-screen bg-black text-white selection:bg-[#ECA92B] selection:text-white">
+      {/* Dynamic Background Glow */}
+      <div className="fixed inset-x-0 top-0 h-[100vh] bg-[radial-gradient(ellipse_95%_100%_at_50%_0%,#ECA92B99_0%,#ECA92B22_50%,transparent_100%)] pointer-events-none z-0"></div>
       <Toaster />
 
       {/* Hero Section */}
-      <div className="flex flex-col lg:gap-1 md:gap-1 gap-1 items-center text-center lg:text-left justify-start w-full h-fit lg:px-14 md:px-10 px-6 pt-[80px] pb-5 z-10">
-        <h1
-          className="text-4xl lg:text-4xl xl:text-6xl font-wintersolace bg-gradient-to-r
-  from-[#b793d8] from-8%
-  to-[#ffffff] to-85%
-  bg-clip-text text-transparent font-bold px-5 py-10"
-        >
-          Become a Writer For Us
+      <div className="flex flex-col items-center text-center justify-start w-full h-fit lg:px-14 md:px-10 px-6 pt-[140px] pb-16 z-10">
+        <h1 className="text-4xl lg:text-5xl xl:text-6xl font-wintersolace bg-clip-text text-transparent bg-gradient-to-r from-[#ECA92B] from-8% via-[#dfcbf0] to-white to-90% drop-shadow-[0_0_25px_rgba(245,158,11,0.3)] tracking-wide py-5 px-2">
+          Join the Writing Team
         </h1>
-        <p className="text-sm sm:text-xl font-[100] text-white font-dmsans max-w-[50%] text-center sm:max-w-[33%]">
+        <p className="text-sm sm:text-lg font-light text-white max-w-[40%] leading-[1.2]  mt-6">
           Become part of our growing community working to educate the world
-          about cancer prevention and awareness.
+          about cancer prevention and awareness through research and storytelling.
         </p>
       </div>
 
       {/* Form Section */}
-      <div className="w-full flex flex-col lg:flex-col items-center justify-between bg-transparent z-10">
-        <div className="flex flex-col items-center lg:items-center justify-center gap-6 w-full lg:max-w-[60%] h-fit lg:px-14 md:px-10 px-6 py-10">
-          <Card className="w-full max-w-3xl border-accent bg-background">
-            <CardHeader>
-              <h2 className="text-2xl font-dmsans font-semibold text-foreground">
-                Student Information
-              </h2>
-              <p className="text-muted-foreground font-dmsans font-light text-white">
-                Please fill out all fields to complete your registration
-              </p>
-            </CardHeader>
-            <CardContent className={submitted ? `hidden` : ``}>
-              <form
-                onSubmit={handleSubmit}
-                className="grid grid-cols-1 md:grid-cols-2 gap-6"
-              >
-                {/* Personal Information */}
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="fullName" className="font-dmsans font-light">
-                    Full Name*
-                  </Label>
-                  <Input
-                    id="fullName"
-                    name="fullName"
-                    type="text"
-                    placeholder="Enter your full name"
-                    className="py-5 rounded-[10px]"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                  />
+      <div className="w-full flex flex-col items-center justify-center bg-transparent z-10 pb-24">
+        <div className="w-full lg:max-w-[75%] xl:max-w-[65%] h-fit lg:px-6">
+          <Card className="w-full border-none bg-transparent relative overflow-hidden rounded-[40px] liquid-glass min-h-[600px]">
+            {/* CardGlass Effects */}
+            {/* <div className="liquidGlass-effect pointer-events-none"></div>
+            <div className="liquidGlass-tint pointer-events-none bg-[#ECA92B08]"></div>
+            <div className="glass-noise"></div> */}
+            <div className="cardGlass-borders pointer-events-none"></div>
+            <div className="cardGlass-shine pointer-events-none"></div>
+            
+            <CardContent className={`relative z-10 w-full p-4 md:p-8 lg:p-12 ${submitted ? 'hidden' : ''}`}>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-10 lg:gap-12">
+                {/* Top Section: Info */}
+                <div className="space-y-4">
+                  <h2 className="text-2xl md:text-3xl font-dmsans font-medium text-white tracking-tight">
+                    Student Information
+                  </h2>
+                  <p className="text-muted-foreground font-dmsans font-light text-base leading-relaxed max-w-3xl">
+                    Please fill out all fields to complete your registration. We are looking for researchers and storytellers who want to make a difference.
+                  </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="font-dmsans font-light">
-                    Email Address*
-                  </Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    className="py-5 rounded-[10px]"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="font-dmsans font-light">
-                    Contact Number*
-                  </Label>
-
-                  <div className="flex flex-row items-center justify-center gap-2 text-sm">
-                    +91
+                {/* Form Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
+                  <div className="space-y-3 md:col-span-2">
+                    <Label htmlFor="fullName" className="font-dmsans font-medium text-white/80 text-sm">
+                      Full Name*
+                    </Label>
                     <Input
-                      id="phone"
-                      name="phone"
-                      type="text"
-                      placeholder="1234567890"
-                      className="py-5 rounded-[10px]"
+                      id="fullName"
+                      name="fullName"
+                      placeholder="Enter your full name"
+                      className="h-14 rounded-xl bg-white/5 border-white/10 text-white placeholder:text-white/20 px-6 focus:bg-white/10 transition-colors"
                       required
-                      value={phone}
-                      onChange={(e) => {
-                        const phoneRegex = /^(?:\+91)?\s*[\d\s-]{0,10}$/; // Allows +91, spaces, and dashes
-                        const sanitizedValue = e.target.value.replace(
-                          /[\s-]/g,
-                          "",
-                        ); // Remove spaces and dashes
-                        if (phoneRegex.test(e.target.value)) {
-                          setPhone(sanitizedValue);
-                        } else {
-                          toast.error("Please enter a valid phone number.");
-                        }
-                      }}
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
                     />
                   </div>
-                </div>
 
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="school" className="font-dmsans font-light">
-                    School/Institution Name*
-                  </Label>
-                  <Input
-                    id="school"
-                    name="school"
-                    type="text"
-                    placeholder="Enter your school name"
-                    className="py-5 rounded-[10px]"
-                    required
-                    value={school}
-                    onChange={(e) => setSchool(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="grade" className="font-dmsans font-light">
-                    Grade / Year of Passing / Graduating*
-                  </Label>
-                  <Input
-                    id="grade"
-                    name="grade"
-                    type="text"
-                    placeholder="e.g. 12th Grade"
-                    className="py-5 rounded-[10px]"
-                    required
-                    value={grade}
-                    onChange={(e) => setGrade(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="age" className="font-dmsans font-light">
-                    Age*
-                  </Label>
-                  <Input
-                    id="age"
-                    name="age"
-                    type="number"
-                    placeholder="Your age"
-                    className="py-5 rounded-[10px]"
-                    required
-                    value={age}
-                    onChange={(e) => {
-                      const ageRegex = /^[0-9]*$/;
-                      if (ageRegex.test(e.target.value)) {
-                        setAge(e.target.value);
-                      } else {
-                        toast.error("Please enter a valid age (numbers only).");
-                      }
-                    }}
-                  />
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="time" className="font-dmsans font-light">
-                    How much time per week can you commit to the team?*
-                  </Label>
-                  <div className="flex flex-col gap-2 p-3">
-                    {[
-                      "1-2 hours",
-                      "2-3 hours",
-                      "3-4 hours",
-                      "5+ hours",
-                      "It depends, but i am interested and committed.",
-                    ].map((timeOption, index) => {
-                      const selected = time === timeOption;
-                      return (
-                        <div
-                          key={index}
-                          className="flex flex-row gap-2 items-center h-full cursor-pointer"
-                          onClick={() => setTime(timeOption)}
-                          tabIndex={0}
-                          role="radio"
-                          aria-checked={selected}
-                          onKeyDown={(e) => {
-                            if (e.key === " " || e.key === "Enter")
-                              setTime(timeOption);
-                          }}
-                        >
-                          <div
-                            className={`w-4 h-4 border border-primary rounded-full flex items-center justify-center transition-colors ${selected ? "bg-white" : "bg-transparent"
-                              }`}
-                          >
-                            {selected && (
-                              <div className="w-2 h-2 bg-white rounded-full"></div>
-                            )}
-                          </div>
-                          <Label
-                            htmlFor={`time-${index}`}
-                            className="font-dmsans font-light cursor-pointer"
-                          >
-                            {timeOption}
-                          </Label>
-                        </div>
-                      );
-                    })}
+                  <div className="space-y-3">
+                    <Label htmlFor="email" className="font-dmsans font-medium text-white/80 text-sm">
+                      Email Address*
+                    </Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      className="h-14 rounded-xl bg-white/5 border-white/10 text-white placeholder:text-white/20 px-6 focus:bg-white/10 transition-colors"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                   </div>
-                </div>
 
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="message" className="font-dmsans font-light">
-                    Qualification or Past experience*
-                  </Label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={4}
-                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    placeholder="Tell us about your past experiences or put in a link for your resume"
-                    required
-                    value={experience}
-                    onChange={(e) => setExperience(e.target.value)}
-                  ></textarea>
-                </div>
+                  <div className="space-y-3">
+                    <Label htmlFor="phone" className="font-dmsans font-medium text-white/80 text-sm">
+                      Contact Number*
+                    </Label>
+                    <div className="flex items-center gap-3">
+                      <span className="text-white/40 font-dmsans font-medium">+91</span>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        placeholder="1234567890"
+                        className="h-14 rounded-xl bg-white/5 border-white/10 text-white placeholder:text-white/20 px-6 focus:bg-white/10 transition-colors"
+                        required
+                        value={phone}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                          setPhone(val);
+                        }}
+                      />
+                    </div>
+                  </div>
 
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="time" className="font-dmsans font-light">
-                    Are you comfortable working in a team and receiving feedback
-                    on your writing?*
-                  </Label>
-                  <div className="flex flex-col gap-2 p-3">
-                    {["Yes", "No", "I am not sure"].map(
-                      (criticismOption, index) => {
-                        const selected = criticism === criticismOption;
+                  <div className="space-y-3 md:col-span-2">
+                    <Label htmlFor="school" className="font-dmsans font-medium text-white/80 text-sm">
+                      School / Institution*
+                    </Label>
+                    <Input
+                      id="school"
+                      placeholder="Enter your school name"
+                      className="h-14 rounded-xl bg-white/5 border-white/10 text-white placeholder:text-white/20 px-6 focus:bg-white/10 transition-colors"
+                      required
+                      value={school}
+                      onChange={(e) => setSchool(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="grade" className="font-dmsans font-medium text-white/80 text-sm">
+                      Grade / Year*
+                    </Label>
+                    <Input
+                      id="grade"
+                      placeholder="e.g. 12th Grade"
+                      className="h-14 rounded-xl bg-white/5 border-white/10 text-white placeholder:text-white/20 px-6 focus:bg-white/10 transition-colors"
+                      required
+                      value={grade}
+                      onChange={(e) => setGrade(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="age" className="font-dmsans font-medium text-white/80 text-sm">
+                      Age*
+                    </Label>
+                    <Input
+                        id="age"
+                        type="number"
+                        placeholder="Your age"
+                        className="h-14 rounded-xl bg-white/5 border-white/10 text-white placeholder:text-white/20 px-6 focus:bg-white/10 transition-colors"
+                        required
+                        value={age}
+                        onChange={(e) => setAge(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-4 md:col-span-2">
+                    <Label className="font-dmsans font-medium text-white/80 text-sm">
+                      Weekly Commitment*
+                    </Label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {[
+                        "1-2 hours",
+                        "2-3 hours",
+                        "3-4 hours",
+                        "5+ hours",
+                        "It depends, but I am interested.",
+                      ].map((timeOption) => {
+                        const isSelected = time === timeOption;
                         return (
                           <div
-                            key={index}
-                            className="flex flex-row gap-2 items-center h-full cursor-pointer"
-                            onClick={() => setCriticism(criticismOption)}
-                            tabIndex={0}
-                            role="radio"
-                            aria-checked={selected}
-                            onKeyDown={(e) => {
-                              if (e.key === " " || e.key === "Enter")
-                                setCriticism(criticismOption);
-                            }}
+                            key={timeOption}
+                            onClick={() => setTime(timeOption)}
+                            className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${isSelected ? 'bg-[#ECA92B22] border-[#ECA92B] text-white' : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'}`}
                           >
-                            <div
-                              className={`w-4 h-4 border border-primary rounded-full flex items-center justify-center transition-colors ${selected ? "bg-primary" : "bg-transparent"
-                                }`}
-                            >
-                              {/* Only show the inner dot if selected */}
-                              {selected && (
-                                <div className="w-2 h-2 bg-background rounded-full"></div>
-                              )}
+                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-[#ECA92B]' : 'border-white/30'}`}>
+                              {isSelected && <div className="w-2 h-2 bg-[#ECA92B] rounded-full" />}
                             </div>
-                            <Label
-                              htmlFor={`criticism-${index}`}
-                              className="font-dmsans font-light cursor-pointer"
-                            >
-                              {criticismOption}
-                            </Label>
+                            <span className="text-sm font-dmsans">{timeOption}</span>
                           </div>
                         );
-                      },
-                    )}
+                      })}
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="time" className="font-dmsans font-light">
-                    What type of writing are you most interested in? (You can
-                    choose more than one)
-                  </Label>
-                  <div className="flex flex-col gap-2 p-3">
-                    {[
-                      "Research-based articles (Mostly required)",
-                      "Editing & proofreading",
-                      "Social media captions/content",
-                      "Interviews or human-interest stories",
-                      "Blog posts",
-                    ].map((writingOption, index) => (
-                      <div
-                        key={index}
-                        className="flex flex-row gap-2 items-center h-full"
-                      >
-                        <div>
+                  <div className="space-y-3 md:col-span-2">
+                    <Label htmlFor="experience" className="font-dmsans font-medium text-white/80 text-sm">
+                      Qualification or Past experience*
+                    </Label>
+                    <textarea
+                      id="experience"
+                      rows={5}
+                      className="w-full rounded-xl border border-white/10 bg-white/5 px-6 py-4 text-sm text-white focus:bg-white/10 placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-[#ECA92B] transition-all"
+                      placeholder="Tell us about your past experiences as a writer..."
+                      required
+                      value={experience}
+                      onChange={(e) => setExperience(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-4 md:col-span-2">
+                    <Label className="font-dmsans font-medium text-white/80 text-sm">
+                      Are you comfortable with feedback?*
+                    </Label>
+                    <div className="flex gap-6">
+                      {["Yes", "No", "Maybe"].map((option) => {
+                        const isSelected = criticism === option;
+                        return (
                           <div
-                            onClick={() => {
-                              const isChecked = writing.includes(writingOption);
-                              setWriting((prev) => {
-                                if (isChecked) {
-                                  return prev.filter(
-                                    (item) => item !== writingOption,
-                                  );
-                                } else {
-                                  return [...prev, writingOption];
-                                }
-                              });
-                            }}
-                            className={`aspect-square w-4 border border-primary rounded-sm relative cursor-pointer ${writing.includes(writingOption)
-                              ? "bg-primary"
-                              : ""
-                              }`}
+                            key={option}
+                            onClick={() => setCriticism(option)}
+                            className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${isSelected ? 'bg-[#ECA92B22] border-[#ECA92B] text-white' : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'}`}
                           >
-                            {writing.includes(writingOption) && (
-                              <Check className="absolute h-3 w-3 aspect-square mx-auto my-auto top-0 bottom-0 left-0 right-0 stroke-3" />
-                            )}
+                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-[#ECA92B]' : 'border-white/30'}`}>
+                              {isSelected && <div className="w-2 h-2 bg-[#ECA92B] rounded-full" />}
+                            </div>
+                            <span className="text-sm font-dmsans">{option}</span>
                           </div>
-                        </div>
-                        <Label
-                          htmlFor={`writing-${index}`}
-                          className="font-dmsans font-light"
-                        >
-                          {writingOption}
-                        </Label>
-                      </div>
-                    ))}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
 
-                <div className="md:col-span-2 pt-4">
-                  <Button
-                    variant="default"
-                    type="submit"
-                    className="w-full py-6 text-lg font-dmsans font-medium cursor-pointer"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        Submitting{" "}
-                        <LoaderCircle className="animate-spin ml-2" />
-                      </>
-                    ) : (
-                      <>
-                        Submit Application <ArrowUpRight className="ml-2" />
-                      </>
-                    )}
-                  </Button>
+                  <div className="md:col-span-2 pt-10 flex flex-col sm:flex-row gap-4">
+                    <Button
+                      type="submit"
+                      className="flex-1 h-16 text-lg font-dmsans font-bold rounded-full bg-[#ECA92B] hover:bg-[#ECA92B]/90 text-black transition-all hover:scale-[1.01] active:scale-[0.99] shadow-[0_10px_30px_-10px_rgba(245,158,11,0.5)]"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <>Submitting <LoaderCircle className="animate-spin ml-2" /></>
+                      ) : (
+                        <>Submit Your Application <ArrowUpRight className="ml-2 w-5 h-5" /></>
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={saveDraft}
+                      className="px-10 h-16 text-lg font-dmsans font-bold rounded-full border-white/10 bg-white/5 hover:bg-white/10 text-white transition-all"
+                    >
+                      Save Draft
+                    </Button>
+                  </div>
                 </div>
               </form>
             </CardContent>
-            <CardContent className={submitted ? `py-10 ` : `hidden`}>
-              Thank You for Registering! We&#39;ll consider your application and
-              reach back in a few days!
+            
+            <CardContent className={`relative z-10 w-full py-32 text-center ${submitted ? '' : 'hidden'}`}>
+              <div className="flex flex-col items-center gap-6">
+                <div className="w-20 h-20 rounded-full bg-[#ECA92B22] border border-[#ECA92B] flex items-center justify-center">
+                  <Check className="w-10 h-10 text-[#ECA92B]" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-wintersolace bg-clip-text text-transparent bg-gradient-to-r from-[#ECA92B] from-8% to-[#ffffff] to-60% mb-4 tracking-wide">Thank You for Registering!</h3>
+                  <p className="text-muted-foreground text-lg font-light max-w-md">We've received your application and will review it soon. Keep an eye on your email!</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      <InternshipFooter 
+        iconPath="/icons/research.svg" 
+        departmentName="Department of Research" 
+        themeColor="#ECA92B" 
+      />
     </div>
   );
 }

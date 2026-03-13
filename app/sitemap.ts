@@ -16,6 +16,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/fetch",
     "/internship/tech",
     "/internship/writer",
+    "/internship/design",
+    "/internship/marketing",
     "/admin",
   ].map((path) => ({
     url: `${baseUrl}${path === "" ? "/" : path}`,
