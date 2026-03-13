@@ -265,7 +265,7 @@ export default function RegistrationPage() {
                         "2-3 years",
                         "3-4 years",
                         "5+ years",
-                        "It depends, but I am interested.",
+                        "No experience, but I am willing to learn",
                       ].map((timeOption) => {
                         const isSelected = time === timeOption;
                         return (
