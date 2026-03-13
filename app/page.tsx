@@ -810,16 +810,16 @@ export default function Home() {
                     <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
                   </Button>
 
-                  {/* Dev / Design Button */}
+                  {/* Tech Team Button */}
                   <Button
                     variant="ghost"
-                    className="relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+                    className="flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
                   >
                     <Link
                       href="/internship/tech"
                       className="relative z-10 flex items-center gap-2"
                     >
-                      Dev / Design{" "}
+                      Tech Team{" "}
                       <ArrowUpRight className="transition-transform" />
                     </Link>
                     <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
@@ -827,6 +827,43 @@ export default function Home() {
                     <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
                     <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
                   </Button>
+
+                  {/* Design Team Button */}
+                  <Button
+                    variant="ghost"
+                    className="flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+                  >
+                    <Link
+                      href="/internship/design"
+                      className="relative z-10 flex items-center gap-2"
+                    >
+                      Design Team{" "}
+                      <ArrowUpRight className="transition-transform" />
+                    </Link>
+                    <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+                    <div className="absolute inset-0 liquidGlass-tint pointer-events-none !bg-[rgba(32,2,51,0.84)]"></div>
+                    <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
+                    <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+                  </Button>
+
+                  {/* Marketing Team Button */}
+                  <Button
+                    variant="ghost"
+                    className="flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+                  >
+                    <Link
+                      href="/internship/marketing"
+                      className="relative z-10 flex items-center gap-2"
+                    >
+                      Marketing Team{" "}
+                      <ArrowUpRight className="transition-transform" />
+                    </Link>
+                    <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+                    <div className="absolute inset-0 liquidGlass-tint pointer-events-none !bg-[rgba(32,2,51,0.84)]"></div>
+                    <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
+                    <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+                  </Button>
+
                 </div>
               </div>
 
