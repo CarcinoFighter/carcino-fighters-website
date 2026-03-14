@@ -47,7 +47,8 @@ type AuthBody = {
 	| "get_story"
 	| "update_story"
 	| "delete_story"
-	| "list_blog_submissions";
+	| "list_blog_submissions"
+	| "search_users";
 	username?: string;
 	email?: string;
 	password?: string;
@@ -64,6 +65,9 @@ type AuthBody = {
 	color?: string;
 	colour?: string;
 	authorId?: string;
+	authorIds?: string[];
+	coAuthorUsernames?: string;
+	overrideAuthors?: boolean;
 	submissionId?: string;
 	decision?: "approve" | "reject";
 	reviewerNote?: string;
@@ -77,6 +81,7 @@ type AuthBody = {
 	storyId?: string;
 	tags?: string[];
 	image_url?: string;
+	query?: string;
 };
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -95,6 +100,7 @@ type DocSubmissionRow = {
 	content: string;
 	color: string | null;
 	author_user_id: string;
+	author_user_ids?: string[];
 	status: "pending" | "approved" | "rejected";
 	reviewer_user_id?: string | null;
 	reviewer_note?: string | null;
@@ -286,13 +292,14 @@ async function getAuthenticatedUser() {
 }
 
 async function applySubmissionToDocs(client: SupabaseClient<any, any, any>, submission: DocSubmissionRow, reviewerId: string | null) {
-	const { doc_id, slug, title, content, color, author_user_id } = submission;
+	const { doc_id, slug, title, content, color, author_user_id, author_user_ids } = submission;
 	const payload = {
 		slug,
 		title,
 		content,
 		color,
 		author_user_id,
+		author_user_ids: author_user_ids && author_user_ids.length > 0 ? author_user_ids : (author_user_id ? [author_user_id] : []),
 	};
 
 	let applied;
@@ -837,7 +844,7 @@ export async function POST(req: Request) {
 
 			const baseQuery = client
 				.from("cancer_docs")
-				.select("id, slug, title, content, color, position, author_user_id, hidden, created_at, updated_at");
+				.select("id, slug, title, content, color, position, author_user_id, author_user_ids, hidden, created_at, updated_at");
 
 			const { forceOwn } = body ?? {};
 			let query = (session.user.admin_access && !forceOwn)
@@ -903,14 +910,22 @@ export async function POST(req: Request) {
 			}
 
 			const filtered = data
-				.filter((d: any) => !d.author_user_id || validAuthors.has(d.author_user_id))
-				.map((d: any) => ({
-					...d,
-					author_name: d.author_user_id ? authorMeta[d.author_user_id]?.name ?? authorMeta[d.author_user_id]?.username ?? authorMeta[d.author_user_id]?.email ?? null : null,
-					author_username: d.author_user_id ? authorMeta[d.author_user_id]?.username ?? null : null,
-					author_position: d.author_user_id ? authorMeta[d.author_user_id]?.position ?? null : null,
-					profilePicture: d.author_user_id ? profileMap[d.author_user_id] ?? null : null,
-				}));
+				.filter((d: any) => {
+					if (!d.author_user_id && (!d.author_user_ids || d.author_user_ids.length === 0)) return true;
+					const ids = d.author_user_ids && d.author_user_ids.length > 0 ? d.author_user_ids : [d.author_user_id];
+					return ids.some((id: string) => validAuthors.has(id));
+				})
+				.map((d: any) => {
+					const ids = d.author_user_ids && d.author_user_ids.length > 0 ? d.author_user_ids : (d.author_user_id ? [d.author_user_id] : []);
+					const firstMeta = ids.length > 0 ? authorMeta[ids[0]] : null;
+					return {
+						...d,
+						author_name: firstMeta ? (firstMeta.name ?? firstMeta.username ?? firstMeta.email ?? null) : null,
+						author_username: firstMeta?.username ?? null,
+						author_position: firstMeta?.position ?? null,
+						profilePicture: ids.length > 0 ? profileMap[ids[0]] ?? null : null,
+					};
+				});
 			return NextResponse.json({ docs: filtered });
 		}
 
@@ -924,7 +939,7 @@ export async function POST(req: Request) {
 
 			const { data: docRow, error: docErr } = await client
 				.from("cancer_docs")
-				.select("id, slug, title, content, color, position, author_user_id, hidden, created_at, updated_at")
+				.select("id, slug, title, content, color, position, author_user_id, author_user_ids, hidden, created_at, updated_at")
 				.eq("id", docId)
 				.limit(1)
 				.maybeSingle();
@@ -938,30 +953,36 @@ export async function POST(req: Request) {
 
 			let authorMeta: { name: string | null; username: string | null; email: string | null; position: string | null } | null = null;
 			let profilePicture: string | null = null;
-			const authorId = docRow.author_user_id;
+			
+			const idsToFetch = docRow.author_user_ids && docRow.author_user_ids.length > 0 ? docRow.author_user_ids : (docRow.author_user_id ? [docRow.author_user_id] : []);
 
-			if (authorId) {
-				const { data: userRow, error: userErr } = await client
+			if (idsToFetch.length > 0) {
+				const { data: userRows, error: userErr } = await client
 					.from("users")
 					.select("id, name, username, email, position")
-					.eq("id", authorId)
-					.limit(1)
-					.maybeSingle();
+					.in("id", idsToFetch);
 
 				if (userErr) return NextResponse.json({ error: userErr.message }, { status: 400 });
-				if (userRow) {
+				if (userRows && userRows.length > 0) {
+					// Join names for display
+					const names = userRows.map((u: any) => u.name ?? u.username ?? u.email ?? "Unknown");
+					const joinedName = names.join(" and ");
+
 					authorMeta = {
-						name: userRow.name ?? null,
-						username: userRow.username ?? null,
-						email: userRow.email ?? null,
-						position: userRow.position ?? null,
+						name: joinedName,
+						username: userRows[0].username ?? null,
+						email: userRows[0].email ?? null,
+						position: userRows[0].position ?? null,
 					};
+
+					// Get profile picture of the first author
 					const { data: picRow } = await client
 						.from("profile_pictures")
 						.select("object_key")
-						.eq("user_id", userRow.id)
+						.eq("user_id", userRows[0].id)
 						.limit(1)
 						.maybeSingle();
+
 					if (picRow?.object_key) {
 						try {
 							const signed = await client.storage.from("profile-picture").createSignedUrl(picRow.object_key, 60 * 60 * 24 * 7);
@@ -980,7 +1001,9 @@ export async function POST(req: Request) {
 					author_username: authorMeta?.username ?? null,
 					author_position: authorMeta?.position ?? null,
 					profilePicture,
+					authorIds: idsToFetch,
 				},
+				isAdmin: session.user.admin_access,
 			});
 		}
 
@@ -989,20 +1012,50 @@ export async function POST(req: Request) {
 			const session = await getAuthenticatedUser();
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-			const { docId, slug, title, content, color } = body ?? {};
+			const { docId, slug, title, content, color, authorIds, coAuthorUsernames, overrideAuthors } = body ?? {};
 			if (!slug || !title || !content) return NextResponse.json({ error: "slug, title, and content are required" }, { status: 400 });
+
+			let finalAuthorIds = authorIds && authorIds.length > 0 ? authorIds : [session.user.id];
+			if (coAuthorUsernames && typeof coAuthorUsernames === 'string') {
+				const unames = coAuthorUsernames.split(",").map(u => u.trim()).filter(Boolean);
+				if (unames.length > 0) {
+					const { data: coAuthors } = await client.from("users").select("id").in("username", unames);
+					if (coAuthors) {
+						if (overrideAuthors) {
+							finalAuthorIds = coAuthors.map((c: any) => c.id);
+						} else {
+							finalAuthorIds = Array.from(new Set([...finalAuthorIds, ...coAuthors.map((c: any) => c.id)]));
+						}
+					}
+				} else if (overrideAuthors) {
+					// Blank field on override = keep who was there, or clear it out
+					// For safety, we enforce at least the editor is an author if they clear it
+					finalAuthorIds = [session.user.id];
+				}
+			}
 
 			if (docId) {
 				const { data: ownerRow, error: ownerErr } = await client
 					.from("cancer_docs")
-					.select("author_user_id")
+					.select("author_user_id, author_user_ids")
 					.eq("id", docId)
 					.limit(1)
 					.maybeSingle();
+
 				if (ownerErr) return NextResponse.json({ error: ownerErr.message }, { status: 400 });
 				if (!ownerRow) return NextResponse.json({ error: "Document not found" }, { status: 404 });
-				if (!session.user.admin_access && ownerRow.author_user_id !== session.user.id) {
+				
+				const isAuthor = ownerRow.author_user_id === session.user.id || (ownerRow.author_user_ids && ownerRow.author_user_ids.includes(session.user.id));
+				if (!session.user.admin_access && !isAuthor) {
 					return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+				}
+
+				// Only admins can modify authors of an existing article.
+				// For non-admins, force the author array back to its original state.
+				if (!session.user.admin_access) {
+					finalAuthorIds = ownerRow.author_user_ids && ownerRow.author_user_ids.length > 0 ? ownerRow.author_user_ids : [ownerRow.author_user_id];
+				} else if (!overrideAuthors && !coAuthorUsernames && ownerRow.author_user_ids) {
+					finalAuthorIds = ownerRow.author_user_ids.length > 0 ? ownerRow.author_user_ids : [ownerRow.author_user_id];
 				}
 			}
 
@@ -1013,6 +1066,7 @@ export async function POST(req: Request) {
 				content,
 				color: color ?? null,
 				author_user_id: session.user.id,
+				author_user_ids: finalAuthorIds,
 				status: "pending",
 			};
 
@@ -1047,7 +1101,7 @@ export async function POST(req: Request) {
 
 			const query = client
 				.from("cancer_doc_submissions")
-				.select("id, doc_id, slug, title, content, color, author_user_id, status, reviewer_user_id, reviewer_note, created_at, updated_at")
+				.select("id, doc_id, slug, title, content, color, author_user_id, author_user_ids, status, reviewer_user_id, reviewer_note, created_at, updated_at")
 				.order("created_at", { ascending: true });
 
 			if (session.user.admin_access) {
@@ -1060,7 +1114,9 @@ export async function POST(req: Request) {
 			const { data, error } = await query;
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-			const authorIds = Array.from(new Set((data ?? []).map((d: any) => d.author_user_id).filter(Boolean)));
+			const authorIds = Array.from(new Set(
+				(data ?? []).flatMap((d: any) => d.author_user_ids && d.author_user_ids.length > 0 ? d.author_user_ids : [d.author_user_id]).filter(Boolean)
+			));
 			let authors: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null }> = {};
 			if (authorIds.length) {
 				const { data: usersRows } = await client
@@ -1077,10 +1133,18 @@ export async function POST(req: Request) {
 				});
 			}
 
-			const submissions = (data ?? []).map((d: any) => ({
-				...d,
-				author: authors[d.author_user_id] ?? null,
-			}));
+			const submissions = (data ?? []).map((d: any) => {
+				const ids = d.author_user_ids && d.author_user_ids.length > 0 ? d.author_user_ids : (d.author_user_id ? [d.author_user_id] : []);
+				const authorNames = ids.map((id: string) => authors[id]?.name ?? authors[id]?.username ?? authors[id]?.email ?? "Unknown");
+				
+				return {
+					...d,
+					author: ids.length > 0 && authors[ids[0]] ? {
+						...authors[ids[0]],
+						name: authorNames.join(" and "),
+					} : null,
+				};
+			});
 
 			return NextResponse.json({ submissions });
 		}
@@ -1310,9 +1374,20 @@ export async function POST(req: Request) {
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-			const { slug, title, content, color, position, authorId } = body ?? {};
+			const { slug, title, content, color, position, authorIds, coAuthorUsernames } = body ?? {};
 			if (!slug || !title || !content) {
 				return NextResponse.json({ error: "slug, title, and content are required" }, { status: 400 });
+			}
+
+			let finalAuthorIds = authorIds && authorIds.length > 0 ? authorIds : [session.user.id];
+			if (coAuthorUsernames && typeof coAuthorUsernames === 'string') {
+				const unames = coAuthorUsernames.split(",").map(u => u.trim()).filter(Boolean);
+				if (unames.length > 0) {
+					const { data: coAuthors } = await client.from("users").select("id").in("username", unames);
+					if (coAuthors) {
+						finalAuthorIds = Array.from(new Set([...finalAuthorIds, ...coAuthors.map((c: any) => c.id)]));
+					}
+				}
 			}
 
 			const { data, error } = await client
@@ -1323,9 +1398,10 @@ export async function POST(req: Request) {
 					content,
 					color: color ?? null,
 					position: position ?? null,
-					author_user_id: authorId ?? session.user.id,
+					author_user_id: finalAuthorIds[0],
+					author_user_ids: finalAuthorIds,
 				})
-				.select("id, slug, title, content, color, position, author_user_id")
+				.select("id, slug, title, content, color, position, author_user_id, author_user_ids")
 				.maybeSingle();
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -1337,8 +1413,24 @@ export async function POST(req: Request) {
 			const session = await getAuthenticatedUser();
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-			const { docId, slug, title, content, color, position, authorId, hidden } = body ?? {};
+			const { docId, slug, title, content, color, position, authorIds, coAuthorUsernames, overrideAuthors, hidden } = body ?? {};
 			if (!docId) return NextResponse.json({ error: "docId is required" }, { status: 400 });
+
+			// Ensure ownership unless admin
+			const ownershipCheck = client
+				.from("cancer_docs")
+				.select("author_user_id, author_user_ids")
+				.eq("id", docId)
+				.limit(1)
+				.maybeSingle();
+			const { data: ownerRow, error: ownerErr } = await ownershipCheck;
+			if (ownerErr) return NextResponse.json({ error: ownerErr.message }, { status: 400 });
+			if (!ownerRow) return NextResponse.json({ error: "Document not found" }, { status: 404 });
+			
+			const isAuthor = ownerRow.author_user_id === session.user.id || (ownerRow.author_user_ids && ownerRow.author_user_ids.includes(session.user.id));
+			if (!session.user.admin_access && !isAuthor) {
+				return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+			}
 
 			const updates: Record<string, unknown> = {};
 			if (slug !== undefined) updates.slug = slug;
@@ -1347,40 +1439,37 @@ export async function POST(req: Request) {
 			if (color !== undefined) updates.color = color;
 			if (position !== undefined) updates.position = position;
 			if (hidden !== undefined) updates.hidden = hidden;
-			if (authorId !== undefined) {
-				if (!session.user.admin_access) {
-					return NextResponse.json({ error: "Only admins can change author" }, { status: 403 });
-				}
-				updates.author_user_id = authorId || null;
 
-				if (authorId) {
-					const { data: authorRow, error: authorErr } = await client
-						.from("users")
-						.select("id")
-						.eq("id", authorId)
-						.limit(1)
-						.maybeSingle();
-					if (authorErr) return NextResponse.json({ error: authorErr.message }, { status: 400 });
-					if (!authorRow) return NextResponse.json({ error: "Author not found" }, { status: 404 });
+			// Author updates only allowed for admins
+			if (session.user.admin_access && (authorIds !== undefined || coAuthorUsernames !== undefined)) {
+				let finalAuthorIds = ownerRow.author_user_ids && ownerRow.author_user_ids.length > 0 ? ownerRow.author_user_ids : [ownerRow.author_user_id];
+				
+				if (authorIds && authorIds.length > 0) {
+					finalAuthorIds = overrideAuthors ? authorIds : Array.from(new Set([...finalAuthorIds, ...authorIds]));
 				}
+
+				if (coAuthorUsernames && typeof coAuthorUsernames === 'string') {
+					const unames = coAuthorUsernames.split(",").map(u => u.trim()).filter(Boolean);
+					if (unames.length > 0) {
+						const { data: coAuthors } = await client.from("users").select("id").in("username", unames);
+						if (coAuthors) {
+							if (overrideAuthors) {
+								finalAuthorIds = coAuthors.map((c: any) => c.id);
+							} else {
+								finalAuthorIds = Array.from(new Set([...finalAuthorIds, ...coAuthors.map((c: any) => c.id)]));
+							}
+						}
+					} else if (overrideAuthors) {
+						finalAuthorIds = [session.user.id];
+					}
+				}
+
+				updates.author_user_id = finalAuthorIds[0] || null;
+				updates.author_user_ids = finalAuthorIds;
 			}
 
 			if (Object.keys(updates).length === 0) {
 				return NextResponse.json({ error: "No fields to update" }, { status: 400 });
-			}
-
-			// Ensure ownership unless admin
-			const ownershipCheck = client
-				.from("cancer_docs")
-				.select("author_user_id")
-				.eq("id", docId)
-				.limit(1)
-				.maybeSingle();
-			const { data: ownerRow, error: ownerErr } = await ownershipCheck;
-			if (ownerErr) return NextResponse.json({ error: ownerErr.message }, { status: 400 });
-			if (!ownerRow) return NextResponse.json({ error: "Document not found" }, { status: 404 });
-			if (!session.user.admin_access && ownerRow.author_user_id !== session.user.id) {
-				return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 			}
 
 			const { data, error } = await client
@@ -1407,6 +1496,27 @@ export async function POST(req: Request) {
 			revalidatePath('/article', 'layout');
 			return NextResponse.json({ ok: true });
 		}
+
+		if (action === "search_users") {
+			const session = await getAuthenticatedUser();
+			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+			const q = body?.query;
+			if (!q || typeof q !== "string") {
+				return NextResponse.json({ users: [] });
+			}
+
+			const { data: users, error } = await client
+				.from("users")
+				.select("id, username, name, email")
+				.or(`username.ilike.%${q}%,name.ilike.%${q}%,email.ilike.%${q}%`)
+				.limit(5);
+
+			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+			return NextResponse.json({ users: users || [] });
+		}
+
 
 		if (action === "list_blogs") {
 			const session = await getAuthenticatedUser();

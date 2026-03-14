@@ -36,6 +36,7 @@ export interface Article {
   position: string | null;
   authorDescription?: string | null;
   author_user_id?: string | null;
+  author_user_ids?: string[];
   avatar_url?: string | null;
   authors?: IndividualAuthor[];
   color?: string | null;
@@ -58,7 +59,7 @@ async function getDocBySlugUncached(slug: string): Promise<Article | null> {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
     let q = supabase
       .from('cancer_docs')
-      .select('id, slug, title, content, author_user_id, color');
+      .select('id, slug, title, content, author_user_id, author_user_ids, color');
 
     if (isUuid) {
       q = q.or(`slug.eq.${slug},id.eq.${slug}`);
@@ -74,23 +75,25 @@ async function getDocBySlugUncached(slug: string): Promise<Article | null> {
       return null;
     }
 
-    const doc = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null; color: string | null };
+    const doc = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null; author_user_ids: string[] | null; color: string | null };
 
     let author: string | null = null;
     let position: string | null = null;
     let authorDescription: string | null = null;
-    if (doc.author_user_id) {
-      const { data: authorRow, error: authorErr } = await supabase
+    const idsToFetch = doc.author_user_ids && doc.author_user_ids.length > 0 ? doc.author_user_ids : (doc.author_user_id ? [doc.author_user_id] : []);
+    
+    if (idsToFetch.length > 0) {
+      const { data: authorRows, error: authorErr } = await supabase
         .from('users')
         .select('id, name, username, email, position, description')
-        .eq('id', doc.author_user_id)
-        .limit(1)
-        .single();
+        .in('id', idsToFetch);
 
-      if (!authorErr && authorRow) {
-        author = authorRow.name ?? authorRow.username ?? authorRow.email ?? null;
-        position = authorRow.position ?? null;
-        authorDescription = authorRow.description ?? null;
+      if (!authorErr && authorRows && authorRows.length > 0) {
+        // We set the top-level author string to the first author or a joined string
+        const authorNames = authorRows.map(row => row.name ?? row.username ?? row.email ?? "Unknown");
+        author = authorNames.join(" and ");
+        position = authorRows[0].position ?? null;
+        authorDescription = authorRows[0].description ?? null;
       }
     }
 
@@ -117,7 +120,7 @@ async function getDocBySlugWithAvatarUncached(slug: string): Promise<ArticleWith
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
     let q = supabase
       .from('cancer_docs')
-      .select('id, slug, title, content, author_user_id, color');
+      .select('id, slug, title, content, author_user_id, author_user_ids, color');
 
     if (isUuid) {
       q = q.or(`slug.eq.${slug},id.eq.${slug}`);
@@ -133,64 +136,50 @@ async function getDocBySlugWithAvatarUncached(slug: string): Promise<ArticleWith
       return null;
     }
 
-    const doc = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null; color: string | null };
+    const doc = data as { id: string; slug: string; title: string; content: string; author_user_id: string | null; author_user_ids: string[] | null; color: string | null };
 
     let author: string | null = null;
     let position: string | null = null;
     let authorDescription: string | null = null;
     let avatarUrlFallback: string | null = null;
-    if (doc.author_user_id) {
-      const { data: authorRow, error: authorErr } = await supabase
-        .from('users')
-        .select('id, name, username, email, position, description, avatar_url')
-        .eq('id', doc.author_user_id)
-        .limit(1)
-        .single();
-
-      if (!authorErr && authorRow) {
-        author = authorRow.name ?? authorRow.username ?? authorRow.email ?? null;
-        position = authorRow.position ?? null;
-        authorDescription = authorRow.description ?? null;
-        avatarUrlFallback = transformSupabaseUrl(authorRow.avatar_url) ?? null;
-      }
-    }
-
     let authors: IndividualAuthor[] = [];
 
-    if (author && author.toLowerCase().includes(" and ")) {
-      const authorNames = author.split(/\s+and\s+/i);
-      const { data: authorRows, error: authorsErr } = await supabase
+    const idsToFetch = doc.author_user_ids && doc.author_user_ids.length > 0 ? doc.author_user_ids : (doc.author_user_id ? [doc.author_user_id] : []);
+    
+    if (idsToFetch.length > 0) {
+      const { data: authorRows, error: authorErr } = await supabase
         .from('users')
         .select('id, name, username, email, position, description, avatar_url')
-        .in('name', authorNames);
+        .in('id', idsToFetch);
 
-      if (!authorsErr && authorRows) {
-        const authorIds = authorRows.map(r => r.id);
+      if (!authorErr && authorRows && authorRows.length > 0) {
+        // Try maintaining ordered rows based on the array sequence
+        const orderedRows = idsToFetch.map(id => authorRows.find(r => r.id === id)).filter(Boolean) as typeof authorRows;
+
+        const authorIds = orderedRows.map(r => r.id);
         const picMap = await getAvatarUrls(authorIds);
 
-        authors = authorRows.map(row => ({
+        authors = orderedRows.map(row => ({
           name: row.name ?? row.username ?? row.email ?? "Unknown Author",
           position: row.position ?? "Researcher",
           description: row.description ?? "Researcher at The Carcino Foundation.",
           profilePicture: picMap[row.id] ?? row.avatar_url ?? null
         }));
-      }
-    } else {
-      let profilePicture: string | null = null;
-      if (doc.author_user_id) {
-        try {
-          const picMap = await getAvatarUrls([doc.author_user_id]);
-          profilePicture = picMap[doc.author_user_id] ?? null;
-        } catch (e) {
-          console.warn('Avatar fetch error', e);
-        }
-      }
 
+        const authorNames = authors.map(a => a.name);
+        author = authorNames.join(" and ");
+        position = authors[0].position ?? null;
+        authorDescription = authors[0].description ?? null;
+        avatarUrlFallback = authors[0].profilePicture ?? null;
+      }
+    }
+
+    if (authors.length === 0) {
       authors = [{
         name: author ?? "Unknown Author",
         position: position ?? "",
         description: authorDescription ?? "Researcher at The Carcino Foundation.",
-        profilePicture: profilePicture || avatarUrlFallback || null
+        profilePicture: avatarUrlFallback || null
       }];
     }
 
@@ -215,14 +204,19 @@ async function getAllDocsUncached(): Promise<Article[]> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('id, slug, title, author_user_id, color')
+      .select('id, slug, title, author_user_id, author_user_ids, color')
       .neq('hidden', true)
       .order('title');
 
     if (!data) return [];
 
-    const docs = data as { id: string; slug: string; title: string; author_user_id: string | null; color: string | null }[];
-    const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
+    const docs = data as { id: string; slug: string; title: string; author_user_id: string | null; author_user_ids: string[] | null; color: string | null }[];
+    const authorIdsSet = new Set<string>();
+    docs.forEach(d => {
+      if (d.author_user_ids && d.author_user_ids.length > 0) d.author_user_ids.forEach(id => authorIdsSet.add(id));
+      else if (d.author_user_id) authorIdsSet.add(d.author_user_id);
+    });
+    const authorIds = Array.from(authorIdsSet);
 
     let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null; description: string | null }> = {};
     if (authorIds.length) {
@@ -240,10 +234,14 @@ async function getAllDocsUncached(): Promise<Article[]> {
     }
 
     return docs.map((d) => {
-      const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
-      const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
-      const position = meta?.position ?? null;
-      const authorDescription = meta?.description ?? null;
+      const idsToUse = d.author_user_ids && d.author_user_ids.length > 0 ? d.author_user_ids : (d.author_user_id ? [d.author_user_id] : []);
+      const metas = idsToUse.map(id => authorMap[id]).filter(Boolean);
+      
+      const authorNames = metas.map(meta => meta.name ?? meta.username ?? meta.email ?? "Unknown");
+      const author = authorNames.length > 0 ? authorNames.join(" and ") : null;
+      const position = metas[0]?.position ?? null;
+      const authorDescription = metas[0]?.description ?? null;
+      
       return { ...d, author, position, authorDescription } as Article;
     });
   } catch (error) {
@@ -262,7 +260,7 @@ async function getAllDocsWithAvatarsUncached(): Promise<ArticleWithAvatar[]> {
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('id, slug, title, author_user_id, color')
+      .select('id, slug, title, author_user_id, author_user_ids, color')
       .neq('hidden', true)
       .order('title');
 
@@ -270,8 +268,13 @@ async function getAllDocsWithAvatarsUncached(): Promise<ArticleWithAvatar[]> {
 
     if (!data) return [];
 
-    const docs = data as { id: string; slug: string; title: string; author_user_id: string | null; color: string | null }[];
-    const authorIds = Array.from(new Set(docs.map(d => d.author_user_id).filter(Boolean))) as string[];
+    const docs = data as { id: string; slug: string; title: string; author_user_id: string | null; author_user_ids: string[] | null; color: string | null }[];
+    const authorIdsSet = new Set<string>();
+    docs.forEach(d => {
+      if (d.author_user_ids && d.author_user_ids.length > 0) d.author_user_ids.forEach(id => authorIdsSet.add(id));
+      else if (d.author_user_id) authorIdsSet.add(d.author_user_id);
+    });
+    const authorIds = Array.from(authorIdsSet);
 
     let authorMap: Record<string, { name: string | null; username: string | null; email: string | null; position: string | null; description: string | null }> = {};
     if (authorIds.length) {
@@ -290,19 +293,24 @@ async function getAllDocsWithAvatarsUncached(): Promise<ArticleWithAvatar[]> {
 
 
     let picMap: Record<string, string | null> = {};
-    const ids = Array.from(new Set(docs.map(d => d.author_user_id || d.id))).filter(Boolean) as string[];
+    const idsToFetchPics = Array.from(new Set([...authorIds, ...docs.map(d => d.id)])).filter(Boolean);
     try {
-      picMap = await getAvatarUrls(ids);
+      picMap = await getAvatarUrls(idsToFetchPics);
     } catch (e) {
       console.warn('Avatars fetch error', e);
     }
 
     return docs.map(d => {
-      const meta = d.author_user_id ? authorMap[d.author_user_id] : undefined;
-      const author = meta ? meta.name ?? meta.username ?? meta.email ?? null : null;
-      const position = meta?.position ?? null;
-      const authorDescription = meta?.description ?? null;
-      return { ...d, author, position, authorDescription, profilePicture: picMap[d.author_user_id || d.id] ?? null } as ArticleWithAvatar;
+      const idsToUse = d.author_user_ids && d.author_user_ids.length > 0 ? d.author_user_ids : (d.author_user_id ? [d.author_user_id] : []);
+      const metas = idsToUse.map(id => authorMap[id]).filter(Boolean);
+      
+      const authorNames = metas.map(meta => meta.name ?? meta.username ?? meta.email ?? "Unknown");
+      const author = authorNames.length > 0 ? authorNames.join(" and ") : null;
+      const position = metas[0]?.position ?? null;
+      const authorDescription = metas[0]?.description ?? null;
+      
+      const primaryAuthorId = idsToUse[0] || d.id;
+      return { ...d, author, position, authorDescription, profilePicture: picMap[primaryAuthorId] ?? null } as ArticleWithAvatar;
     });
   } catch (error) {
     console.error('Error in getAllDocsWithAvatars:', error);
@@ -335,7 +343,7 @@ async function getRandomArticleSummariesUncached(limit = 3, excludeSlug?: string
   try {
     const { data, error } = await supabase
       .from('cancer_docs')
-      .select('id, slug, title, author_user_id, color')
+      .select('id, slug, title, author_user_id, author_user_ids, color')
       .neq('hidden', true)
       .limit(20);
 
@@ -346,13 +354,19 @@ async function getRandomArticleSummariesUncached(limit = 3, excludeSlug?: string
       return [];
     }
 
-    const docsRaw = data as { id: string; slug: string; title: string; author_user_id: string | null; color: string | null }[];
+    const docsRaw = data as { id: string; slug: string; title: string; author_user_id: string | null; author_user_ids: string[] | null; color: string | null }[];
 
     const docs = excludeSlug ? docsRaw.filter(d => d.slug !== excludeSlug) : docsRaw;
 
     const shuffled = docs.sort(() => 0.5 - Math.random()).slice(0, limit);
 
-    const authorIds = Array.from(new Set(shuffled.map(d => d.author_user_id).filter(Boolean))) as string[];
+    const authorIdsSet = new Set<string>();
+    shuffled.forEach(d => {
+      if (d.author_user_ids && d.author_user_ids.length > 0) d.author_user_ids.forEach(id => authorIdsSet.add(id));
+      else if (d.author_user_id) authorIdsSet.add(d.author_user_id);
+    });
+    const authorIds = Array.from(authorIdsSet);
+    
     let authorMap: Record<string, string | null> = {};
 
     if (authorIds.length > 0) {
@@ -370,13 +384,17 @@ async function getRandomArticleSummariesUncached(limit = 3, excludeSlug?: string
       }
     }
 
-    const supabaseSummaries = shuffled.map(d => ({
-      id: d.id,
-      slug: d.slug,
-      title: d.title,
-      author: (d.author_user_id ? authorMap[d.author_user_id] : null) ?? "Unknown Author",
-      color: d.color
-    }));
+    const supabaseSummaries = shuffled.map(d => {
+      const idsToUse = d.author_user_ids && d.author_user_ids.length > 0 ? d.author_user_ids : (d.author_user_id ? [d.author_user_id] : []);
+      const authorNames = idsToUse.map(id => authorMap[id]).filter(Boolean);
+      return {
+        id: d.id,
+        slug: d.slug,
+        title: d.title,
+        author: authorNames.length > 0 ? authorNames.join(" and ") : "Unknown Author",
+        color: d.color
+      };
+    });
     return supabaseSummaries.sort(() => 0.5 - Math.random()).slice(0, limit);
 
   } catch (error) {

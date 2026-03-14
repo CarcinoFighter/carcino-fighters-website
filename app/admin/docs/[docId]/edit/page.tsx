@@ -6,6 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
+import UserTypeahead from "@/components/admin/UserTypeahead";
+
 
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
@@ -36,6 +38,9 @@ export default function DocEditPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [ribbonColor, setRibbonColor] = useState("");
+  const [coAuthorUsernames, setCoAuthorUsernames] = useState("");
+  const [overrideAuthors, setOverrideAuthors] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,6 +82,7 @@ export default function DocEditPage() {
           return;
         }
         setDoc(data.doc);
+        setIsAdmin(!!data.isAdmin);
         setSlug(data.doc?.slug ?? "");
         setTitle(data.doc?.title ?? "");
         setContent(data.doc?.content ?? "");
@@ -110,6 +116,8 @@ export default function DocEditPage() {
           title,
           content,
           color: ribbonColor,
+          coAuthorUsernames,
+          overrideAuthors,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -290,6 +298,30 @@ export default function DocEditPage() {
                       />
                     </div>
                   </div>
+                  {isAdmin && (
+                    <div className="space-y-4 pt-4 border-t border-white/10 mt-2">
+                      <UserTypeahead
+                        id="coAuthorUsernames"
+                        label="Manage Authors (Usernames)"
+                        value={coAuthorUsernames}
+                        onChange={setCoAuthorUsernames}
+                        placeholder="e.g. jsmith, aeinstein"
+                      />
+                      <div className="flex items-center gap-3 px-1">
+                        <input
+                          type="checkbox"
+                          id="overrideAuthors"
+                          checked={overrideAuthors}
+                          onChange={(e) => setOverrideAuthors(e.target.checked)}
+                          className="h-4 w-4 rounded border-white/10 bg-white/5 accent-purple-600 focus:ring-purple-500/50 cursor-pointer"
+                        />
+                        <label htmlFor="overrideAuthors" className="text-sm text-white/60 select-none cursor-pointer">
+                          Overwrite existing authors (Otherwise appends)
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
                 </div>
 
                 <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-3xl p-6 h-full">

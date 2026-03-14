@@ -272,8 +272,6 @@
     @apply border-border;
   }
 
-  html {}
-
   .font-dmsans {
     letter-spacing: var(--tracking-dmsans);
   }
