@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
+import UserTypeahead from "@/components/admin/UserTypeahead";
+
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 const MarkdownPreview = dynamic(() => import("@uiw/react-markdown-preview"), { ssr: false });
@@ -15,6 +17,7 @@ export default function NewDocPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [ribbonColor, setRibbonColor] = useState("");
+  const [coAuthorUsernames, setCoAuthorUsernames] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -69,6 +72,7 @@ export default function NewDocPage() {
           title,
           content,
           color: ribbonColor,
+          coAuthorUsernames,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -250,6 +254,14 @@ export default function NewDocPage() {
                     />
                   </div>
                 </div>
+                <UserTypeahead
+                  id="coAuthorUsernames"
+                  label="Co-authors (Usernames)"
+                  value={coAuthorUsernames}
+                  onChange={setCoAuthorUsernames}
+                  placeholder="e.g. jsmith, aeinstein"
+                />
+
               </div>
 
               <div className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col justify-center gap-3">
