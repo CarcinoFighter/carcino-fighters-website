@@ -174,6 +174,7 @@ async function createSessionRow(userId: string, token: string, expiresAt: string
 			user_agent: userAgent,
 			ip_address: ip,
 			expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
+			last_used_at: new Date().toISOString(),
 		});
 
 	if (error) throw error;
@@ -201,6 +202,8 @@ async function validateSessionFromToken(token: string) {
 
 	if (error) throw error;
 	if (!session) return null;
+
+	// updateSessionLastUsed is now called inside getAuthenticatedUser for both branches
 
 	if (session.expires_at && new Date(session.expires_at).getTime() < Date.now()) {
 		return null;
@@ -270,6 +273,8 @@ async function getAuthenticatedUser() {
 
 			if (!userRow) return null; // Not an employee, but have a public session. Admin API is restricted.
 
+			await updateSessionLastUsed(token);
+
 			return {
 				token,
 				user: {
@@ -288,7 +293,34 @@ async function getAuthenticatedUser() {
 		}
 	}
 
+	// updateSessionLastUsed is called inside validateSessionFromToken if needed, 
+	// but we'll call it once here to cover the jwt branch.
+	await updateSessionLastUsed(token);
 	return validateSessionFromToken(token);
+}
+
+/**
+ * Updates the last_used_at column for a given session token in the login_sessions table.
+ */
+async function updateSessionLastUsed(token: string) {
+	try {
+		const client = await ensureClient();
+		const tokenHash = await hashToken(token);
+		const now = new Date().toISOString();
+
+		const { error } = await client
+			.from("login_sessions")
+			.update({ last_used_at: now })
+			.eq("token_hash", tokenHash);
+
+		if (error) {
+			console.info("[admin-auth] session update error:", error.message);
+		} else {
+			console.info("[admin-auth] session updated:", tokenHash);
+		}
+	} catch (e) {
+		console.error("[admin-auth] unexpected error during session update:", e);
+	}
 }
 
 async function applySubmissionToDocs(client: SupabaseClient<any, any, any>, submission: DocSubmissionRow, reviewerId: string | null) {
@@ -540,7 +572,7 @@ export async function GET() {
 		vlog("get.ok", { userId: session.user.id });
 		return NextResponse.json(
 			{ authenticated: true, user: session.user },
-			{ headers: { "Cache-Control": "private, max-age=300" } },
+			{ headers: { "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate", "Pragma": "no-cache", "Expires": "0" } },
 		);
 	} catch (e: unknown) {
 		const message = e instanceof Error ? e.message : typeof e === "string" ? e : "Unknown error";
