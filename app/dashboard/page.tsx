@@ -19,6 +19,7 @@ type User = {
     description: string | null;
     position?: string | null;
     profilePicture?: string | null;
+    is_legacy?: boolean;
 };
 
 type Doc = {
@@ -240,6 +241,7 @@ export default function DashboardPage() {
                         description: pu.bio,
                         profilePicture: pu.avatar_url,
                         position: pu.position,
+                        is_legacy: pu.is_legacy || false,
                     });
 
                     // If employee, fetch articles
@@ -415,6 +417,10 @@ export default function DashboardPage() {
                                 {isAdmin && user?.position ? (
                                     <p className="text-purple-400/80 text-xs font-medium uppercase mb-6">
                                         {user.position}
+                                    </p>
+                                ) : user?.is_legacy ? (
+                                    <p className="text-red-400/80 text-xs font-medium uppercase mb-6">
+                                        Legacy Member
                                     </p>
                                 ) : (
                                     <div className="mb-6" />
