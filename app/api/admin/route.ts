@@ -174,6 +174,7 @@ async function createSessionRow(userId: string, token: string, expiresAt: string
 			user_agent: userAgent,
 			ip_address: ip,
 			expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
+			last_used_at: new Date().toISOString(),
 		});
 
 	if (error) throw error;
@@ -202,6 +203,8 @@ async function validateSessionFromToken(token: string) {
 	if (error) throw error;
 	if (!session) return null;
 
+	// updateSessionLastUsed is now called inside getAuthenticatedUser for both branches
+
 	if (session.expires_at && new Date(session.expires_at).getTime() < Date.now()) {
 		return null;
 	}
@@ -210,13 +213,13 @@ async function validateSessionFromToken(token: string) {
 
 	const { data: userRow, error: userError } = await client
 		.from("users")
-		.select("id, username, email, name, admin_access, description, position, department")
+		.select("id, username, email, name, admin_access, description, position, department, is_legacy")
 		.eq("id", payload.sub)
 		.limit(1)
 		.maybeSingle();
 
 	if (userError) throw userError;
-	if (!userRow) return null;
+	if (!userRow || userRow.is_legacy) return null;
 
 	return {
 		token,
@@ -229,6 +232,7 @@ async function validateSessionFromToken(token: string) {
 			description: userRow.description,
 			position: userRow.position,
 			department: userRow.department,
+			is_legacy: Boolean(userRow.is_legacy),
 		},
 	};
 }
@@ -263,12 +267,14 @@ async function getAuthenticatedUser() {
 			// Then check if they are an employee in the "users" table
 			const { data: userRow } = await client
 				.from("users")
-				.select("id, username, email, name, admin_access, description, position, department")
+				.select("id, username, email, name, admin_access, description, position, department, is_legacy")
 				.eq("email", publicUser.email.toLowerCase())
 				.limit(1)
 				.maybeSingle();
 
-			if (!userRow) return null; // Not an employee, but have a public session. Admin API is restricted.
+			if (!userRow || userRow.is_legacy) return null; // Not an employee or legacy. Admin API is restricted.
+
+			await updateSessionLastUsed(token);
 
 			return {
 				token,
@@ -281,6 +287,7 @@ async function getAuthenticatedUser() {
 					description: userRow.description,
 					position: userRow.position,
 					department: userRow.department,
+					is_legacy: Boolean(userRow.is_legacy),
 				},
 			};
 		} catch (e) {
@@ -288,7 +295,34 @@ async function getAuthenticatedUser() {
 		}
 	}
 
+	// updateSessionLastUsed is called inside validateSessionFromToken if needed, 
+	// but we'll call it once here to cover the jwt branch.
+	await updateSessionLastUsed(token);
 	return validateSessionFromToken(token);
+}
+
+/**
+ * Updates the last_used_at column for a given session token in the login_sessions table.
+ */
+async function updateSessionLastUsed(token: string) {
+	try {
+		const client = await ensureClient();
+		const tokenHash = await hashToken(token);
+		const now = new Date().toISOString();
+
+		const { error } = await client
+			.from("login_sessions")
+			.update({ last_used_at: now })
+			.eq("token_hash", tokenHash);
+
+		if (error) {
+			console.info("[admin-auth] session update error:", error.message);
+		} else {
+			console.info("[admin-auth] session updated:", tokenHash);
+		}
+	} catch (e) {
+		console.error("[admin-auth] unexpected error during session update:", e);
+	}
 }
 
 async function applySubmissionToDocs(client: SupabaseClient<any, any, any>, submission: DocSubmissionRow, reviewerId: string | null) {
@@ -540,7 +574,7 @@ export async function GET() {
 		vlog("get.ok", { userId: session.user.id });
 		return NextResponse.json(
 			{ authenticated: true, user: session.user },
-			{ headers: { "Cache-Control": "private, max-age=300" } },
+			{ headers: { "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate", "Pragma": "no-cache", "Expires": "0" } },
 		);
 	} catch (e: unknown) {
 		const message = e instanceof Error ? e.message : typeof e === "string" ? e : "Unknown error";
@@ -584,7 +618,7 @@ export async function POST(req: Request) {
 			// find user by username or email (case-insensitive)
 			const { data: user, error } = await client
 				.from("users")
-				.select("id, username, email, name, password, admin_access, description, position, department")
+				.select("id, username, email, name, password, admin_access, description, position, department, is_legacy")
 				.or(`username.eq.${identifier},email.eq.${identifier}`)
 				.limit(1)
 				.maybeSingle();
@@ -592,7 +626,7 @@ export async function POST(req: Request) {
 			if (error) {
 				return NextResponse.json({ error: error.message }, { status: 500 });
 			}
-			if (!user) {
+			if (!user || user.is_legacy) {
 				return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
 			}
 
@@ -736,7 +770,7 @@ export async function POST(req: Request) {
 
 			const { data: usersData, error } = await client
 				.from("users")
-				.select("id, username, email, name, admin_access, position, description, avatar_url, department")
+				.select("id, username, email, name, admin_access, position, description, avatar_url, department, is_legacy")
 				.order("created_at", { ascending: true });
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -796,11 +830,22 @@ export async function POST(req: Request) {
 				return NextResponse.json({ error: "No fields to update" }, { status: 400 });
 			}
 
+			// Check if target user is legacy
+			const { data: targetUser } = await client
+				.from("users")
+				.select("is_legacy")
+				.eq("id", targetUserId)
+				.maybeSingle();
+
+			if (targetUser?.is_legacy) {
+				return NextResponse.json({ error: "Cannot edit legacy employees" }, { status: 403 });
+			}
+
 			const { data, error } = await client
 				.from("users")
 				.update(updates)
 				.eq("id", targetUserId)
-				.select("id, username, email, name, admin_access, position, description, avatar_url, department")
+				.select("id, username, email, name, admin_access, position, description, avatar_url, department, is_legacy")
 				.maybeSingle();
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -953,7 +998,7 @@ export async function POST(req: Request) {
 
 			let authorMeta: { name: string | null; username: string | null; email: string | null; position: string | null } | null = null;
 			let profilePicture: string | null = null;
-			
+
 			const idsToFetch = docRow.author_user_ids && docRow.author_user_ids.length > 0 ? docRow.author_user_ids : (docRow.author_user_id ? [docRow.author_user_id] : []);
 
 			if (idsToFetch.length > 0) {
@@ -1044,7 +1089,7 @@ export async function POST(req: Request) {
 
 				if (ownerErr) return NextResponse.json({ error: ownerErr.message }, { status: 400 });
 				if (!ownerRow) return NextResponse.json({ error: "Document not found" }, { status: 404 });
-				
+
 				const isAuthor = ownerRow.author_user_id === session.user.id || (ownerRow.author_user_ids && ownerRow.author_user_ids.includes(session.user.id));
 				if (!session.user.admin_access && !isAuthor) {
 					return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -1136,7 +1181,7 @@ export async function POST(req: Request) {
 			const submissions = (data ?? []).map((d: any) => {
 				const ids = d.author_user_ids && d.author_user_ids.length > 0 ? d.author_user_ids : (d.author_user_id ? [d.author_user_id] : []);
 				const authorNames = ids.map((id: string) => authors[id]?.name ?? authors[id]?.username ?? authors[id]?.email ?? "Unknown");
-				
+
 				return {
 					...d,
 					author: ids.length > 0 && authors[ids[0]] ? {
@@ -1426,7 +1471,7 @@ export async function POST(req: Request) {
 			const { data: ownerRow, error: ownerErr } = await ownershipCheck;
 			if (ownerErr) return NextResponse.json({ error: ownerErr.message }, { status: 400 });
 			if (!ownerRow) return NextResponse.json({ error: "Document not found" }, { status: 404 });
-			
+
 			const isAuthor = ownerRow.author_user_id === session.user.id || (ownerRow.author_user_ids && ownerRow.author_user_ids.includes(session.user.id));
 			if (!session.user.admin_access && !isAuthor) {
 				return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -1443,7 +1488,7 @@ export async function POST(req: Request) {
 			// Author updates only allowed for admins
 			if (session.user.admin_access && (authorIds !== undefined || coAuthorUsernames !== undefined)) {
 				let finalAuthorIds = ownerRow.author_user_ids && ownerRow.author_user_ids.length > 0 ? ownerRow.author_user_ids : [ownerRow.author_user_id];
-				
+
 				if (authorIds && authorIds.length > 0) {
 					finalAuthorIds = overrideAuthors ? authorIds : Array.from(new Set([...finalAuthorIds, ...authorIds]));
 				}
@@ -1704,17 +1749,18 @@ export async function POST(req: Request) {
 			if (!targetUserId) return NextResponse.json({ error: "targetUserId is required" }, { status: 400 });
 			if (targetUserId === session.user.id) return NextResponse.json({ error: "You cannot delete yourself" }, { status: 400 });
 
-			// Null out authored docs so they stay visible
-			const { error: docErr } = await client
-				.from("cancer_docs")
-				.update({ author_user_id: null })
-				.eq("author_user_id", targetUserId);
-			if (docErr) return NextResponse.json({ error: docErr.message }, { status: 400 });
+			// Null out authored docs so they stay visible (though they should stay visible anyway)
+			// const { error: docErr } = await client
+			// 	.from("cancer_docs")
+			// 	.update({ author_user_id: null })
+			// 	.eq("author_user_id", targetUserId);
+			// if (docErr) return NextResponse.json({ error: docErr.message }, { status: 400 });
 
 			// Remove login sessions for that user
 			await client.from("login_sessions").delete().eq("user_id", targetUserId);
 
-			const { error: delErr } = await client.from("users").delete().eq("id", targetUserId);
+			// Mark user as legacy instead of deleting
+			const { error: delErr } = await client.from("users").update({ is_legacy: true, admin_access: false }).eq("id", targetUserId);
 			if (delErr) return NextResponse.json({ error: delErr.message }, { status: 400 });
 
 			return NextResponse.json({ ok: true });

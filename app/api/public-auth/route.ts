@@ -39,19 +39,21 @@ async function serializeUser(row: any) {
     avatar_url: row.avatar_url,
     is_employee: false,
     position: null as string | null,
+    is_legacy: false as boolean,
   };
 
   // Check if this user is an employee
   if (sb && row.email) {
     const { data: employee } = await sb
       .from("users") // Original users table is now Employees
-      .select("id, name, position, description")
+      .select("id, name, position, description, is_legacy")
       .eq("email", row.email.toLowerCase())
       .limit(1)
       .maybeSingle();
 
     if (employee) {
-      user.is_employee = true;
+      user.is_employee = !employee.is_legacy; // If legacy, they are no longer an "active" employee for dashboard purposes
+      user.is_legacy = Boolean(employee.is_legacy);
       user.position = employee.position;
       // Prefer employee name and description/bio if available
       if (employee.name) user.name = employee.name;
@@ -236,13 +238,13 @@ export async function POST(req: Request) {
         // Authenticate as employee first
         const { data: emp, error: empErr } = await sb!
           .from("users")
-          .select("id, username, email, name, password, description, avatar_url")
+          .select("id, username, email, name, password, description, avatar_url, is_legacy")
           .or(`username.eq.${lowerIdentifier},email.eq.${lowerIdentifier}`)
           .limit(1)
           .maybeSingle();
 
         if (empErr) return NextResponse.json({ error: empErr.message }, { status: 400 });
-        if (!emp) return NextResponse.json({ error: "Invalid employee credentials" }, { status: 401 });
+        if (!emp || emp.is_legacy) return NextResponse.json({ error: "Invalid employee credentials" }, { status: 401 });
 
         const valid = await bcrypt.compare(password, emp.password ?? "");
         if (!valid) return NextResponse.json({ error: "Invalid employee credentials" }, { status: 401 });

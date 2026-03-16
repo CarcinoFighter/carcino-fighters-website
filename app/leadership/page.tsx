@@ -102,11 +102,11 @@ const organizationHierarchy: Leader = {
               avatar: "/avatars/siran.png",
             },
             {
-              name: "Nishka Majumder",
+              name: "Aryaka Sikdar",
               title: "Proofreading Manager",
               description:
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-              avatar: "/avatars/nishka.png",
+              avatar: "/avatars/dummy.png",
             },
           ],
         },

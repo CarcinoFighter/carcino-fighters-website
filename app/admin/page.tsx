@@ -43,6 +43,7 @@ export default function AdminPage() {
     department?: string | null;
     description?: string | null;
     profilePicture?: string | null;
+    is_legacy?: boolean | null;
   };
 
   type PublicUserRow = {
@@ -110,7 +111,7 @@ export default function AdminPage() {
   const [publicUsersOpen, setPublicUsersOpen] = useState(false);
   const [publicUsersLoading, setPublicUsersLoading] = useState(false);
   const [selfForm, setSelfForm] = useState({ username: "", email: "", name: "", password: "", description: "", department: "" });
-  const [userEdits, setUserEdits] = useState<Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string; department: string }>>({});
+  const [userEdits, setUserEdits] = useState<Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string; department: string; is_legacy: boolean }>>({});
   const [publicUserEdits, setPublicUserEdits] = useState<Record<string, { username: string; email: string; name: string; bio: string; password: string }>>({});
   const [savingSelf, setSavingSelf] = useState(false);
   const [savingUser, setSavingUser] = useState<Record<string, boolean>>({});
@@ -551,7 +552,7 @@ export default function AdminPage() {
       const data = await res.json().catch(() => ({}));
       if (res.ok && Array.isArray(data.users)) {
         setUsers(data.users);
-        const initialEdits: Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string; department: string }> = {};
+        const initialEdits: Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string; department: string; is_legacy: boolean }> = {};
         data.users.forEach((u: UserRow) => {
           initialEdits[u.id] = {
             username: u.username ?? "",
@@ -562,9 +563,10 @@ export default function AdminPage() {
             position: u.position ?? "",
             description: u.description ?? "",
             department: u.department ?? "",
+            is_legacy: Boolean(u.is_legacy),
           };
         });
-        setUserEdits(initialEdits);
+        setUserEdits(initialEdits as any);
       } else if (!res.ok) {
         setError(data?.error || "Failed to load users");
       }
@@ -788,7 +790,7 @@ export default function AdminPage() {
 
   async function handleDeleteUser(userId: string) {
     setError("");
-    if (!confirm("Delete this user?")) return;
+    if (!confirm("Are you sure you want to purge this user? They will be moved to legacy writers and lose admin access.")) return;
     try {
       const res = await fetch("/api/admin", {
         method: "POST",
@@ -815,6 +817,9 @@ export default function AdminPage() {
         .some((v) => String(v).toLowerCase().includes(term))
     );
   }, [userSearch, users]);
+
+  const activeFilteredUsers = useMemo(() => filteredUsers.filter((u) => !u.is_legacy), [filteredUsers]);
+  const legacyFilteredUsers = useMemo(() => filteredUsers.filter((u) => u.is_legacy), [filteredUsers]);
 
   const filteredPublicUsers = useMemo(() => {
     const term = publicUserSearch.toLowerCase().trim();
@@ -971,7 +976,7 @@ export default function AdminPage() {
                       },
                       {
                         label: "Society Members",
-                        value: users.length,
+                        value: users.filter(u => !u.is_legacy).length,
                         icon: Users,
                         color: "text-purple-400",
                         bg: "bg-purple-400/10",
@@ -1241,126 +1246,235 @@ export default function AdminPage() {
                         )}
                       </AnimatePresence>
 
-                      <div className="overflow-x-auto no-scrollbar">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="border-b border-white/5">
-                              <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Contributor</th>
-                              <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Role & Department</th>
-                              <th className="text-center py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Auth Level</th>
-                              <th className="text-right py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-white/[0.02]">
-                            {filteredUsers.map((u, i) => {
-                              const isExpanded = expandedUserId === u.id;
-                              const edit = userEdits[u.id] ?? {};
-                              return (
-                                <React.Fragment key={u.id}>
-                                  <motion.tr
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: i * 0.03 }}
-                                    className={`group hover:bg-white/[0.03] transition-all cursor-pointer ${isExpanded ? 'bg-white/[0.03]' : ''}`}
-                                    onClick={() => setExpandedUserId(isExpanded ? null : u.id)}
-                                  >
-                                    <td className="py-5 px-6">
-                                      <div className="flex items-center gap-4">
-                                        <div className="relative h-11 w-11 rounded-full bg-white/5 border border-white/10 overflow-hidden ring-4 ring-white/[0.02] transition-transform group-hover:scale-105">
-                                          {u.profilePicture ? (
-                                            <img src={u.profilePicture} className="w-full h-full object-cover" alt="" />
-                                          ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-xs font-black text-white/20">
-                                              {u.name?.[0] || u.username?.[0] || "?"}
+                      <div className="space-y-12">
+                        {/* Active Employees Table */}
+                        <div className="space-y-4">
+                          <h3 className="text-sm font-tttravelsnext font-bold text-white/40 uppercase tracking-[0.2em] ml-2">Active Society Members</h3>
+                          <div className="overflow-x-auto no-scrollbar">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b border-white/5">
+                                  <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Contributor</th>
+                                  <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Role & Department</th>
+                                  <th className="text-center py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Auth Level</th>
+                                  <th className="text-right py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-white/[0.02]">
+                                {activeFilteredUsers.length === 0 ? (
+                                  <tr>
+                                    <td colSpan={4} className="py-10 text-center text-white/20 italic font-medium">No active members found</td>
+                                  </tr>
+                                ) : activeFilteredUsers.map((u, i) => {
+                                  const isExpanded = expandedUserId === u.id;
+                                  const edit = userEdits[u.id] ?? {};
+                                  return (
+                                    <React.Fragment key={u.id}>
+                                      <motion.tr
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: i * 0.03 }}
+                                        className={`group hover:bg-white/[0.03] transition-all cursor-pointer ${isExpanded ? 'bg-white/[0.03]' : ''}`}
+                                        onClick={() => setExpandedUserId(isExpanded ? null : u.id)}
+                                      >
+                                        <td className="py-5 px-6">
+                                          <div className="flex items-center gap-4">
+                                            <div className="relative h-11 w-11 rounded-full bg-white/5 border border-white/10 overflow-hidden ring-4 ring-white/[0.02] transition-transform group-hover:scale-105">
+                                              {u.profilePicture ? (
+                                                <img src={u.profilePicture} className="w-full h-full object-cover" alt="" />
+                                              ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-xs font-black text-white/20">
+                                                  {u.name?.[0] || u.username?.[0] || "?"}
+                                                </div>
+                                              )}
                                             </div>
-                                          )}
-                                        </div>
-                                        <div>
-                                          <div className="font-bold text-white/90 group-hover:text-white transition-colors">{u.name || u.username}</div>
-                                          <div className="text-[10px] text-white/30 lowercase font-medium">{u.email}</div>
-                                        </div>
-                                      </div>
-                                    </td>
-                                    <td className="py-5 px-6">
-                                      <div className="space-y-0.5">
-                                        <div className="text-sm font-bold text-white/70">{u.position || "Staff"}</div>
-                                        <div className="text-[10px] text-white/30 uppercase tracking-widest font-black">{u.department || "Unassigned"}</div>
-                                      </div>
-                                    </td>
-                                    <td className="py-5 px-6 text-center">
-                                      <div className="inline-flex">
-                                        {u.admin_access ? (
-                                          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-500/10 text-purple-300 border border-purple-500/20">
-                                            <ShieldCheck size={10} />
-                                            Administrator
+                                            <div>
+                                              <div className="font-bold text-white/90 group-hover:text-white transition-colors">{u.name || u.username}</div>
+                                              <div className="text-[10px] text-white/30 lowercase font-medium">{u.email}</div>
+                                            </div>
+                                          </div>
+                                        </td>
+                                        <td className="py-5 px-6">
+                                          <div className="space-y-0.5">
+                                            <div className="text-sm font-bold text-white/70">{u.position || "Staff"}</div>
+                                            <div className="text-[10px] text-white/30 uppercase tracking-widest font-black">{u.department || "Unassigned"}</div>
+                                          </div>
+                                        </td>
+                                        <td className="py-5 px-6 text-center">
+                                          <div className="inline-flex">
+                                            {u.admin_access ? (
+                                              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                                                <ShieldCheck size={10} />
+                                                Administrator
+                                              </span>
+                                            ) : (
+                                              <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/5 text-white/30 border border-white/5">
+                                                Standard Access
+                                              </span>
+                                            )}
+                                          </div>
+                                        </td>
+                                        <td className="py-5 px-6 text-right">
+                                          <div className="flex items-center justify-end gap-2 text-[10px] font-black uppercase tracking-widest text-white/30 group-hover:text-white transition-all">
+                                            {isExpanded ? "Close" : "Modify"}
+                                            <ChevronRight size={14} className={`transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`} />
+                                          </div>
+                                        </td>
+                                      </motion.tr>
+                                      {isExpanded && (
+                                        <tr>
+                                          <td colSpan={5} className="p-6 bg-white/[0.01] border-b border-white/5">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl">
+                                              <div className="space-y-1.5">
+                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Full Name</label>
+                                                <input className={`${inputClass} w-full`} placeholder="Full name" value={edit.name} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, name: e.target.value } }))} />
+                                              </div>
+                                              <div className="space-y-1.5">
+                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Username</label>
+                                                <input className={`${inputClass} w-full`} placeholder="@username" value={edit.username} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, username: e.target.value } }))} />
+                                              </div>
+                                              <div className="space-y-1.5">
+                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Email</label>
+                                                <input type="email" className={`${inputClass} w-full`} placeholder="email@example.com" value={edit.email} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, email: e.target.value } }))} />
+                                              </div>
+                                              <div className="space-y-1.5">
+                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Position / Role</label>
+                                                <input className={`${inputClass} w-full`} placeholder="e.g. Research Lead" value={edit.position} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, position: e.target.value } }))} />
+                                              </div>
+                                              <div className="space-y-1.5">
+                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Department</label>
+                                                <input className={`${inputClass} w-full`} placeholder="e.g. Biology" value={edit.department} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, department: e.target.value } }))} />
+                                              </div>
+                                              <div className="space-y-1.5 md:col-span-1">
+                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Description / Bio</label>
+                                                <textarea className={`${textareaClass} w-full !min-h-[80px]`} placeholder="Short bio or description..." value={edit.description} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, description: e.target.value } }))} />
+                                              </div>
+                                              <div className="space-y-1.5">
+                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">New Password</label>
+                                                <input type="password" className={`${inputClass} w-full`} placeholder="Leave blank to keep current" value={edit.password} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, password: e.target.value } }))} />
+                                              </div>
+                                              <div className="space-y-1.5">
+                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Confirm Password</label>
+                                                <input type="password" className={`${inputClass} w-full`} placeholder="Repeat new password" onChange={(e) => {/* confirm is local UI only – validated on save */ }} />
+                                              </div>
+                                              <div className="space-y-1.5 flex items-center gap-4 pb-2 pt-2">
+                                                <input type="checkbox" id={`admin-${u.id}`} className="accent-purple-500 h-4 w-4" checked={edit.admin_access} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, admin_access: e.target.checked } }))} />
+                                                <label htmlFor={`admin-${u.id}`} className="text-xs font-bold uppercase tracking-widest text-white/80 cursor-pointer">Grant Admin Authorization</label>
+                                              </div>
+                                              <div className="flex justify-end gap-3 items-center">
+                                                <button onClick={() => handleDeleteUser(u.id)} className="text-xs font-bold text-red-400/60 hover:text-red-400 transition-colors uppercase tracking-widest mr-4">Purge User</button>
+                                                <button onClick={() => handleUpdateUser(u.id)} disabled={Boolean(savingUser[u.id])} className="px-6 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all">{savingUser[u.id] ? "Saving..." : "Apply Changes"}</button>
+                                              </div>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        {/* Legacy Employees Table */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3 ml-2">
+                            <h3 className="text-sm font-tttravelsnext font-bold text-white/40 uppercase tracking-[0.2em]">Archived Members</h3>
+                            <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/5 text-[9px] font-black text-white/20 uppercase tracking-widest">Read Only</span>
+                          </div>
+                          <div className="overflow-x-auto no-scrollbar">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b border-white/5">
+                                  <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Contributor</th>
+                                  <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Role & Department</th>
+                                  <th className="text-center py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Status</th>
+                                  <th className="text-right py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-white/[0.02]">
+                                {legacyFilteredUsers.length === 0 ? (
+                                  <tr>
+                                    <td colSpan={4} className="py-10 text-center text-white/10 italic font-medium">No archived members found</td>
+                                  </tr>
+                                ) : legacyFilteredUsers.map((u, i) => {
+                                  const isExpanded = expandedUserId === u.id;
+                                  return (
+                                    <React.Fragment key={u.id}>
+                                      <motion.tr
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className={`group hover:bg-white/[0.02] transition-all cursor-pointer ${isExpanded ? 'bg-white/[0.02]' : ''}`}
+                                        onClick={() => setExpandedUserId(isExpanded ? null : u.id)}
+                                      >
+                                        <td className="py-5 px-6 opacity-60">
+                                          <div className="flex items-center gap-4">
+                                            <div className="h-11 w-11 rounded-full bg-white/5 border border-white/10 overflow-hidden grayscale opacity-50">
+                                              {u.profilePicture && <img src={u.profilePicture} className="w-full h-full object-cover" alt="" />}
+                                            </div>
+                                            <div>
+                                              <div className="font-bold text-white/80">{u.name || u.username}</div>
+                                              <div className="text-[10px] text-white/30 lowercase font-medium">{u.email}</div>
+                                            </div>
+                                          </div>
+                                        </td>
+                                        <td className="py-5 px-6 opacity-60">
+                                          <div className="space-y-0.5">
+                                            <div className="text-sm font-bold text-white/60">{u.position || "Staff"}</div>
+                                            <div className="text-[10px] text-white/30 uppercase tracking-widest font-black">{u.department || "Unassigned"}</div>
+                                          </div>
+                                        </td>
+                                        <td className="py-5 px-6 text-center">
+                                          <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/10">
+                                            Legacy Member
                                           </span>
-                                        ) : (
-                                          <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/5 text-white/30 border border-white/5">
-                                            Standard Access
-                                          </span>
-                                        )}
-                                      </div>
-                                    </td>
-                                    <td className="py-5 px-6 text-right">
-                                      <div className="flex items-center justify-end gap-2 text-[10px] font-black uppercase tracking-widest text-white/30 group-hover:text-white transition-all">
-                                        {isExpanded ? "Close" : "Modify"}
-                                        <ChevronRight size={14} className={`transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`} />
-                                      </div>
-                                    </td>
-                                  </motion.tr>
-                                  {isExpanded && (
-                                    <tr>
-                                      <td colSpan={5} className="p-6 bg-white/[0.01] border-b border-white/5">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl">
-                                          <div className="space-y-1.5">
-                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Full Name</label>
-                                            <input className={`${inputClass} w-full`} placeholder="Full name" value={edit.name} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, name: e.target.value } }))} />
+                                        </td>
+                                        <td className="py-5 px-6 text-right">
+                                          <div className="flex items-center justify-end gap-2 text-[10px] font-black uppercase tracking-widest text-white/20 group-hover:text-white transition-all">
+                                            {isExpanded ? "Hide Details" : "View Record"}
+                                            <ChevronRight size={14} className={`transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`} />
                                           </div>
-                                          <div className="space-y-1.5">
-                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Username</label>
-                                            <input className={`${inputClass} w-full`} placeholder="@username" value={edit.username} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, username: e.target.value } }))} />
-                                          </div>
-                                          <div className="space-y-1.5">
-                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Email</label>
-                                            <input type="email" className={`${inputClass} w-full`} placeholder="email@example.com" value={edit.email} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, email: e.target.value } }))} />
-                                          </div>
-                                          <div className="space-y-1.5">
-                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Position / Role</label>
-                                            <input className={`${inputClass} w-full`} placeholder="e.g. Research Lead" value={edit.position} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, position: e.target.value } }))} />
-                                          </div>
-                                          <div className="space-y-1.5">
-                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Department</label>
-                                            <input className={`${inputClass} w-full`} placeholder="e.g. Biology" value={edit.department} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, department: e.target.value } }))} />
-                                          </div>
-                                          <div className="space-y-1.5 md:col-span-1">
-                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Description / Bio</label>
-                                            <textarea className={`${textareaClass} w-full !min-h-[80px]`} placeholder="Short bio or description..." value={edit.description} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, description: e.target.value } }))} />
-                                          </div>
-                                          <div className="space-y-1.5">
-                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">New Password</label>
-                                            <input type="password" className={`${inputClass} w-full`} placeholder="Leave blank to keep current" value={edit.password} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, password: e.target.value } }))} />
-                                          </div>
-                                          <div className="space-y-1.5">
-                                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Confirm Password</label>
-                                            <input type="password" className={`${inputClass} w-full`} placeholder="Repeat new password" onChange={(e) => {/* confirm is local UI only – validated on save */ }} />
-                                          </div>
-                                          <div className="space-y-1.5 flex items-center gap-4 pb-2 pt-2">
-                                            <input type="checkbox" id={`admin-${u.id}`} className="accent-purple-500 h-4 w-4" checked={edit.admin_access} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, admin_access: e.target.checked } }))} />
-                                            <label htmlFor={`admin-${u.id}`} className="text-xs font-bold uppercase tracking-widest text-white/80 cursor-pointer">Grant Admin Authorization</label>
-                                          </div>
-                                          <div className="flex justify-end gap-3 items-center">
-                                            <button onClick={() => handleDeleteUser(u.id)} className="text-xs font-bold text-red-400/60 hover:text-red-400 transition-colors uppercase tracking-widest mr-4">Purge User</button>
-                                            <button onClick={() => handleUpdateUser(u.id)} disabled={Boolean(savingUser[u.id])} className="px-6 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all">{savingUser[u.id] ? "Saving..." : "Apply Changes"}</button>
-                                          </div>
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  )}
-                                </React.Fragment>
-                              );
-                            })}
-                          </tbody>
-                        </table>
+                                        </td>
+                                      </motion.tr>
+                                      {isExpanded && (
+                                        <tr>
+                                          <td colSpan={5} className="p-8 bg-black/10 border-b border-white/5">
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl">
+                                              <div className="space-y-1">
+                                                <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">Full Name</p>
+                                                <p className="text-sm text-white/60">{u.name || "N/A"}</p>
+                                              </div>
+                                              <div className="space-y-1">
+                                                <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">Identity</p>
+                                                <p className="text-sm text-white/60">@{u.username}</p>
+                                              </div>
+                                              <div className="space-y-1">
+                                                <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">Primary Contact</p>
+                                                <p className="text-sm text-white/60">{u.email}</p>
+                                              </div>
+                                              <div className="space-y-1">
+                                                <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">Service Period</p>
+                                                <p className="text-sm text-white/40 italic">Historical data preserved</p>
+                                              </div>
+                                              <div className="md:col-span-4 space-y-1">
+                                                <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">Archived Biography</p>
+                                                <p className="text-sm text-white/50 leading-relaxed whitespace-pre-wrap italic">"{u.description || "No bio available in archives."}"</p>
+                                              </div>
+                                              <div className="md:col-span-4 flex justify-end">
+                                                <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] border border-white/5 px-4 py-2 rounded-xl">Immutable Archive Record</span>
+                                              </div>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
