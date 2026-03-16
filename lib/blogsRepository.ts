@@ -12,7 +12,7 @@ export type RawBlogRow = {
   likes: number | null;
   created_at: string;
   updated_at: string;
-  deleted: boolean | null;
+  hidden: boolean | null;
   users_public?:
     | {
         name: string | null;
@@ -40,7 +40,7 @@ export type BlogEntry = {
   likes: number | null;
   created_at: string;
   updated_at: string;
-  deleted: boolean | null;
+  hidden: boolean | null;
   authorName: string | null;
   authorUsername: string | null;
   authorBio: string | null;
@@ -73,7 +73,7 @@ function mapRow(row: RawBlogRow | null): BlogEntry | null {
     likes: row.likes,
     created_at: row.created_at,
     updated_at: row.updated_at,
-    deleted: row.deleted,
+    hidden: row.hidden,
     authorName,
     authorUsername,
     authorBio,
@@ -85,10 +85,10 @@ async function getBlogBySlugRaw(slug: string) {
   const { data, error } = await supabase
     .from("blogs")
     .select(
-      "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+      "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, hidden, users_public(name, username, avatar_url, bio)"
     )
     .eq("slug", slug)
-    .eq("deleted", false)
+    .eq("hidden", false)
     .limit(1)
     .maybeSingle();
 
@@ -114,9 +114,9 @@ async function getAllBlogsRaw() {
   const { data, error } = await supabase
     .from("blogs")
     .select(
-      "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+      "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, hidden, users_public(name, username, avatar_url, bio)"
     )
-    .eq("deleted", false)
+    .eq("hidden", false)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -137,9 +137,9 @@ async function getRandomBlogsRaw(limit = 3, excludeSlug?: string) {
   const { data, error } = await supabase
     .from("blogs")
     .select(
-      "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, deleted, users_public(name, username, avatar_url, bio)"
+      "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, hidden, users_public(name, username, avatar_url, bio)"
     )
-    .eq("deleted", false)
+    .eq("hidden", false)
     .limit(30);
 
   if (error) {
