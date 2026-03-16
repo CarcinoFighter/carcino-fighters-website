@@ -306,13 +306,18 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
             </div>
 
 
-            <div className="flex flex-col gap-8 mt-24 items-center">
+            
+
+          </motion.div>
+        </div>
+      </div>
+      <div className="flex flex-col gap-8 mt-24 items-center -mx-5 sm:-mx-20 px-4">
               <h2 className="sm:text-3xl text-4xl font-instrumentserifitalic bg-gradient-to-r
   from-[#b793d8] from-8%
   to-[#ffffff] to-60%
   bg-clip-text text-transparent">Suggested Articles</h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl mx-auto px-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl mx-auto">
                 {moreArticles.map((a) => {
                   const getTitleFontSize = (title: string) => {
                     const words = title.split(/\s+/);
@@ -400,10 +405,6 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                 })}
               </div>
             </div>
-
-          </motion.div>
-        </div>
-      </div>
       <Footer />
     </div>
   );
