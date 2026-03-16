@@ -94,7 +94,8 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
     <div ref={containerRef} className="min-h-screen text-foreground bg-[#2A292F] relative overflow-hidden">
       <DynamicBackgroundHues containerRef={containerRef} />
       <ScrollProgress className="hidden md:block" />
-      <main className="w-full max-w-5xl mx-auto p-4 sm:p-6 relative z-10 mt-24 sm:mt-32 flex flex-col items-center justify-center self-center">
+      <main className="w-full p-4 sm:p-6 relative z-10 mt-24 sm:mt-32 flex flex-col items-center justify-center self-center">
+        <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
         <header className="mb-8 text-center px-4">
           <h1
             className={`${getMainTitleFontSize(entry.title)} leading-[0.9] whitespace-pre-wrap text-center font-wintersolace font-bold bg-gradient-to-r from-[#70429b] from-8% to-[#dfcbf0] to-60% bg-clip-text text-transparent py-4 break-words [hyphens:auto]`}
@@ -198,12 +199,13 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
             </Button>
           </motion.div>
         </div>
+        </div>
 
-        <section className="mt-16">
+        <section className="mt-16 w-full max-w-6xl mx-auto px-4">
           <h2 className="sm:text-3xl text-4xl font-instrumentserifitalic text-[#CDA8E8] text-center mb-8">
             More Blogs
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
             {related.map((r, i) => {
               const getTitleFontSize = (title: string) => {
                 const words = title.split(/\s+/);
