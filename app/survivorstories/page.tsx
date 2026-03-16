@@ -20,6 +20,12 @@ const staggerContainer = {
   },
 };
 
+const formatSlugToName = (slug: string) =>
+  slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+
 interface SurvivorStory {
   id: string;
   slug: string;
@@ -252,13 +258,15 @@ export default function Home() {
                                 w-full h-full
                               "
                             >
-                              {/* translateY-based centering: smooth, no layout shift */}
-                              <div className="w-full h-full flex flex-col items-center justify-center p-6">
+                              <div className="w-full h-full flex flex-col items-center justify-center p-6 gap-2">
                                 <h3
-                                  className={`${getTitleFontSize(story.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[250px] mx-auto w-full text-white translate-y-0 sm:translate-y-14 sm:group-hover/card:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]`}
+                                  className={`${getTitleFontSize(story.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[250px] mx-auto w-full text-white translate-y-0 sm:translate-y-8 sm:group-hover/card:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]`}
                                 >
                                   {story.title}
                                 </h3>
+                                <p className="text-[15px] sm:text-[17px] font-dmsans font-semibold text-white/90 text-center opacity-0 sm:group-hover/card:opacity-100 transition-opacity duration-500 delay-100">
+                                  {story.slug ? formatSlugToName(story.slug) : ""}
+                                </p>
                               </div>
                             </CardItem>
                           </div>
