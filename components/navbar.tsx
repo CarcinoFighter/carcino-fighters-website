@@ -312,7 +312,7 @@ export function Navbar() {
               <Award size={22} />
               Survivors
             </Link>
-            <div className="h-px bg-border my-2" />
+            <div className="h-px bg-white/20 my-2" />
 
             <Link
               onClick={() => setMobileMenuOpen(false)}
