@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Buffer } from "node:buffer";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { sendWelcomeEmail } from "@/lib/email";
 
 type AuthBody = {
   action?: "register" | "login" | "update_profile" | "logout";
@@ -215,6 +216,11 @@ export async function POST(req: Request) {
 
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
+      // Trigger welcome email
+      if (data?.email) {
+        sendWelcomeEmail(data.email, data.name || data.username || "there").catch(console.error);
+      }
+
       const user = await serializeUser(data);
       if (!user) return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
 
@@ -280,6 +286,12 @@ export async function POST(req: Request) {
             .maybeSingle();
 
           if (syncErr) return NextResponse.json({ error: `Sync Failed: ${syncErr.message}` }, { status: 500 });
+          
+          // Trigger welcome email for first-time employee signin (sync to public)
+          if (newPub?.email) {
+            sendWelcomeEmail(newPub.email, newPub.name || emp.name || "there").catch(console.error);
+          }
+
           userRow = newPub;
         }
       } else {
