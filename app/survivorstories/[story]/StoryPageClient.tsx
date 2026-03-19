@@ -102,8 +102,10 @@ export default function StoryPageClient({
   }, []);
 
   const getMainTitleFontSize = (title: string) => {
-    if (title.length > 50) return "text-2xl sm:text-4xl md:text-5xl lg:text-6xl";
-    if (title.length > 30) return "text-3xl sm:text-5xl md:text-6xl lg:text-7xl";
+    if (title.length > 50)
+      return "text-2xl sm:text-4xl md:text-5xl lg:text-6xl";
+    if (title.length > 30)
+      return "text-3xl sm:text-5xl md:text-6xl lg:text-7xl";
     return "text-4xl sm:text-6xl lg:text-7xl";
   };
 
@@ -129,7 +131,6 @@ export default function StoryPageClient({
       <ScrollProgress className="hidden md:block" />
 
       <main className="w-full p-4 sm:p-6 relative z-10 mt-24 sm:mt-32 flex flex-col items-center justify-center self-center">
-
         {/* Constrained article content */}
         <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
           <header className="mb-8 text-center">
@@ -168,16 +169,28 @@ export default function StoryPageClient({
               rehypePlugins={[rehypeRaw]}
               components={{
                 h1: (props) => (
-                  <h1 className="text-2xl sm:text-3xl font-bold mt-8 mb-4 break-words [overflow-wrap:anywhere]" {...props} />
+                  <h1
+                    className="text-2xl sm:text-3xl font-bold mt-8 mb-4 break-words [overflow-wrap:anywhere]"
+                    {...props}
+                  />
                 ),
                 h2: (props) => (
-                  <h2 className="text-xl sm:text-2xl font-bold mt-8 mb-4 break-words [overflow-wrap:anywhere]" {...props} />
+                  <h2
+                    className="text-xl sm:text-2xl font-bold mt-8 mb-4 break-words [overflow-wrap:anywhere]"
+                    {...props}
+                  />
                 ),
                 h3: (props) => (
-                  <h3 className="text-lg sm:text-xl font-bold mt-6 mb-3 break-words [overflow-wrap:anywhere]" {...props} />
+                  <h3
+                    className="text-lg sm:text-xl font-bold mt-6 mb-3 break-words [overflow-wrap:anywhere]"
+                    {...props}
+                  />
                 ),
                 p: (props) => (
-                  <p className="mb-4 last:mb-0 leading-relaxed break-words [overflow-wrap:anywhere]" {...props} />
+                  <p
+                    className="mb-4 last:mb-0 leading-relaxed break-words [overflow-wrap:anywhere]"
+                    {...props}
+                  />
                 ),
                 a: (props) => (
                   <a
@@ -186,13 +199,22 @@ export default function StoryPageClient({
                   />
                 ),
                 ul: (props) => (
-                  <ul className="list-disc list-outside ml-6 my-4 space-y-2 break-words [overflow-wrap:anywhere]" {...props} />
+                  <ul
+                    className="list-disc list-outside ml-6 my-4 space-y-2 break-words [overflow-wrap:anywhere]"
+                    {...props}
+                  />
                 ),
                 li: (props) => (
-                  <li className="break-words [overflow-wrap:anywhere]" {...props} />
+                  <li
+                    className="break-words [overflow-wrap:anywhere]"
+                    {...props}
+                  />
                 ),
                 ol: (props) => (
-                  <ol className="list-decimal list-outside ml-6 my-4 space-y-2 break-words [overflow-wrap:anywhere]" {...props} />
+                  <ol
+                    className="list-decimal list-outside ml-6 my-4 space-y-2 break-words [overflow-wrap:anywhere]"
+                    {...props}
+                  />
                 ),
                 blockquote: (props) => (
                   <blockquote
@@ -214,15 +236,24 @@ export default function StoryPageClient({
                 ),
                 table: (props) => (
                   <div className="my-8 overflow-x-auto rounded-xl border border-white/10 bg-white/5 backdrop-blur-md">
-                    <table className="min-w-full divide-y divide-white/10" {...props} />
+                    <table
+                      className="min-w-full divide-y divide-white/10"
+                      {...props}
+                    />
                   </div>
                 ),
                 thead: (props) => <thead className="bg-white/5" {...props} />,
                 th: (props) => (
-                  <th className="px-4 py-3 text-left text-xs font-bold text-white/70 uppercase tracking-wider" {...props} />
+                  <th
+                    className="px-4 py-3 text-left text-xs font-bold text-white/70 uppercase tracking-wider"
+                    {...props}
+                  />
                 ),
                 td: (props) => (
-                  <td className="px-4 py-3 text-sm text-white/50 border-t border-white/5" {...props} />
+                  <td
+                    className="px-4 py-3 text-sm text-white/50 border-t border-white/5"
+                    {...props}
+                  />
                 ),
                 img: ({ src, alt }) => (
                   <MDImage
@@ -296,7 +327,8 @@ export default function StoryPageClient({
                           backgroundImage: `url('${backgroundImage}')`,
                           backgroundColor: relatedCardColor,
                           backgroundBlendMode: "multiply",
-                          filter: "saturate(1.25) brightness(1.1) contrast(0.75)",
+                          filter:
+                            "saturate(1.25) brightness(1.1) contrast(0.75)",
                         }}
                         className="
                           relative
@@ -319,7 +351,7 @@ export default function StoryPageClient({
 
                         <div className="relative z-10 w-full h-full flex flex-col items-center justify-center gap-2 p-6">
                           <h3
-                            className={`${getTitleFontSize(r.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[250px] mx-auto w-full text-white translate-y-8 group-hover/card:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]`}
+                            className={`${getTitleFontSize(r.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[250px] mx-auto w-full text-white relative top-6 sm:top-3 translate-y-8 group-hover/card:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]`}
                           >
                             {r.title}
                           </h3>
