@@ -260,7 +260,7 @@ export default function Home() {
                             >
                               <div className="w-full h-full flex flex-col items-center justify-center p-6 gap-2">
                                 <h3
-                                  className={`${getTitleFontSize(story.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[250px] mx-auto w-full text-white relative top-6 sm:top-3 translate-y-0 sm:translate-y-8 sm:group-hover/card:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]`}
+                                  className={`${getTitleFontSize(story.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[250px] mx-auto w-full text-white relative top-12 sm:top-3 translate-y-0 sm:translate-y-8 sm:group-hover/card:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]`}
                                 >
                                   {story.title}
                                 </h3>
