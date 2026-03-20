@@ -16,7 +16,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import { Footer } from "@/components/footer";
-import { motion, MotionConfig, useScroll, useTransform } from "framer-motion";
+import { motion, MotionConfig, useScroll, useTransform, AnimatePresence } from "framer-motion";
 // import { useState } from "react";
 import ShinyText from "@/components/ShinyText";
 
@@ -304,41 +304,21 @@ export default function Home() {
                 whileTap={{ scale: 0.98 }}
                 className="inline-flex"
               >
-                <Button
-                  variant="ghost"
-                  className="relative px-3 py-2 sm:px-5 sm:py-4 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 font-dmsans font-normal transition-all duration-300 mt-12 sm:mt-10 text-xs sm:text-[15px]"
-                >
-                  <Link
-                    href="/the-vision"
-                    className="relative z-10 flex items-center gap-1"
-                  >
-                    Read the
-                    <span className="font-bold">Chief Editor's</span>
-                    Note
-                    <span />
-                    <ArrowUpRight className="transition-transform" />
-                  </Link>
-
-                  {/* Liquid glass layers */}
-                  <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-
-                  <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
-                  <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
-                </Button>
+                {/* Chief Editor's Note button removed */}
               </motion.div>
               <ShinyText
-                text={"One Year of changing the Game"}
+                text={"Breaking Down Cancer for Everyone"}
                 disabled={true}
                 speed={4}
-                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-[560px] [word-spacing:6px] sm:mt-3 max-sm:text-3xl max-sm:w-3/5 leading-[100%]"
+                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-[780px] [word-spacing:6px] sm:mt-3 max-sm:text-3xl max-sm:w-3/5 leading-[100%]"
                 textColor="#fafafa"
               />
               <motion.span
                 className="font-dmsans text-[#c6c6c6] text-2xl sm:max-w-[50%] sm:-mt-0 w-full text-center max-sm:text-xs max-sm:w-4/5 font-light leading-[109%]"
                 variants={fadeUp}
               >
-                As we cross a year of work at Carcino, here’s to looking forward
-                to more success and reach. Read the address from our leadership!
+                Cancer affects millions of lives—but together, awareness, compassion,
+                and early detection can change the story.
                 {/*but in a way everyone can understand. */}
               </motion.span>
               <div className="flex flex-col items-center gap-2">
@@ -767,12 +747,12 @@ export default function Home() {
               <div className="absolute inset-0 bg-linear-180 blur-3xl from-[#F0F0FF]/30 via-[#D5B0FF]/30 to-[#F0F0FF]/30 dark:from-[#2C2C2C]/30 dark:via-[#471F77]/30 dark:to-[#2C2C2C]/30"></div>
 
               {/* Local Hover Hue */}
-              <div 
+              <div
                 className="absolute inset-0 transition-opacity duration-700 ease-in-out pointer-events-none z-0"
                 style={{
                   opacity: ctaHoverColor ? 0.6 : 0,
-                  background: ctaActiveColor 
-                    ? `radial-gradient(circle at center, ${ctaActiveColor}66 0%, transparent 70%)` 
+                  background: ctaActiveColor
+                    ? `radial-gradient(circle at center, ${ctaActiveColor}66 0%, transparent 70%)`
                     : "none"
                 }}
               />
@@ -889,7 +869,7 @@ export default function Home() {
                 <motion.div
                   className="absolute inset-0 flex items-center justify-center"
                   initial={false}
-                  animate={{ 
+                  animate={{
                     opacity: ctaHoverIcon ? 0 : 0.8,
                     scale: ctaHoverIcon ? 0.9 : 1
                   }}
@@ -905,25 +885,26 @@ export default function Home() {
                 </motion.div>
 
                 {/* Department Icon Layer */}
-                <motion.div
-                   className="absolute inset-0 flex items-center justify-center"
-                   initial={false}
-                   animate={{ 
-                     opacity: ctaHoverIcon ? 1 : 0,
-                     scale: ctaHoverIcon ? 1.1 : 1
-                   }}
-                   transition={{ duration: 0.6, ease: "easeInOut" }}
-                >
+                <AnimatePresence mode="popLayout">
                   {ctaHoverIcon && (
-                    <Image
-                      src={ctaHoverIcon}
-                      height={200}
-                      width={200}
-                      alt=""
-                      className="object-contain"
-                    />
+                    <motion.div
+                      key={ctaHoverIcon}
+                      className="absolute inset-0 flex items-center justify-center"
+                      initial={{ opacity: 0, scale: 1 }}
+                      animate={{ opacity: 1, scale: 1.1 }}
+                      exit={{ opacity: 0, scale: 1 }}
+                      transition={{ duration: 0.6, ease: "easeInOut" }}
+                    >
+                      <Image
+                        src={ctaHoverIcon}
+                        height={200}
+                        width={200}
+                        alt=""
+                        className="object-contain"
+                      />
+                    </motion.div>
                   )}
-                </motion.div>
+                </AnimatePresence>
               </div>
             </div>
           </motion.div>
@@ -931,7 +912,7 @@ export default function Home() {
 
         {/* Footer */}
         <Footer></Footer>
-      </div>
+      </div >
     </>
   );
 }
