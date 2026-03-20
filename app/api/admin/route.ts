@@ -814,7 +814,7 @@ export async function POST(req: Request) {
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-			const { targetUserId, username, email, name, password, admin_access, position, description, department } = body ?? {};
+			const { targetUserId, username, email, name, password, admin_access, position, description, department, is_banned } = body ?? {};
 			if (!targetUserId) return NextResponse.json({ error: "targetUserId is required" }, { status: 400 });
 
 			const updates: Record<string, unknown> = {};
@@ -826,6 +826,21 @@ export async function POST(req: Request) {
 			if (description !== undefined) updates.description = description || null;
 			if (department !== undefined) updates.department = department || null;
 			if (password) updates.password = await bcrypt.hash(password, 10);
+			
+			if (is_banned !== undefined) {
+				const currentUserPosition = (session.user.position || "").toUpperCase();
+				const isAuthForBan = currentUserPosition === "CEO" || currentUserPosition === "COO";
+				
+				if (!isAuthForBan) {
+					return NextResponse.json({ error: "Only CEO and COO can modify ban status" }, { status: 403 });
+				}
+				
+				if (targetUserId === session.user.id) {
+					return NextResponse.json({ error: "You cannot ban your own account" }, { status: 403 });
+				}
+
+				updates.is_banned = Boolean(is_banned);
+			}
 
 			if (Object.keys(updates).length === 0) {
 				return NextResponse.json({ error: "No fields to update" }, { status: 400 });
@@ -846,7 +861,7 @@ export async function POST(req: Request) {
 				.from("users")
 				.update(updates)
 				.eq("id", targetUserId)
-				.select("id, username, email, name, admin_access, position, description, avatar_url, department, is_legacy")
+				.select("id, username, email, name, admin_access, position, description, avatar_url, department, is_legacy, is_banned")
 				.maybeSingle();
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -1928,7 +1943,23 @@ export async function POST(req: Request) {
 			if (email !== undefined) updates.email = email ? email.toLowerCase() : null;
 			if (name !== undefined) updates.name = name ?? null;
 			if (bio !== undefined) updates.bio = bio ?? null;
-			if (is_banned !== undefined) updates.is_banned = Boolean(is_banned);
+			
+			if (is_banned !== undefined) {
+				const currentUserPosition = (session.user.position || "").toUpperCase();
+				const isAuthForBan = currentUserPosition === "CEO" || currentUserPosition === "COO";
+				
+				if (!isAuthForBan) {
+					return NextResponse.json({ error: "Only CEO and COO can modify ban status" }, { status: 403 });
+				}
+				
+				// Block self-ban (check by email since public user might be the current employee)
+				const { data: targetEmailCheck } = await client.from("users_public").select("email").eq("id", targetUserId).maybeSingle();
+				if (targetEmailCheck?.email?.toLowerCase() === session.user.email?.toLowerCase()) {
+					return NextResponse.json({ error: "You cannot ban your own account" }, { status: 403 });
+				}
+
+				updates.is_banned = Boolean(is_banned);
+			}
 			if (password) updates.password = await bcrypt.hash(password, 10);
 			updates.updated_at = new Date().toISOString();
 
@@ -1954,7 +1985,16 @@ export async function POST(req: Request) {
 					if (username !== undefined) empUpdates.username = username || null;
 					if (name !== undefined) empUpdates.name = name ?? null;
 					if (bio !== undefined) empUpdates.description = bio ?? null;
-					if (is_banned !== undefined) empUpdates.is_banned = Boolean(is_banned);
+					if (is_banned !== undefined) {
+						// The authorization and self-ban checks for `is_banned` are already performed above
+						// for the public user. If we reached here, the current user is authorized to ban
+						// and the target public user is not the current user.
+						// We need to ensure the employee being updated is not the current session user.
+						if (employee.id === session.user.id) {
+							return NextResponse.json({ error: "You cannot ban your own account" }, { status: 403 });
+						}
+						empUpdates.is_banned = Boolean(is_banned);
+					}
 					if (password) empUpdates.password = await bcrypt.hash(password, 10);
 
 					if (Object.keys(empUpdates).length > 0) {
