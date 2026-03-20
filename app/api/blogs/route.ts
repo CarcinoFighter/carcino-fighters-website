@@ -177,7 +177,7 @@ export async function GET(req: Request) {
     const query = sb!
       .from("blogs")
       .select(
-        "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, hidden, users_public(name, username, avatar_url, bio)"
+        "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, hidden, users_public!blogs_user_id_fkey(name, username, avatar_url, bio)"
       )
       .eq("hidden", false)
       .order("created_at", { ascending: false });

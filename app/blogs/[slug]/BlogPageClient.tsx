@@ -65,6 +65,7 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
   const containerRef = useRef<HTMLDivElement>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [initialLiked, setInitialLiked] = useState(false);
 
   useEffect(() => {
     // Record view (anonymous)
@@ -75,11 +76,12 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
     }).catch(() => { });
 
     // Check auth status
-    fetch("/api/blogs/interact")
+    fetch(`/api/blogs/interact?blogId=${entry.id}`)
       .then((r) => r.json())
       .then((data) => {
         setIsAuthenticated(!!data.authenticated);
         setUserId(data.userId ?? null);
+        setInitialLiked(!!data.liked);
       })
       .catch(() => { });
   }, [entry.id]);
@@ -114,7 +116,7 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
                 {entry.views ?? 0}
               </span>
               <div className="relative z-10">
-                <LikeButton blogId={entry.id} initialLikes={entry.likes ?? 0} isAuthenticated={isAuthenticated} userId={userId} />
+                <LikeButton blogId={entry.id} initialLikes={entry.likes ?? 0} initialLiked={initialLiked} isAuthenticated={isAuthenticated} userId={userId} />
               </div>
             </div>
           </div>

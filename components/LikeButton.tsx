@@ -6,31 +6,25 @@ import { Bookmark } from "lucide-react";
 interface LikeButtonProps {
     blogId: string;
     initialLikes: number;
+    initialLiked: boolean;
     isAuthenticated: boolean;
     userId: string | null;
-}
-
-function getLikedKey(blogId: string, userId: string | null) {
-    // Scope the key to the user so different accounts have independent like state
-    return userId ? `blog_liked_${blogId}_${userId}` : `blog_liked_${blogId}`;
 }
 
 export default function LikeButton({
     blogId,
     initialLikes,
+    initialLiked,
     isAuthenticated,
     userId,
 }: LikeButtonProps) {
-    const [liked, setLiked] = useState(false);
+    const [liked, setLiked] = useState(initialLiked);
     const [likeCount, setLikeCount] = useState(initialLikes);
     const [busy, setBusy] = useState(false);
 
     useEffect(() => {
-        try {
-            const stored = localStorage.getItem(getLikedKey(blogId, userId));
-            if (stored === "true") setLiked(true);
-        } catch { }
-    }, [blogId, userId]);
+        setLiked(initialLiked);
+    }, [initialLiked]);
 
     const handleLike = async () => {
         if (liked || busy) return;
@@ -45,10 +39,6 @@ export default function LikeButton({
         setLikeCount((c) => c + 1);
 
         try {
-            localStorage.setItem(getLikedKey(blogId, userId), "true");
-        } catch { }
-
-        try {
             const res = await fetch("/api/blogs/interact", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -59,17 +49,11 @@ export default function LikeButton({
                 // Revert on failure
                 setLiked(false);
                 setLikeCount((c) => c - 1);
-                try {
-                    localStorage.removeItem(getLikedKey(blogId, userId));
-                } catch { }
             }
         } catch (err) {
             console.error("Failed to register like", err);
             setLiked(false);
             setLikeCount((c) => c - 1);
-            try {
-                localStorage.removeItem(getLikedKey(blogId, userId));
-            } catch { }
         } finally {
             setBusy(false);
         }

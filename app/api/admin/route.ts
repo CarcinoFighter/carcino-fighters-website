@@ -1570,7 +1570,7 @@ export async function POST(req: Request) {
 			const { forceOwn } = body ?? {};
 			let query = client
 				.from("blogs")
-				.select("*, users_public(name, username, avatar_url, bio)")
+				.select("*, users_public!blogs_user_id_fkey(name, username, avatar_url, bio)")
 				.order("created_at", { ascending: false });
 
 			if (!session.user.admin_access || forceOwn) {
@@ -1598,7 +1598,7 @@ export async function POST(req: Request) {
 
 			const { data, error } = await client
 				.from("blogs")
-				.select("*, users_public(name, username, avatar_url, bio)")
+				.select("*, users_public!blogs_user_id_fkey(name, username, avatar_url, bio)")
 				.eq("id", blogId)
 				.maybeSingle();
 

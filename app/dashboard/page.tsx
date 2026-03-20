@@ -268,28 +268,12 @@ export default function DashboardPage() {
                     setBlogs(blogsData.blogs);
                 }
 
-                // Fetch bookmarked blogs from localStorage
+                // Fetch bookmarked blogs from backend
                 try {
-                    const userId = publicData.user?.id;
-                    const bookmarkedIds: string[] = [];
-                    const uuidRe = /^blog_liked_([0-9a-f-]{36})(?:_([0-9a-f-]{36}))?$/;
-                    for (let i = 0; i < localStorage.length; i++) {
-                        const key = localStorage.key(i);
-                        if (!key || localStorage.getItem(key) !== "true") continue;
-                        const m = key.match(uuidRe);
-                        if (!m) continue;
-                        const blogId = m[1];
-                        const keyUserId = m[2]; // may be undefined
-                        // If the key includes a userId, only accept if it matches the current user
-                        if (keyUserId && keyUserId !== userId) continue;
-                        bookmarkedIds.push(blogId);
-                    }
-                    if (bookmarkedIds.length > 0) {
-                        const bmRes = await fetch(`/api/blogs?ids=${bookmarkedIds.join(",")}`);
-                        const bmData = await bmRes.json().catch(() => ({}));
-                        if (bmRes.ok && bmData.blogs) {
-                            setBookmarkedBlogs(bmData.blogs);
-                        }
+                    const bmRes = await fetch("/api/blogs/bookmarks");
+                    const bmData = await bmRes.json().catch(() => ({}));
+                    if (bmRes.ok && bmData.blogs) {
+                        setBookmarkedBlogs(bmData.blogs);
                     }
                 } catch (e) {
                     console.error("Failed to load bookmarked blogs", e);

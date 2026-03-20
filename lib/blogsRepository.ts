@@ -85,7 +85,7 @@ async function getBlogBySlugRaw(slug: string) {
   const { data, error } = await supabase
     .from("blogs")
     .select(
-      "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, hidden, users_public(name, username, avatar_url, bio)"
+      "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, hidden, users_public!blogs_user_id_fkey(name, username, avatar_url, bio)"
     )
     .eq("slug", slug)
     .eq("hidden", false)
@@ -114,7 +114,7 @@ async function getAllBlogsRaw() {
   const { data, error } = await supabase
     .from("blogs")
     .select(
-      "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, hidden, users_public(name, username, avatar_url, bio)"
+      "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, hidden, users_public!blogs_user_id_fkey(name, username, avatar_url, bio)"
     )
     .eq("hidden", false)
     .order("created_at", { ascending: false });
@@ -137,7 +137,7 @@ async function getRandomBlogsRaw(limit = 3, excludeSlug?: string) {
   const { data, error } = await supabase
     .from("blogs")
     .select(
-      "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, hidden, users_public(name, username, avatar_url, bio)"
+      "id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, hidden, users_public!blogs_user_id_fkey(name, username, avatar_url, bio)"
     )
     .eq("hidden", false)
     .limit(30);
