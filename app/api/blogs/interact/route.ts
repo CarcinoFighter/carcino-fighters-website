@@ -38,15 +38,30 @@ async function getSession() {
 /* ── GET  /api/blogs/interact?blogId=xxx ─────────────────── */
 /* Returns auth status so frontend knows whether to allow liking */
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
         const session = await getSession();
+        const url = new URL(req.url);
+        const blogId = url.searchParams.get("blogId");
+        let liked = false;
+
+        if (session && blogId && sb) {
+            const { data } = await sb
+                .from("blog_bookmarks")
+                .select("blog_id")
+                .eq("user_id", session.id)
+                .eq("blog_id", blogId)
+                .maybeSingle();
+            if (data) liked = true;
+        }
+
         return NextResponse.json({
             authenticated: !!session,
             userId: session?.id ?? null,
+            liked
         });
     } catch {
-        return NextResponse.json({ authenticated: false, userId: null });
+        return NextResponse.json({ authenticated: false, userId: null, liked: false });
     }
 }
 
@@ -95,12 +110,23 @@ export async function POST(req: Request) {
                 );
             }
 
-            const { error } = await sb.rpc("increment_blog_likes", {
-                blog_id: blogId,
-            });
-            if (error) {
-                return NextResponse.json({ error: error.message }, { status: 400 });
+            const { error: bookmarkErr } = await sb
+                .from("blog_bookmarks")
+                .insert({ user_id: session.id, blog_id: blogId });
+
+            if (bookmarkErr) {
+                if (bookmarkErr.code !== '23505') {
+                    return NextResponse.json({ error: bookmarkErr.message }, { status: 400 });
+                }
+            } else {
+                const { error } = await sb.rpc("increment_blog_likes", {
+                    blog_id: blogId,
+                });
+                if (error) {
+                    return NextResponse.json({ error: error.message }, { status: 400 });
+                }
             }
+            
             return NextResponse.json({ ok: true });
         }
 
