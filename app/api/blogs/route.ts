@@ -72,12 +72,28 @@ async function getSession() {
     if (isPublicJwt) {
       const { data: user, error } = await sb!
         .from("users_public")
-        .select("id, username, name, email, avatar_url, bio, deleted")
+        .select("id, username, name, email, avatar_url, bio, deleted, is_banned")
         .eq("id", payload.sub)
         .limit(1)
         .maybeSingle();
 
       if (error || !user || user.deleted) return null;
+      const isBanned = Boolean(user.is_banned);
+
+      // Check public_sessions table
+      const tokenHash = await hashToken(token);
+      const { data: sessionRow } = await sb!
+        .from("public_sessions")
+        .select("id, expires_at")
+        .eq("token_hash", tokenHash)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (!sessionRow) return null;
+      if (sessionRow.expires_at && new Date(sessionRow.expires_at).getTime() < Date.now()) {
+        await sb!.from("public_sessions").delete().eq("id", sessionRow.id);
+        return null;
+      }
 
       const { data: empUser } = await sb!
         .from("users")
@@ -93,6 +109,7 @@ async function getSession() {
         bio: user.bio,
         admin_access: Boolean(empUser?.admin_access),
         is_public_session: true,
+        is_banned: isBanned,
       };
     } else {
       const tokenHash = await hashToken(token);
@@ -119,7 +136,7 @@ async function getSession() {
 
       const { data: pubUser } = await sb!
         .from("users_public")
-        .select("id, username, name, avatar_url, bio")
+        .select("id, username, name, avatar_url, bio, is_banned")
         .eq("email", empUser.email.toLowerCase())
         .limit(1)
         .maybeSingle();
@@ -136,6 +153,7 @@ async function getSession() {
         bio: pubUser.bio,
         admin_access: Boolean(empUser?.admin_access),
         is_public_session: false,
+        is_banned: Boolean(pubUser.is_banned),
       };
     }
   } catch (e) {
@@ -242,6 +260,7 @@ export async function POST(req: Request) {
     if (missingConfig()) return NextResponse.json({ error: "Supabase credentials not configured" }, { status: 500 });
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (session.is_banned) return NextResponse.json({ error: "Banned users cannot submit blog posts." }, { status: 403 });
 
     const body = (await req.json().catch(() => ({}))) as BlogBody;
     const action = body.action ?? "create";

@@ -9,6 +9,7 @@ interface LikeButtonProps {
     initialLiked: boolean;
     isAuthenticated: boolean;
     userId: string | null;
+    isBanned?: boolean;
 }
 
 export default function LikeButton({
@@ -17,6 +18,7 @@ export default function LikeButton({
     initialLiked,
     isAuthenticated,
     userId,
+    isBanned = false,
 }: LikeButtonProps) {
     const [liked, setLiked] = useState(initialLiked);
     const [likeCount, setLikeCount] = useState(initialLikes);
@@ -27,7 +29,7 @@ export default function LikeButton({
     }, [initialLiked]);
 
     const handleLike = async () => {
-        if (liked || busy) return;
+        if (liked || busy || isBanned) return;
 
         if (!isAuthenticated) {
             window.location.href = "/blogs/dashboard";
@@ -62,21 +64,23 @@ export default function LikeButton({
     return (
         <button
             onClick={handleLike}
-            disabled={liked || busy}
-            aria-label={liked ? "Bookmarked" : "Bookmark this post"}
+            disabled={liked || busy || isBanned}
+            aria-label={isBanned ? "Account Banned" : liked ? "Bookmarked" : "Bookmark this post"}
             className={`
         inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-dmsans
         transition-all duration-300 select-none
         ${liked
                     ? "bg-indigo-500/20 text-indigo-400 cursor-default"
-                    : isAuthenticated
-                        ? "bg-white/5 text-white/60 hover:bg-white/10 hover:text-indigo-400 cursor-pointer"
-                        : "bg-white/5 text-white/30 cursor-pointer"
+                    : isBanned
+                        ? "bg-red-500/10 text-red-400/50 cursor-not-allowed border border-red-500/20"
+                        : isAuthenticated
+                            ? "bg-white/5 text-white/60 hover:bg-white/10 hover:text-indigo-400 cursor-pointer"
+                            : "bg-white/5 text-white/30 cursor-pointer"
                 }
       `}
         >
             <Bookmark
-                className={`w-4 h-4 transition-all duration-300 ${liked ? "fill-indigo-400 text-indigo-400 scale-110" : ""}`}
+                className={`w-4 h-4 transition-all duration-300 ${liked ? "fill-indigo-400 text-indigo-400 scale-110" : ""} ${isBanned ? "text-red-400/40" : ""}`}
             />
             <span>{likeCount}</span>
         </button>

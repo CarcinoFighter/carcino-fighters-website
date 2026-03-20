@@ -5,6 +5,21 @@ import { Buffer } from "node:buffer";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendWelcomeEmail } from "@/lib/email";
+import crypto from "node:crypto";
+
+const OFFENSIVE_WORDS = [
+  "abuse", "anal", "anus", "ass", "asshole", "bastard", "bitch", "boob", "cock", "cum", "cunt", "dick", "dildo", "dyke", "fag", "faggot", "fuck", "fucker", "homo", "jerk", "jizz", "knob", "nigger", "piss", "pussy", "rape", "retard", "sex", "shag", "shit", "slag", "slut", "spastic", "twat", "vagina", "whore"
+];
+
+function isOffensive(text: string | null | undefined) {
+  if (!text) return false;
+  const lower = text.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return OFFENSIVE_WORDS.some(word => lower.includes(word));
+}
+
+async function hashToken(token: string) {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
 
 type AuthBody = {
   action?: "register" | "login" | "update_profile" | "logout";
@@ -41,6 +56,7 @@ async function serializeUser(row: any) {
     is_employee: false,
     position: null as string | null,
     is_legacy: false as boolean,
+    is_banned: Boolean(row.is_banned),
   };
 
   // Check if this user is an employee
@@ -88,13 +104,31 @@ async function getSession() {
     const payload = jwt.verify(token, jwtSecret!) as jwt.JwtPayload & { sub: string };
     const { data: user, error } = await sb!
       .from("users_public")
-      .select("id, username, email, name, bio, avatar_url, deleted")
+      .select("id, username, email, name, bio, avatar_url, deleted, is_banned")
       .eq("id", payload.sub)
       .limit(1)
       .maybeSingle();
 
     if (error || !user || user.deleted) return null;
-    return { token, user: await serializeUser(user) };
+
+    // Check sessions table for public users
+    const tokenHash = await hashToken(token);
+    const { data: sessionRow } = await sb!
+      .from("public_sessions")
+      .select("id, expires_at")
+      .eq("token_hash", tokenHash)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!sessionRow) return null;
+    if (sessionRow.expires_at && new Date(sessionRow.expires_at).getTime() < Date.now()) {
+      // Clean up expired session
+      await sb!.from("public_sessions").delete().eq("id", sessionRow.id);
+      return null;
+    }
+
+    const serialized = await serializeUser(user);
+    return { token, user: serialized };
   } catch (e) {
     return null;
   }
@@ -190,6 +224,11 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "username, email and password are required" }, { status: 400 });
       }
 
+      if (isOffensive(username) || isOffensive(name)) {
+        // Auto-ban immediately if possible, or just reject registration
+        return NextResponse.json({ error: "The provided name or username contains offensive language." }, { status: 400 });
+      }
+
       const lowerUsername = username.toLowerCase();
       const lowerEmail = email.toLowerCase();
       const { count, error: existingErr } = await sb!
@@ -210,8 +249,9 @@ export async function POST(req: Request) {
           name: name ?? null,
           bio: bio ?? null,
           is_active: true,
+          is_banned: false,
         })
-        .select("id, username, email, name, bio, avatar_url")
+        .select("id, username, email, name, bio, avatar_url, is_banned")
         .maybeSingle();
 
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -225,6 +265,15 @@ export async function POST(req: Request) {
       if (!user) return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
 
       const token = jwt.sign({ sub: user.id, username: user.username }, jwtSecret!, { expiresIn: "7d" });
+      const tokenHash = await hashToken(token);
+      
+      // Store public session
+      await sb!.from("public_sessions").insert({
+        user_id: user.id,
+        token_hash: tokenHash,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      });
+
       const response = NextResponse.json({ user }, { status: 201 });
       setAuthCookie(response, token);
 
@@ -258,7 +307,7 @@ export async function POST(req: Request) {
         // Ensure they have a public profile
         const { data: existingPub } = await sb!
           .from("users_public")
-          .select("id, username, email, name, password, bio, avatar_url, deleted")
+          .select("id, username, email, name, password, bio, avatar_url, deleted, is_banned")
           .eq("email", emp.email.toLowerCase())
           .limit(1)
           .maybeSingle();
@@ -282,7 +331,7 @@ export async function POST(req: Request) {
               bio: emp.description,
               is_active: true,
             })
-            .select("id, username, email, name, password, bio, avatar_url, deleted")
+            .select("id, username, email, name, password, bio, avatar_url, deleted, is_banned")
             .maybeSingle();
 
           if (syncErr) return NextResponse.json({ error: `Sync Failed: ${syncErr.message}` }, { status: 500 });
@@ -298,7 +347,7 @@ export async function POST(req: Request) {
         // Standard public login
         const { data, error } = await sb!
           .from("users_public")
-          .select("id, username, email, name, password, bio, avatar_url, deleted")
+          .select("id, username, email, name, password, bio, avatar_url, deleted, is_banned")
           .or(`username.eq.${lowerIdentifier},email.eq.${lowerIdentifier}`)
           .limit(1)
           .maybeSingle();
@@ -311,7 +360,34 @@ export async function POST(req: Request) {
         userRow = data;
       }
 
+      if (!userRow) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+
+      if (userRow.is_banned) {
+        return NextResponse.json({ error: "Your account has been permanently banned. Contact support@carcino.work for appeals." }, { status: 403 });
+      }
+
+      // Check for suspicious session count
+      const { count: sessionCount } = await sb!
+        .from("public_sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userRow.id);
+
+      if (sessionCount && sessionCount >= 10) {
+        // Auto-ban for too many sessions
+        await sb!.from("users_public").update({ is_banned: true }).eq("id", userRow.id);
+        return NextResponse.json({ error: "Suspicious activity detected (too many active sessions). Your account has been banned." }, { status: 403 });
+      }
+
       const token = jwt.sign({ sub: userRow.id, username: userRow.username }, jwtSecret!, { expiresIn: "7d" });
+      const tokenHash = await hashToken(token);
+
+      // Store public session
+      await sb!.from("public_sessions").insert({
+        user_id: userRow.id,
+        token_hash: tokenHash,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      });
+
       const response = NextResponse.json({
         token,
         user: await serializeUser(userRow),
@@ -330,12 +406,20 @@ export async function POST(req: Request) {
     if (action === "update_profile") {
       const session = await getSession();
       if (!session || !session.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      if (session.user.is_banned) return NextResponse.json({ error: "Banned users cannot update their profile." }, { status: 403 });
+      
       const userId = session.user.id;
 
       const updates: Record<string, unknown> = {};
-      if (body.username !== undefined) updates.username = body.username ? body.username.toLowerCase() : null;
+      if (body.username !== undefined) {
+        if (isOffensive(body.username)) return NextResponse.json({ error: "Offensive username." }, { status: 400 });
+        updates.username = body.username ? body.username.toLowerCase() : null;
+      }
       if (body.email !== undefined) updates.email = body.email ? body.email.toLowerCase() : null;
-      if (body.name !== undefined) updates.name = body.name ?? null;
+      if (body.name !== undefined) {
+        if (isOffensive(body.name)) return NextResponse.json({ error: "Offensive name." }, { status: 400 });
+        updates.name = body.name ?? null;
+      }
       if (body.bio !== undefined) updates.bio = body.bio ?? null;
       if (body.avatar_url !== undefined) updates.avatar_url = body.avatar_url ?? null;
       if (body.password) updates.password = await bcrypt.hash(body.password, 10);
@@ -356,7 +440,7 @@ export async function POST(req: Request) {
         .from("users_public")
         .update(updates)
         .eq("id", userId)
-        .select("id, username, email, name, bio, avatar_url")
+        .select("id, username, email, name, bio, avatar_url, is_banned")
         .maybeSingle();
 
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -376,6 +460,16 @@ export async function POST(req: Request) {
 
       const response = NextResponse.json({ ok: true });
       response.cookies.set({ name: COOKIE_NAME, value: "", path: "/", maxAge: 0 });
+
+      // Remove session from DB
+      const token = (await cookies()).get(COOKIE_NAME)?.value;
+      if (token && jwtSecret) {
+        try {
+          const tokenHash = await hashToken(token);
+          await sb!.from("public_sessions").delete().eq("token_hash", tokenHash);
+        } catch {}
+      }
+
       return response;
     }
 

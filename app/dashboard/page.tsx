@@ -20,6 +20,7 @@ type User = {
     position?: string | null;
     profilePicture?: string | null;
     is_legacy?: boolean;
+    is_banned?: boolean;
 };
 
 type Doc = {
@@ -242,6 +243,7 @@ export default function DashboardPage() {
                         profilePicture: pu.avatar_url,
                         position: pu.position,
                         is_legacy: pu.is_legacy || false,
+                        is_banned: pu.is_banned || false,
                     });
 
                     // If employee, fetch articles
@@ -328,7 +330,24 @@ export default function DashboardPage() {
                 />
             </div>
 
-            <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="max-w-7xl mx-auto">
+                {user?.is_banned && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-8 relative overflow-hidden group"
+                    >
+                        <div className="absolute inset-0 bg-red-500/10 backdrop-blur-md rounded-full border border-red-500/20" />
+                        <div className="relative z-10 py-3.5 px-8 flex items-center justify-center gap-3 text-center">
+                            <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                            <p className="text-sm font-medium text-red-100/90 tracking-wide font-dmsans">
+                                Your account has been permanently banned. In case you want to have your ban reversed, contact <a href="mailto:support@carcino.work" className="font-bold underline decoration-red-500/30 hover:decoration-red-500 transition-all">support@carcino.work</a>
+                            </p>
+                        </div>
+                    </motion.div>
+                )}
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-4 xl:col-span-3">
                     <div className="sticky top-12">
                         <div className="relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[30px] rounded-[40px] p-8 flex flex-col items-center text-center group hover:shadow-[0_0_30px_rgba(139,92,246,0.2)] transition-shadow duration-500">
@@ -366,7 +385,7 @@ export default function DashboardPage() {
                                             {user?.name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || "?"}
                                         </div>
                                     )}
-                                    {isEditing && (
+                                    {isEditing && !user?.is_banned && (
                                         <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 rounded-full opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
                                             <label htmlFor="pfp-upload" className="text-xs font-medium text-white cursor-pointer p-2">
                                                 Change
@@ -417,18 +436,24 @@ export default function DashboardPage() {
                                         <p className="text-gray-300 text-sm leading-[120%] mb-8 whitespace-pre-wrap ">
                                             {user?.description || "No bio description yet."}
                                         </p>
-                                        <button
-                                            onClick={() => {
-                                                setEditForm({
-                                                    description: user?.description || "",
-                                                    password: ""
-                                                });
-                                                setIsEditing(true);
-                                            }}
-                                            className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-sm font-medium py-2 px-4 rounded-lg mb-4 transition-colors w-full"
-                                        >
-                                            Edit Profile
-                                        </button>
+                                        {!user?.is_banned ? (
+                                            <button
+                                                onClick={() => {
+                                                    setEditForm({
+                                                        description: user?.description || "",
+                                                        password: ""
+                                                    });
+                                                    setIsEditing(true);
+                                                }}
+                                                className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-sm font-medium py-2 px-4 rounded-lg mb-4 transition-colors w-full"
+                                            >
+                                                Edit Profile
+                                            </button>
+                                        ) : (
+                                            <div className="bg-red-900/10 border border-red-500/20 text-red-400 text-xs p-3 rounded-lg mb-4 text-center">
+                                                Editing restricted due to account ban.
+                                            </div>
+                                        )}
                                     </>
                                 ) : (
                                     <form onSubmit={handleUpdateProfile} className="w-full space-y-4 mb-6 text-left">
@@ -567,13 +592,15 @@ export default function DashboardPage() {
 
                     <div className="flex items-center justify-between mb-2 pt-8">
                         <h3 className="text-xl font-semibold text-gray-200">Your Blogs</h3>
-                        <Link
-                            href="/blogs/dashboard"
-                            className="bg-white/5 hover:bg-white/10 text-white text-xs font-medium py-2 px-4 rounded-xl transition-all duration-300 flex items-center gap-2 border border-white/10 hover:border-purple-500/50"
-                        >
-                            <Plus className="w-4 h-4" />
-                            Add Blog
-                        </Link>
+                        {!user?.is_banned && (
+                            <Link
+                                href="/blogs/dashboard"
+                                className="bg-white/5 hover:bg-white/10 text-white text-xs font-medium py-2 px-4 rounded-xl transition-all duration-300 flex items-center gap-2 border border-white/10 hover:border-purple-500/50"
+                            >
+                                <Plus className="w-4 h-4" />
+                                Add Blog
+                            </Link>
+                        )}
                     </div>
 
                     {blogs.length === 0 ? (
@@ -698,7 +725,8 @@ export default function DashboardPage() {
                     )}
                 </div>
             </div>
-            <AnimatePresence>
+        </div>
+        <AnimatePresence>
                 {croppingImage && (
                     <ProfilePictureEditor
                         imageSrc={croppingImage}

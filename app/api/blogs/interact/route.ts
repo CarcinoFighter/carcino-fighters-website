@@ -23,13 +23,13 @@ async function getSession() {
         const payload = jwt.verify(token, jwtSecret) as jwt.JwtPayload & { sub: string };
         const { data: user, error } = await sb
             .from("users_public")
-            .select("id, username, name, deleted")
+            .select("id, username, name, deleted, is_banned")
             .eq("id", payload.sub)
             .limit(1)
             .maybeSingle();
 
         if (error || !user || user.deleted) return null;
-        return { id: user.id };
+        return { id: user.id, isBanned: !!user.is_banned };
     } catch {
         return null;
     }
@@ -40,7 +40,7 @@ async function getSession() {
 
 export async function GET(req: Request) {
     try {
-        const session = await getSession();
+        const session = (await getSession()) as { id: string; isBanned: boolean } | null;
         const url = new URL(req.url);
         const blogId = url.searchParams.get("blogId");
         let liked = false;
@@ -58,10 +58,11 @@ export async function GET(req: Request) {
         return NextResponse.json({
             authenticated: !!session,
             userId: session?.id ?? null,
+            isBanned: session?.isBanned ?? false,
             liked
         });
     } catch {
-        return NextResponse.json({ authenticated: false, userId: null, liked: false });
+        return NextResponse.json({ authenticated: false, userId: null, isBanned: false, liked: false });
     }
 }
 
@@ -102,11 +103,18 @@ export async function POST(req: Request) {
         }
 
         if (action === "like") {
-            const session = await getSession();
+            const session = (await getSession()) as { id: string; isBanned: boolean } | null;
             if (!session) {
                 return NextResponse.json(
                     { error: "You must be logged in to like a post" },
                     { status: 401 },
+                );
+            }
+
+            if (session.isBanned) {
+                return NextResponse.json(
+                    { error: "Banned users cannot like or bookmark posts." },
+                    { status: 403 },
                 );
             }
 

@@ -66,6 +66,7 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [initialLiked, setInitialLiked] = useState(false);
+  const [isBanned, setIsBanned] = useState(false);
 
   useEffect(() => {
     // Record view (anonymous)
@@ -82,6 +83,7 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
         setIsAuthenticated(!!data.authenticated);
         setUserId(data.userId ?? null);
         setInitialLiked(!!data.liked);
+        setIsBanned(!!data.isBanned);
       })
       .catch(() => { });
   }, [entry.id]);
@@ -116,7 +118,7 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
                 {entry.views ?? 0}
               </span>
               <div className="relative z-10">
-                <LikeButton blogId={entry.id} initialLikes={entry.likes ?? 0} initialLiked={initialLiked} isAuthenticated={isAuthenticated} userId={userId} />
+                <LikeButton blogId={entry.id} initialLikes={entry.likes ?? 0} initialLiked={initialLiked} isAuthenticated={isAuthenticated} userId={userId} isBanned={isBanned} />
               </div>
             </div>
           </div>
