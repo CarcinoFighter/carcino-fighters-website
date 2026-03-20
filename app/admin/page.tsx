@@ -1371,10 +1371,20 @@ export default function AdminPage() {
                                                 <input type="checkbox" id={`admin-${u.id}`} className="accent-purple-500 h-4 w-4" checked={edit.admin_access} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, admin_access: e.target.checked } }))} />
                                                 <label htmlFor={`admin-${u.id}`} className="text-xs font-bold uppercase tracking-widest text-white/80 cursor-pointer">Grant Admin Authorization</label>
                                               </div>
-                                              <div className="space-y-1.5 flex items-center gap-4 pb-2 pt-2">
-                                                <input type="checkbox" id={`banned-${u.id}`} className="accent-red-500 h-4 w-4" checked={edit.is_banned} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, is_banned: e.target.checked } }))} />
-                                                <label htmlFor={`banned-${u.id}`} className="text-xs font-bold uppercase tracking-widest text-red-400 cursor-pointer">Restrict Account Access (BAN)</label>
-                                              </div>
+                                              {(() => {
+                                                const myPos = (currentUser?.position || "").toUpperCase();
+                                                const canBan = myPos === "CEO" || myPos === "COO";
+                                                const isSelf = u.id === currentUser?.id;
+                                                
+                                                if (!canBan || isSelf) return null;
+                                                
+                                                return (
+                                                  <div className="space-y-1.5 flex items-center gap-4 pb-2 pt-2">
+                                                    <input type="checkbox" id={`banned-${u.id}`} className="accent-red-500 h-4 w-4" checked={edit.is_banned} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, is_banned: e.target.checked } }))} />
+                                                    <label htmlFor={`banned-${u.id}`} className="text-xs font-bold uppercase tracking-widest text-red-400 cursor-pointer">Restrict Account Access (BAN)</label>
+                                                  </div>
+                                                );
+                                              })()}
                                               <div className="flex justify-end gap-3 items-center">
                                                 <button onClick={() => handleDeleteUser(u.id)} className="text-xs font-bold text-red-400/60 hover:text-red-400 transition-colors uppercase tracking-widest mr-4">Purge User</button>
                                                 <button onClick={() => handleUpdateUser(u.id)} disabled={Boolean(savingUser[u.id])} className="px-6 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all">{savingUser[u.id] ? "Saving..." : "Apply Changes"}</button>
@@ -1603,22 +1613,33 @@ export default function AdminPage() {
                                               <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">New Password</label>
                                               <input type="password" className={`${inputClass} w-full`} placeholder="Leave blank to keep current" value={pubEdit.password} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, password: e.target.value } }))} />
                                             </div>
-                                            <div className="space-y-1.5 md:col-span-2 flex items-center gap-4 py-4">
-                                              <div 
-                                                className={`flex items-center gap-3 px-6 py-4 rounded-[28px] border transition-all cursor-pointer select-none grow ${pubEdit.is_banned ? "bg-red-500/10 border-red-500/30" : "bg-white/5 border-white/10 hover:bg-white/[0.08]"}`}
-                                                onClick={() => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, is_banned: !pubEdit.is_banned } }))}
-                                              >
-                                                <div className={`w-12 h-6 rounded-full relative transition-colors duration-500 ${pubEdit.is_banned ? "bg-red-500" : "bg-white/10"}`}>
-                                                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-500 ${pubEdit.is_banned ? "translate-x-7" : "translate-x-1"}`} />
+                                            {(() => {
+                                              const myPos = (currentUser?.position || "").toUpperCase();
+                                              const canBan = myPos === "CEO" || myPos === "COO";
+                                              // For public users, we check by email if it's the current employee
+                                              const isSelf = u.email?.toLowerCase() === currentUser?.email?.toLowerCase();
+                                              
+                                              if (!canBan || isSelf) return null;
+                                              
+                                              return (
+                                                <div className="space-y-1.5 md:col-span-2 flex items-center gap-4 py-4">
+                                                  <div 
+                                                    className={`flex items-center gap-3 px-6 py-4 rounded-[28px] border transition-all cursor-pointer select-none grow ${pubEdit.is_banned ? "bg-red-500/10 border-red-500/30" : "bg-white/5 border-white/10 hover:bg-white/[0.08]"}`}
+                                                    onClick={() => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, is_banned: !pubEdit.is_banned } }))}
+                                                  >
+                                                    <div className={`w-12 h-6 rounded-full relative transition-colors duration-500 ${pubEdit.is_banned ? "bg-red-500" : "bg-white/10"}`}>
+                                                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-500 ${pubEdit.is_banned ? "translate-x-7" : "translate-x-1"}`} />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                      <span className={`text-xs font-black uppercase tracking-widest ${pubEdit.is_banned ? "text-red-400" : "text-white/60"}`}>
+                                                        {pubEdit.is_banned ? "Banned Permanently" : "Active & Verified"}
+                                                      </span>
+                                                      <span className="text-[10px] text-white/30 font-medium">Restricts all write access, comments, likes and profile editing.</span>
+                                                    </div>
+                                                  </div>
                                                 </div>
-                                                <div className="flex flex-col">
-                                                  <span className={`text-xs font-black uppercase tracking-widest ${pubEdit.is_banned ? "text-red-400" : "text-white/60"}`}>
-                                                    {pubEdit.is_banned ? "Banned Permanently" : "Active & Verified"}
-                                                  </span>
-                                                  <span className="text-[10px] text-white/30 font-medium">Restricts all write access, comments, likes and profile editing.</span>
-                                                </div>
-                                              </div>
-                                            </div>
+                                              );
+                                            })()}
                                           </div>
                                           <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3">
