@@ -784,84 +784,102 @@ export default function Home() {
                   with the world.
                 </p>
 
-                <div className="flex flex-row sm:ml-10 gap-3 max-sm:flex-col">
+                <motion.div 
+                  className="flex flex-row sm:ml-10 gap-3 max-sm:flex-col"
+                  variants={staggerContainer}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.1 }}
+                >
                   {/* Writing Team Button */}
-                  <Button
-                    variant="ghost"
-                    className="flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
-                    onMouseEnter={() => { setCtaHoverColor("#ECA92B"); setCtaActiveColor("#ECA92B"); setCtaHoverIcon("/icons/research.svg"); }}
-                    onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
-                  >
-                    <Link
-                      href="/internship/writer"
-                      className="relative z-10 flex items-center gap-2"
+                  <motion.div variants={fadeUp}>
+                    <Button
+                      variant="ghost"
+                      className="group flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+                      onMouseEnter={() => { setCtaHoverColor("#ECA92B"); setCtaActiveColor("#ECA92B"); setCtaHoverIcon("/icons/research.svg"); }}
+                      onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
                     >
-                      Writing Team{" "}
-                      <ArrowUpRight className="transition-transform" />
-                    </Link>
-                    <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-                    <div className="liquidGlass-shine  relative w-[101%] h-[100%] !top-[0px] !left-[-1px]"></div>
-                    <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
-                  </Button>
+                      <Link
+                        href="/internship/writer"
+                        className="relative z-10 flex items-center gap-2"
+                      >
+                        Writing Team{" "}
+                        <ArrowUpRight className="transition-transform" />
+                      </Link>
+                      <div className="absolute inset-0 bg-[#ECA92B] opacity-0 group-hover:opacity-15 transition-opacity duration-300 pointer-events-none"></div>
+                      <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+                      <div className="liquidGlass-shine  relative w-[101%] h-[100%] !top-[0px] !left-[-1px]"></div>
+                      <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+                    </Button>
+                  </motion.div>
 
                   {/* Tech Team Button */}
-                  <Button
-                    variant="ghost"
-                    className="flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
-                    onMouseEnter={() => { setCtaHoverColor("#39C69C"); setCtaActiveColor("#39C69C"); setCtaHoverIcon("/icons/development.svg"); }}
-                    onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
-                  >
-                    <Link
-                      href="/internship/tech"
-                      className="relative z-10 flex items-center gap-2"
+                  <motion.div variants={fadeUp}>
+                    <Button
+                      variant="ghost"
+                      className="group flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+                      onMouseEnter={() => { setCtaHoverColor("#39C69C"); setCtaActiveColor("#39C69C"); setCtaHoverIcon("/icons/development.svg"); }}
+                      onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
                     >
-                      Tech Team{" "}
-                      <ArrowUpRight className="transition-transform" />
-                    </Link>
-                    <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-                    <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
-                    <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
-                  </Button>
+                      <Link
+                        href="/internship/tech"
+                        className="relative z-10 flex items-center gap-2"
+                      >
+                        Tech Team{" "}
+                        <ArrowUpRight className="transition-transform" />
+                      </Link>
+                      <div className="absolute inset-0 bg-[#39C69C] opacity-0 group-hover:opacity-15 transition-opacity duration-300 pointer-events-none"></div>
+                      <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+                      <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
+                      <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+                    </Button>
+                  </motion.div>
 
                   {/* Design Team Button */}
-                  <Button
-                    variant="ghost"
-                    className="flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
-                    onMouseEnter={() => { setCtaHoverColor("#3373F2"); setCtaActiveColor("#3373F2"); setCtaHoverIcon("/icons/design.svg"); }}
-                    onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
-                  >
-                    <Link
-                      href="/internship/design"
-                      className="relative z-10 flex items-center gap-2"
+                  <motion.div variants={fadeUp}>
+                    <Button
+                      variant="ghost"
+                      className="group flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+                      onMouseEnter={() => { setCtaHoverColor("#3373F2"); setCtaActiveColor("#3373F2"); setCtaHoverIcon("/icons/design.svg"); }}
+                      onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
                     >
-                      Design Team{" "}
-                      <ArrowUpRight className="transition-transform" />
-                    </Link>
-                    <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-                    <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
-                    <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
-                  </Button>
+                      <Link
+                        href="/internship/design"
+                        className="relative z-10 flex items-center gap-2"
+                      >
+                        Design Team{" "}
+                        <ArrowUpRight className="transition-transform" />
+                      </Link>
+                      <div className="absolute inset-0 bg-[#3373F2] opacity-0 group-hover:opacity-15 transition-opacity duration-300 pointer-events-none"></div>
+                      <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+                      <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
+                      <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+                    </Button>
+                  </motion.div>
 
                   {/* Marketing Team Button */}
-                  <Button
-                    variant="ghost"
-                    className="flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
-                    onMouseEnter={() => { setCtaHoverColor("#EC3C6E"); setCtaActiveColor("#EC3C6E"); setCtaHoverIcon("/icons/marketing.svg"); }}
-                    onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
-                  >
-                    <Link
-                      href="/internship/marketing"
-                      className="relative z-10 flex items-center gap-2"
+                  <motion.div variants={fadeUp}>
+                    <Button
+                      variant="ghost"
+                      className="group flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
+                      onMouseEnter={() => { setCtaHoverColor("#EC3C6E"); setCtaActiveColor("#EC3C6E"); setCtaHoverIcon("/icons/marketing.svg"); }}
+                      onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
                     >
-                      Marketing Team{" "}
-                      <ArrowUpRight className="transition-transform" />
-                    </Link>
-                    <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
-                    <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
-                    <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
-                  </Button>
+                      <Link
+                        href="/internship/marketing"
+                        className="relative z-10 flex items-center gap-2"
+                      >
+                        Marketing Team{" "}
+                        <ArrowUpRight className="transition-transform" />
+                      </Link>
+                      <div className="absolute inset-0 bg-[#EC3C6E] opacity-0 group-hover:opacity-15 transition-opacity duration-300 pointer-events-none"></div>
+                      <div className="absolute inset-0 liquidGlass-effect pointer-events-none"></div>
+                      <div className="liquidGlass-shine  relative w-[100.8%] h-[100%] !top-[0px] !left-[-1px]"></div>
+                      <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
+                    </Button>
+                  </motion.div>
 
-                </div>
+                </motion.div>
               </div>
 
               <div className="hidden xl:flex my-10 mr-20 relative z-10 w-[300px] h-[300px] items-center justify-center">
