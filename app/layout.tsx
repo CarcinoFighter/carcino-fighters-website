@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Geist, Space_Grotesk, Cinzel, Michroma } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
+import { BannedBanner } from "@/components/BannedBanner";
 import localFont from "next/font/local";
 import { GoogleAnalytics } from '@next/third-parties/google';
 
@@ -165,6 +166,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
 
+          <BannedBanner />
           <Navbar></Navbar>
           <svg
             style={{ display: "none" }}

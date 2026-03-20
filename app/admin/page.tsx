@@ -44,6 +44,7 @@ export default function AdminPage() {
     description?: string | null;
     profilePicture?: string | null;
     is_legacy?: boolean | null;
+    is_banned?: boolean | null;
   };
 
   type PublicUserRow = {
@@ -56,6 +57,7 @@ export default function AdminPage() {
     is_employee?: boolean;
     employee_id?: string;
     created_at?: string;
+    is_banned?: boolean;
   };
 
   type CancerDoc = {
@@ -111,8 +113,8 @@ export default function AdminPage() {
   const [publicUsersOpen, setPublicUsersOpen] = useState(false);
   const [publicUsersLoading, setPublicUsersLoading] = useState(false);
   const [selfForm, setSelfForm] = useState({ username: "", email: "", name: "", password: "", description: "", department: "" });
-  const [userEdits, setUserEdits] = useState<Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string; department: string; is_legacy: boolean }>>({});
-  const [publicUserEdits, setPublicUserEdits] = useState<Record<string, { username: string; email: string; name: string; bio: string; password: string }>>({});
+  const [userEdits, setUserEdits] = useState<Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string; department: string; is_legacy: boolean; is_banned: boolean }>>({});
+  const [publicUserEdits, setPublicUserEdits] = useState<Record<string, { username: string; email: string; name: string; bio: string; password: string; is_banned: boolean }>>({});
   const [savingSelf, setSavingSelf] = useState(false);
   const [savingUser, setSavingUser] = useState<Record<string, boolean>>({});
   const [savingPublicUser, setSavingPublicUser] = useState<Record<string, boolean>>({});
@@ -552,7 +554,7 @@ export default function AdminPage() {
       const data = await res.json().catch(() => ({}));
       if (res.ok && Array.isArray(data.users)) {
         setUsers(data.users);
-        const initialEdits: Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string; department: string; is_legacy: boolean }> = {};
+        const initialEdits: Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string; department: string; is_legacy: boolean; is_banned: boolean }> = {};
         data.users.forEach((u: UserRow) => {
           initialEdits[u.id] = {
             username: u.username ?? "",
@@ -564,6 +566,7 @@ export default function AdminPage() {
             description: u.description ?? "",
             department: u.department ?? "",
             is_legacy: Boolean(u.is_legacy),
+            is_banned: Boolean(u.is_banned),
           };
         });
         setUserEdits(initialEdits as any);
@@ -587,7 +590,7 @@ export default function AdminPage() {
       const data = await res.json().catch(() => ({}));
       if (res.ok && Array.isArray(data.users)) {
         setPublicUsers(data.users);
-        const initialEdits: Record<string, { username: string; email: string; name: string; bio: string; password: string }> = {};
+        const initialEdits: Record<string, { username: string; email: string; name: string; bio: string; password: string; is_banned: boolean }> = {};
         data.users.forEach((u: PublicUserRow) => {
           initialEdits[u.id] = {
             username: u.username ?? "",
@@ -595,6 +598,7 @@ export default function AdminPage() {
             name: u.name ?? "",
             bio: u.bio ?? "",
             password: "",
+            is_banned: Boolean(u.is_banned),
           };
         });
         setPublicUserEdits(initialEdits);
@@ -625,6 +629,7 @@ export default function AdminPage() {
         email: edit.email,
         name: edit.name,
         bio: edit.bio,
+        is_banned: edit.is_banned,
       };
       if (edit.password) body.password = edit.password;
 
@@ -731,6 +736,7 @@ export default function AdminPage() {
         position: edit.position,
         description: edit.description,
         department: edit.department,
+        is_banned: edit.is_banned,
       };
       if (edit.password) body.password = edit.password;
 
@@ -1307,6 +1313,10 @@ export default function AdminPage() {
                                                 <ShieldCheck size={10} />
                                                 Administrator
                                               </span>
+                                            ) : u.is_banned ? (
+                                              <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-red-500/10 text-red-300 border border-red-500/20">
+                                                Banned Account
+                                              </span>
                                             ) : (
                                               <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/5 text-white/30 border border-white/5">
                                                 Standard Access
@@ -1360,6 +1370,10 @@ export default function AdminPage() {
                                               <div className="space-y-1.5 flex items-center gap-4 pb-2 pt-2">
                                                 <input type="checkbox" id={`admin-${u.id}`} className="accent-purple-500 h-4 w-4" checked={edit.admin_access} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, admin_access: e.target.checked } }))} />
                                                 <label htmlFor={`admin-${u.id}`} className="text-xs font-bold uppercase tracking-widest text-white/80 cursor-pointer">Grant Admin Authorization</label>
+                                              </div>
+                                              <div className="space-y-1.5 flex items-center gap-4 pb-2 pt-2">
+                                                <input type="checkbox" id={`banned-${u.id}`} className="accent-red-500 h-4 w-4" checked={edit.is_banned} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, is_banned: e.target.checked } }))} />
+                                                <label htmlFor={`banned-${u.id}`} className="text-xs font-bold uppercase tracking-widest text-red-400 cursor-pointer">Restrict Account Access (BAN)</label>
                                               </div>
                                               <div className="flex justify-end gap-3 items-center">
                                                 <button onClick={() => handleDeleteUser(u.id)} className="text-xs font-bold text-red-400/60 hover:text-red-400 transition-colors uppercase tracking-widest mr-4">Purge User</button>
@@ -1526,23 +1540,34 @@ export default function AdminPage() {
                                         <div className="h-11 w-11 rounded-full bg-white/5 border border-white/10 overflow-hidden ring-4 ring-white/[0.02] transition-transform group-hover:scale-105">
                                           {u.avatar_url && <img src={u.avatar_url} className="w-full h-full object-cover" alt="" />}
                                         </div>
-                                        <div>
-                                          <div className="font-bold text-white/90 group-hover:text-white transition-colors">{u.name || u.username || "Anonymous User"}</div>
-                                          <div className="text-[10px] text-white/30 lowercase font-medium">{u.email}</div>
-                                        </div>
+                                          <div>
+                                            <div className="flex items-center gap-2">
+                                              <div className="font-bold text-white/90 group-hover:text-white transition-colors">{u.name || u.username || "Anonymous User"}</div>
+                                              {u.is_banned && (
+                                                <span className="px-1.5 py-0.5 rounded-md bg-red-500/20 text-red-500 text-[8px] font-black uppercase tracking-tighter border border-red-500/30">
+                                                  Banned
+                                                </span>
+                                              )}
+                                            </div>
+                                            <div className="text-[10px] text-white/30 lowercase font-medium">{u.email}</div>
+                                          </div>
                                       </div>
                                     </td>
                                     <td className="py-5 px-6 text-center">
                                       <div className="inline-flex">
-                                        {u.is_employee ? (
-                                          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-500/10 text-purple-300 border border-purple-500/20">
-                                            Society Contributor
-                                          </span>
-                                        ) : (
-                                          <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/5 text-white/30 border border-white/5">
-                                            Public Member
-                                          </span>
-                                        )}
+                                          {u.is_banned ? (
+                                            <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse">
+                                              Banned Account
+                                            </span>
+                                          ) : u.is_employee ? (
+                                            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                                              Society Contributor
+                                            </span>
+                                          ) : (
+                                            <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/5 text-white/30 border border-white/5">
+                                              Public Member
+                                            </span>
+                                          )}
                                       </div>
                                     </td>
                                     <td className="py-5 px-6 text-right">
@@ -1553,7 +1578,7 @@ export default function AdminPage() {
                                     </td>
                                   </motion.tr>
                                   {isExpanded && (() => {
-                                    const pubEdit = publicUserEdits[u.id] ?? { username: u.username ?? "", email: u.email ?? "", name: u.name ?? "", bio: u.bio ?? "", password: "" };
+                                    const pubEdit = publicUserEdits[u.id] ?? { username: u.username ?? "", email: u.email ?? "", name: u.name ?? "", bio: u.bio ?? "", password: "", is_banned: Boolean(u.is_banned) };
                                     return (
                                       <tr>
                                         <td colSpan={3} className="p-6 bg-white/[0.01] border-b border-white/5">
@@ -1578,9 +1603,21 @@ export default function AdminPage() {
                                               <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">New Password</label>
                                               <input type="password" className={`${inputClass} w-full`} placeholder="Leave blank to keep current" value={pubEdit.password} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, password: e.target.value } }))} />
                                             </div>
-                                            <div className="space-y-1.5">
-                                              <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Confirm Password</label>
-                                              <input type="password" className={`${inputClass} w-full`} placeholder="Repeat new password" />
+                                            <div className="space-y-1.5 md:col-span-2 flex items-center gap-4 py-4">
+                                              <div 
+                                                className={`flex items-center gap-3 px-6 py-4 rounded-[28px] border transition-all cursor-pointer select-none grow ${pubEdit.is_banned ? "bg-red-500/10 border-red-500/30" : "bg-white/5 border-white/10 hover:bg-white/[0.08]"}`}
+                                                onClick={() => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, is_banned: !pubEdit.is_banned } }))}
+                                              >
+                                                <div className={`w-12 h-6 rounded-full relative transition-colors duration-500 ${pubEdit.is_banned ? "bg-red-500" : "bg-white/10"}`}>
+                                                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-500 ${pubEdit.is_banned ? "translate-x-7" : "translate-x-1"}`} />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                  <span className={`text-xs font-black uppercase tracking-widest ${pubEdit.is_banned ? "text-red-400" : "text-white/60"}`}>
+                                                    {pubEdit.is_banned ? "Banned Permanently" : "Active & Verified"}
+                                                  </span>
+                                                  <span className="text-[10px] text-white/30 font-medium">Restricts all write access, comments, likes and profile editing.</span>
+                                                </div>
+                                              </div>
                                             </div>
                                           </div>
                                           <div className="flex items-center justify-between">

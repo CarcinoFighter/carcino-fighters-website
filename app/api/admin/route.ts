@@ -49,6 +49,7 @@ type AuthBody = {
 	| "delete_story"
 	| "list_blog_submissions"
 	| "search_users";
+	is_banned?: boolean;
 	username?: string;
 	email?: string;
 	password?: string;
@@ -1860,7 +1861,7 @@ export async function POST(req: Request) {
 
 			const { data: publicUsers, error } = await client
 				.from("users_public")
-				.select("id, username, email, name, bio, avatar_url, created_at")
+				.select("id, username, email, name, bio, avatar_url, created_at, is_banned")
 				.eq("deleted", false)
 				.order("created_at", { ascending: false });
 
@@ -1919,7 +1920,7 @@ export async function POST(req: Request) {
 			if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 			if (!session.user.admin_access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-			const { targetUserId, username, email, name, bio, password } = body ?? {};
+			const { targetUserId, username, email, name, bio, password, is_banned } = body ?? {};
 			if (!targetUserId) return NextResponse.json({ error: "targetUserId is required" }, { status: 400 });
 
 			const updates: Record<string, unknown> = {};
@@ -1927,6 +1928,7 @@ export async function POST(req: Request) {
 			if (email !== undefined) updates.email = email ? email.toLowerCase() : null;
 			if (name !== undefined) updates.name = name ?? null;
 			if (bio !== undefined) updates.bio = bio ?? null;
+			if (is_banned !== undefined) updates.is_banned = Boolean(is_banned);
 			if (password) updates.password = await bcrypt.hash(password, 10);
 			updates.updated_at = new Date().toISOString();
 
@@ -1934,7 +1936,7 @@ export async function POST(req: Request) {
 				.from("users_public")
 				.update(updates)
 				.eq("id", targetUserId)
-				.select("id, username, email, name, bio, avatar_url")
+				.select("id, username, email, name, bio, avatar_url, is_banned")
 				.maybeSingle();
 
 			if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -1952,6 +1954,7 @@ export async function POST(req: Request) {
 					if (username !== undefined) empUpdates.username = username || null;
 					if (name !== undefined) empUpdates.name = name ?? null;
 					if (bio !== undefined) empUpdates.description = bio ?? null;
+					if (is_banned !== undefined) empUpdates.is_banned = Boolean(is_banned);
 					if (password) empUpdates.password = await bcrypt.hash(password, 10);
 
 					if (Object.keys(empUpdates).length > 0) {

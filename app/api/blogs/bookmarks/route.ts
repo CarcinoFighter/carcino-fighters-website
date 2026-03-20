@@ -38,13 +38,13 @@ async function getSession() {
     if (isPublicJwt) {
       const { data: user, error } = await sb!
         .from("users_public")
-        .select("id, username, name, email, avatar_url, bio, deleted")
+        .select("id, username, name, email, avatar_url, bio, deleted, is_banned")
         .eq("id", payload.sub)
         .limit(1)
         .maybeSingle();
 
       if (error || !user || user.deleted) return null;
-      return { id: user.id };
+      return { id: user.id, is_banned: !!user.is_banned };
     } else {
       const tokenHash = await hashToken(token);
       const { data: sessionRow } = await (sb!
@@ -68,14 +68,14 @@ async function getSession() {
 
       const { data: pubUser } = await sb!
         .from("users_public")
-        .select("id")
+        .select("id, is_banned")
         .eq("email", empUser.email.toLowerCase())
         .limit(1)
         .maybeSingle();
 
       if (!pubUser) return null;
 
-      return { id: pubUser.id };
+      return { id: pubUser.id, is_banned: !!pubUser.is_banned };
     }
   } catch (e) {
     return null;
