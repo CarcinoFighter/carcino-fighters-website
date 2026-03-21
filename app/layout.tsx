@@ -123,6 +123,9 @@ export const metadata: Metadata = {
     default: "The Carcino Foundation – Breaking Down Cancer for Anyone and Everyone",
   },
   description: "A simple hub, built to educate and help emerging and concurrent generations upon one of the leading causes of death in humanity.",
+  verification: {
+    google: "73412c894887f1e9",
+  },
 };
 
 export default function RootLayout({
