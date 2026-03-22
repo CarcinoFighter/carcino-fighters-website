@@ -1,0 +1,22 @@
+[
+  {
+    "endpoint": "/api/blogs",
+    "status": 200,
+    "pass": true
+  },
+  {
+    "endpoint": "/api/survivor-stories",
+    "status": 200,
+    "pass": true
+  },
+  {
+    "endpoint": "/api/cancer-docs",
+    "status": 200,
+    "pass": true
+  },
+  {
+    "endpoint": "/api/articles",
+    "status": 200,
+    "pass": true
+  }
+]

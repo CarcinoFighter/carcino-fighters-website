@@ -1,0 +1,47 @@
+[
+  {
+    "baseUrl": "https://www.carcino.work",
+    "endpoint": "/api/content/blogs",
+    "status": 500,
+    "data": {
+      "error": "Failed to fetch blogs"
+    },
+    "pass": false
+  },
+  {
+    "baseUrl": "https://www.carcino.work",
+    "endpoint": "/api/content/survivor-stories",
+    "status": 500,
+    "data": {
+      "error": "Failed to fetch stories"
+    },
+    "pass": false
+  },
+  {
+    "baseUrl": "https://www.carcino.work",
+    "endpoint": "/api/content/cancer-docs",
+    "status": 500,
+    "data": {
+      "error": "Failed to fetch docs"
+    },
+    "pass": false
+  },
+  {
+    "baseUrl": "https://carcino.work",
+    "endpoint": "/api/content/blogs",
+    "error": "connect ETIMEDOUT 192.0.2.1:443",
+    "pass": false
+  },
+  {
+    "baseUrl": "https://carcino.work",
+    "endpoint": "/api/content/survivor-stories",
+    "error": "connect ETIMEDOUT 192.0.2.1:443",
+    "pass": false
+  },
+  {
+    "baseUrl": "https://carcino.work",
+    "endpoint": "/api/content/cancer-docs",
+    "error": "connect ETIMEDOUT 192.0.2.1:443",
+    "pass": false
+  }
+]

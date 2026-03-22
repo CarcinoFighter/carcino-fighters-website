@@ -1,0 +1,50 @@
+[
+  {
+    "endpoint": "/api/content/blogs",
+    "status": 500,
+    "data": {
+      "error": "Failed to fetch blogs"
+    },
+    "pass": false
+  },
+  {
+    "endpoint": "/api/content/survivor-stories",
+    "status": 500,
+    "data": {
+      "error": "Failed to fetch stories"
+    },
+    "pass": false
+  },
+  {
+    "endpoint": "/api/content/cancer-docs",
+    "status": 500,
+    "data": {
+      "error": "Failed to fetch docs"
+    },
+    "pass": false
+  },
+  {
+    "endpoint": "/api/content/blogs?status=published",
+    "status": 500,
+    "data": {
+      "error": "Failed to fetch blogs"
+    },
+    "pass": false
+  },
+  {
+    "endpoint": "/api/content/survivor-stories?status=published",
+    "status": 500,
+    "data": {
+      "error": "Failed to fetch stories"
+    },
+    "pass": false
+  },
+  {
+    "endpoint": "/api/content/cancer-docs?status=published",
+    "status": 500,
+    "data": {
+      "error": "Failed to fetch docs"
+    },
+    "pass": false
+  }
+]

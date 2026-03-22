@@ -1,0 +1,14 @@
+[
+  {
+    "baseUrl": "https://cms.carcino.work",
+    "endpoint": "/api/content/blogs",
+    "error": "getaddrinfo ENOTFOUND cms.carcino.work",
+    "pass": false
+  },
+  {
+    "baseUrl": "https://cms.carcino.work",
+    "endpoint": "/api/blogs",
+    "error": "getaddrinfo ENOTFOUND cms.carcino.work",
+    "pass": false
+  }
+]

@@ -1,0 +1,31 @@
+[
+  {
+    "baseUrl": "https://api.carcino.work",
+    "endpoint": "/api/content/blogs",
+    "error": "getaddrinfo ENOTFOUND api.carcino.work",
+    "pass": false
+  },
+  {
+    "baseUrl": "https://api.carcino.work",
+    "endpoint": "/api/blogs",
+    "error": "getaddrinfo ENOTFOUND api.carcino.work",
+    "pass": false
+  },
+  {
+    "baseUrl": "https://www.carcino.work",
+    "endpoint": "/api/content/blogs",
+    "status": 500,
+    "data": {
+      "error": "Failed to fetch blogs"
+    },
+    "pass": false
+  },
+  {
+    "baseUrl": "https://www.carcino.work",
+    "endpoint": "/api/blogs",
+    "status": 200,
+    "data": "<!DOCTYPE html><html lang=\"en\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=dev...",
+    "isHtml": true,
+    "pass": true
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "endpoint": "/api/blogs",
+    "status": 200,
+    "structure": "no sample",
+    "count": "unknown"
+  },
+  {
+    "endpoint": "/api/survivor-stories",
+    "status": 200,
+    "structure": "no sample",
+    "count": "unknown"
+  },
+  {
+    "endpoint": "/api/cancer-docs",
+    "status": 200,
+    "structure": "no sample",
+    "count": "unknown"
+  }
+]
