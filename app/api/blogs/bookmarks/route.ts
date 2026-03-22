@@ -136,12 +136,13 @@ export async function GET(req: Request) {
         else if (bm.content_type === 'cancer_doc') data = await getStaffCancerDocBySlug(bm.blog_id);
         
         if (data) {
+          const d = data as any;
           return {
-            ...data,
+            ...d,
             source: 'staff',
             content_type: bm.content_type,
             // Map to the shape expected by dashboard if different
-            authorName: data.authorName || data.author || "Staff",
+            authorName: d.authorName || d.author || "Staff",
           };
         }
         return null;

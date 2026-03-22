@@ -1,5 +1,5 @@
 import { ArticleListClient } from "./ArticleListClient";
-import { getAllDocs } from "@/lib/docsRepository";
+import { getAllDocs, type Article } from "@/lib/docsRepository";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ export default async function ArticleListPage() {
   
   const articles = [...communityDocs.map(d => ({ ...d, source: 'community' })), ...staffDocs].sort((a: any, b: any) => 
     a.title.localeCompare(b.title)
-  );
+  ) as Article[];
 
   return <ArticleListClient articles={articles} />;
 }
