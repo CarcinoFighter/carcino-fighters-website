@@ -14,8 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { Footer } from "@/components/footer";
 import { DynamicBackgroundHues } from "@/components/ui/dynamic-background-hues";
-import LikeButton from "@/components/LikeButton";
-import { Eye } from "lucide-react";
+
 import type { ArticleWithAvatar, ArticleSummary } from "@/lib/docsRepository";
 import { useEffect } from "react";
 
@@ -49,11 +48,6 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   const authorLabel = article.author ?? "Unknown Author";
   const positionLabel = article.position ?? "";
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [initialLiked, setInitialLiked] = useState(false);
-  const [isBanned, setIsBanned] = useState(false);
-
   useEffect(() => {
     // Record view
     fetch("/api/blogs/interact", {
@@ -66,17 +60,6 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
         content_type: "cancer_doc" 
       }),
     }).catch(() => { });
-
-    // Check auth status
-    fetch(`/api/blogs/interact?blogId=${article.id}&source=${article.source || 'community'}&content_type=cancer_doc`)
-      .then((r) => r.json())
-      .then((data) => {
-        setIsAuthenticated(!!data.authenticated);
-        setUserId(data.userId ?? null);
-        setInitialLiked(!!data.liked);
-        setIsBanned(!!data.isBanned);
-      })
-      .catch(() => { });
   }, [article.id]);
 
   // Re-use the fadeUp variant from blogs for the button
@@ -163,27 +146,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                     )}
                   </div>
                 )}
-                <div className="flex flex-col sm:flex-row items-center sm:justify-center gap-4 px-5 py-3 mt-4">
-                  <div className="relative flex items-center gap-4 px-5 py-2 rounded-full overflow-hidden isolate">
-                    <div className="liquidGlass-shine relative w-[102.5%] h-[100%] !top-[-0.1px] !left-[-2.3px]"></div>
-                    <span className="relative z-10 inline-flex items-center gap-1.5 text-white/40 text-xs sm:text-sm font-dmsans">
-                      <Eye className="w-4 h-4" />
-                      {(article as any).views ?? 0}
-                    </span>
-                    <div className="relative z-10">
-                      <LikeButton 
-                        blogId={article.id} 
-                        initialLikes={(article as any).likes ?? 0} 
-                        initialLiked={initialLiked} 
-                        isAuthenticated={isAuthenticated} 
-                        userId={userId} 
-                        isBanned={isBanned}
-                        source={article.source}
-                        content_type="cancer_doc"
-                      />
-                    </div>
-                  </div>
-                </div>
+
               </div>
             </div>
           </motion.div>
