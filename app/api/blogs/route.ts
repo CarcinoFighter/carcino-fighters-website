@@ -215,7 +215,7 @@ export async function GET(req: Request) {
     const { data, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-    const communityBlogs = (data ?? []).map(mapBlog).map(b => ({ ...b, source: 'community' }));
+    const communityBlogs = (data ?? []).map(mapBlog).map((b: any) => ({ ...b, source: 'community' }));
     
     // Fetch staff blogs
     const staffBlogs = await getStaffBlogs();

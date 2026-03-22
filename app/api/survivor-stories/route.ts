@@ -226,7 +226,7 @@ export async function GET(req: Request) {
     const { data, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-    const communityStories = (data ?? []).map(mapStory).map(s => ({ ...s, source: 'community' }));
+    const communityStories = (data ?? []).map(mapStory).map((s: any) => ({ ...s, source: 'community' }));
     
     // Fetch staff stories
     const { getStaffSurvivorStories } = await import("@/lib/carcinoWork");

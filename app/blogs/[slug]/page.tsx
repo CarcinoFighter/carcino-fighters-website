@@ -41,7 +41,7 @@ export default async function Page({ params }: Props) {
 
   if (!entry) {
     const { getStaffBlogBySlug } = await import("@/lib/carcinoWork");
-    entry = await getStaffBlogBySlug(slug);
+    entry = await getStaffBlogBySlug(slug) as any as BlogEntry;
   }
 
   try {

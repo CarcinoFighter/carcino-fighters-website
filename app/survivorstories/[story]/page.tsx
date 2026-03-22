@@ -55,7 +55,7 @@ export default async function Page({ params }: Props) {
 
   if (!storyData) {
     const { getStaffSurvivorStoryBySlug } = await import("@/lib/carcinoWork");
-    storyData = await getStaffSurvivorStoryBySlug(story);
+    storyData = await getStaffSurvivorStoryBySlug(story) as any as SurvivorStory;
   }
 
   if (!storyData) {
