@@ -54,6 +54,11 @@ export default async function Page({ params }: Props) {
   }
 
   if (!storyData) {
+    const { getStaffSurvivorStoryBySlug } = await import("@/lib/carcinoWork");
+    storyData = await getStaffSurvivorStoryBySlug(story);
+  }
+
+  if (!storyData) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8 bg-[#2A292F] font-dmsans">
         <div className="max-w-3xl w-full text-center">

@@ -670,12 +670,12 @@ export default function DashboardPage() {
                             <div className="glass-noise"></div>
                             <div className="cardGlass-borders pointer-events-none"></div>
                             <div className="cardGlass-shine pointer-events-none"></div>
-                            <p className="relative z-10 text-gray-400 font-medium font-dmsans">You haven't bookmarked any blogs yet.</p>
+                             <p className="relative z-10 text-gray-400 font-medium font-dmsans">You haven't bookmarked any content yet.</p>
                         </div>
                     ) : (
-                        bookmarkedBlogs.map((blog) => (
+                        bookmarkedBlogs.map((item: any) => (
                             <div
-                                key={blog.id}
+                                key={item.id}
                                 className="group relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-[30px] rounded-[40px] p-6 sm:p-8 flex flex-col md:flex-row gap-8 hover:bg-white/5 transition-all duration-300"
                             >
                                 <div className="liquidGlass-effect pointer-events-none"></div>
@@ -696,26 +696,31 @@ export default function DashboardPage() {
                                     <div className="flex-1 flex flex-col justify-center">
                                         <div className="flex items-center gap-3 mb-4">
                                             <span className="px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-medium text-indigo-300">
-                                                Bookmarked
+                                                {item.content_type === 'survivor_story' ? 'Survivor Story' : item.content_type === 'cancer_doc' ? 'Article' : 'Blog'}
+                                                {item.source === 'staff' ? ' • Staff' : ''}
                                             </span>
                                         </div>
 
                                         <h3 className="text-2xl font-bold mb-1 group-hover:text-indigo-300 transition-colors">
-                                            {blog.title}
+                                            {item.title}
                                         </h3>
-                                        {blog.authorName && (
-                                            <p className="text-xs text-gray-500 mb-3">by {blog.authorName}</p>
+                                        {item.authorName && (
+                                            <p className="text-xs text-gray-500 mb-3">by {item.authorName}</p>
                                         )}
 
                                         <p className="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
-                                            {stripMarkdown(blog.content)}
+                                            {(item.content || "").replace(/[#*`]/g, "")}
                                         </p>
 
                                         <Link
-                                            href={`/blogs/${blog.slug}`}
+                                            href={
+                                                item.content_type === 'survivor_story' ? `/survivorstories/${item.slug}` :
+                                                item.content_type === 'cancer_doc' ? `/article/${item.slug}` :
+                                                `/blogs/${item.slug}`
+                                            }
                                             className="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 text-sm font-medium group/link"
                                         >
-                                            View Blog
+                                            View {item.content_type === 'survivor_story' ? 'Story' : item.content_type === 'cancer_doc' ? 'Article' : 'Blog'}
                                             <ArrowUpRight className="w-4 h-4 transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5" />
                                         </Link>
                                     </div>

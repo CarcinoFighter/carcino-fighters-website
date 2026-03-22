@@ -226,7 +226,16 @@ export async function GET(req: Request) {
     const { data, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-    const stories = (data ?? []).map(mapStory);
+    const communityStories = (data ?? []).map(mapStory).map(s => ({ ...s, source: 'community' }));
+    
+    // Fetch staff stories
+    const { getStaffSurvivorStories } = await import("@/lib/carcinoWork");
+    const staffStories = await getStaffSurvivorStories();
+    
+    // Merge and sort
+    const stories = [...communityStories, ...staffStories].sort((a: any, b: any) => 
+      new Date(b.published_at || b.created_at).getTime() - new Date(a.published_at || a.created_at).getTime()
+    );
 
     if (mine && session?.id) {
       const { data: submissions, error: subErr } = await sb!

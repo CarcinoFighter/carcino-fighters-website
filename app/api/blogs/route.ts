@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import jwt from "jsonwebtoken";
+import { getStaffBlogs } from "@/lib/carcinoWork";
 
 const COOKIE_NAME = "public_jwt";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -214,7 +215,15 @@ export async function GET(req: Request) {
     const { data, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-    const blogs = (data ?? []).map(mapBlog);
+    const communityBlogs = (data ?? []).map(mapBlog).map(b => ({ ...b, source: 'community' }));
+    
+    // Fetch staff blogs
+    const staffBlogs = await getStaffBlogs();
+    
+    // Merge and sort
+    const blogs = [...communityBlogs, ...staffBlogs].sort((a: any, b: any) => 
+      new Date(b.published_at || b.created_at).getTime() - new Date(a.published_at || a.created_at).getTime()
+    );
 
     // If 'mine', also fetch pending submissions
     if (mine && session?.id) {

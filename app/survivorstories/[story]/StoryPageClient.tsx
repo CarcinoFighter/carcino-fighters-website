@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Footer } from "@/components/footer";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
+import LikeButton from "@/components/LikeButton";
+import { Eye } from "lucide-react";
 import type {
   SurvivorStory,
   SurvivorStorySummary,
@@ -81,8 +83,35 @@ export default function StoryPageClient({
     (SurvivorStorySummary & { image_url?: string | null })[]
   >(() => pickRelated(relatedProp, story.id));
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [initialLiked, setInitialLiked] = useState(false);
+  const [isBanned, setIsBanned] = useState(false);
 
   React.useEffect(() => {
+    // Record view
+    fetch("/api/blogs/interact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        action: "view", 
+        blogId: story.id, 
+        source: story.source || 'community', 
+        content_type: "survivor_story" 
+      }),
+    }).catch(() => { });
+
+    // Check auth status
+    fetch(`/api/blogs/interact?blogId=${story.id}&source=${story.source || 'community'}&content_type=survivor_story`)
+      .then((r) => r.json())
+      .then((data) => {
+        setIsAuthenticated(!!data.authenticated);
+        setUserId(data.userId ?? null);
+        setInitialLiked(!!data.liked);
+        setIsBanned(!!data.isBanned);
+      })
+      .catch(() => { });
+
     (async () => {
       try {
         const res = await fetch("/api/survivor-stories");
@@ -140,6 +169,27 @@ export default function StoryPageClient({
             >
               {story.title}
             </h1>
+            <div className="flex flex-col sm:flex-row items-center sm:justify-center gap-4 px-5 py-3 mt-4">
+              <div className="relative flex items-center gap-4 px-5 py-2 rounded-full overflow-hidden isolate">
+                <div className="liquidGlass-shine relative w-[102.5%] h-[100%] !top-[-0.1px] !left-[-2.3px]"></div>
+                <span className="relative z-10 inline-flex items-center gap-1.5 text-white/40 text-xs sm:text-sm font-dmsans">
+                  <Eye className="w-4 h-4" />
+                  {story.views ?? 0}
+                </span>
+                <div className="relative z-10">
+                  <LikeButton 
+                    blogId={story.id} 
+                    initialLikes={story.likes ?? 0} 
+                    initialLiked={initialLiked} 
+                    isAuthenticated={isAuthenticated} 
+                    userId={userId} 
+                    isBanned={isBanned}
+                    source={story.source}
+                    content_type="survivor_story"
+                  />
+                </div>
+              </div>
+            </div>
           </header>
 
           <article

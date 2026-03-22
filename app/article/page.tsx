@@ -9,6 +9,14 @@ export const metadata: Metadata = {
 export const revalidate = 600;
 
 export default async function ArticleListPage() {
-  const articles = await getAllDocs();
+  const communityDocs = await getAllDocs();
+  
+  const { getStaffCancerDocs } = await import("@/lib/carcinoWork");
+  const staffDocs = await getStaffCancerDocs();
+  
+  const articles = [...communityDocs.map(d => ({ ...d, source: 'community' })), ...staffDocs].sort((a: any, b: any) => 
+    a.title.localeCompare(b.title)
+  );
+
   return <ArticleListClient articles={articles} />;
 }

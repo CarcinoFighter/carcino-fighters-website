@@ -50,6 +50,7 @@ export type SurvivorStory = {
   authorUsername: string | null;
   authorBio: string | null;
   avatarUrl: string | null;
+  source?: 'community' | 'staff';
 };
 
 export type SurvivorStorySummary = {
