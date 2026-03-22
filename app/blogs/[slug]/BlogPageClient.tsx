@@ -118,7 +118,15 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
                 {entry.views ?? 0}
               </span>
               <div className="relative z-10">
-                <LikeButton blogId={entry.id} initialLikes={entry.likes ?? 0} initialLiked={initialLiked} isAuthenticated={isAuthenticated} userId={userId} isBanned={isBanned} />
+                <LikeButton 
+                  blogId={entry.id} 
+                  initialLikes={entry.likes ?? 0} 
+                  initialLiked={initialLiked} 
+                  isAuthenticated={isAuthenticated} 
+                  userId={userId} 
+                  isBanned={isBanned}
+                  source={entry.source}
+                />
               </div>
             </div>
           </div>

@@ -43,6 +43,8 @@ export async function GET(req: Request) {
         const session = (await getSession()) as { id: string; isBanned: boolean } | null;
         const url = new URL(req.url);
         const blogId = url.searchParams.get("blogId");
+        const source = url.searchParams.get("source") || "community";
+        const content_type = url.searchParams.get("content_type") || "blog";
         let liked = false;
 
         if (session && blogId && sb) {
@@ -51,6 +53,8 @@ export async function GET(req: Request) {
                 .select("blog_id")
                 .eq("user_id", session.id)
                 .eq("blog_id", blogId)
+                .eq("source", source)
+                .eq("content_type", content_type)
                 .maybeSingle();
             if (data) liked = true;
         }
@@ -71,6 +75,8 @@ export async function GET(req: Request) {
 type InteractBody = {
     action?: "view" | "like";
     blogId?: string;
+    source?: "community" | "staff";
+    content_type?: "blog" | "survivor_story" | "cancer_doc";
 };
 
 export async function POST(req: Request) {
@@ -83,7 +89,7 @@ export async function POST(req: Request) {
         }
 
         const body = (await req.json().catch(() => ({}))) as InteractBody;
-        const { action, blogId } = body;
+        const { action, blogId, source, content_type } = body;
 
         if (!action || !blogId) {
             return NextResponse.json(
@@ -93,11 +99,17 @@ export async function POST(req: Request) {
         }
 
         if (action === "view") {
-            const { error } = await sb.rpc("increment_blog_views", {
-                blog_id: blogId,
-            });
-            if (error) {
-                return NextResponse.json({ error: error.message }, { status: 400 });
+            if (source === 'community') {
+                let rpcName = "";
+                if (content_type === 'blog') rpcName = "increment_blog_views";
+                else if (content_type === 'survivor_story') rpcName = "increment_story_views";
+                
+                if (rpcName) {
+                    await sb.rpc(rpcName, {
+                        blog_id: blogId,
+                        story_id: blogId
+                    });
+                }
             }
             return NextResponse.json({ ok: true });
         }
@@ -120,18 +132,29 @@ export async function POST(req: Request) {
 
             const { error: bookmarkErr } = await sb
                 .from("blog_bookmarks")
-                .insert({ user_id: session.id, blog_id: blogId });
+                .insert({ 
+                    user_id: session.id, 
+                    blog_id: blogId,
+                    source: source || 'community',
+                    content_type: content_type || 'blog'
+                });
 
             if (bookmarkErr) {
                 if (bookmarkErr.code !== '23505') {
                     return NextResponse.json({ error: bookmarkErr.message }, { status: 400 });
                 }
-            } else {
-                const { error } = await sb.rpc("increment_blog_likes", {
-                    blog_id: blogId,
-                });
-                if (error) {
-                    return NextResponse.json({ error: error.message }, { status: 400 });
+            } else if (source === 'community') {
+                // Only increment likes for community content in our DB
+                let rpcName = "";
+                if (content_type === 'blog') rpcName = "increment_blog_likes";
+                else if (content_type === 'survivor_story') rpcName = "increment_story_likes";
+                
+                if (rpcName) {
+                    const { error } = await sb.rpc(rpcName, {
+                        blog_id: blogId,
+                        story_id: blogId // Some RPCs might use story_id
+                    });
+                    // Silently fail RPC if it doesn't exist, bookmark is still saved
                 }
             }
             

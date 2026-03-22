@@ -40,6 +40,7 @@ export interface Article {
   avatar_url?: string | null;
   authors?: IndividualAuthor[];
   color?: string | null;
+  source?: 'community' | 'staff';
 }
 
 export interface ArticleWithAvatar extends Article {

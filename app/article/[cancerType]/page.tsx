@@ -7,7 +7,12 @@ import { Metadata } from "next";
 
 export async function generateMetadata({ params }: ArticlePageParams): Promise<Metadata> {
   const { cancerType: slug } = await params;
-  const article = await getDocBySlugWithAvatar(slug);
+  let article = await getDocBySlugWithAvatar(slug);
+
+  if (!article) {
+    const { getStaffCancerDocBySlug } = await import("@/lib/carcinoWork");
+    article = await getStaffCancerDocBySlug(slug) as any;
+  }
 
   if (!article) {
     return {
@@ -31,10 +36,15 @@ export default async function ArticlePage({ params }: ArticlePageParams) {
     notFound();
   }
 
-  const [article, moreArticles] = await Promise.all([
+  let [article, moreArticles] = await Promise.all([
     getDocBySlugWithAvatar(slug),
     getRandomArticleSummaries(3, slug),
   ]);
+
+  if (!article) {
+    const { getStaffCancerDocBySlug } = await import("@/lib/carcinoWork");
+    article = await getStaffCancerDocBySlug(slug) as any;
+  }
 
   if (!article) {
     return (

@@ -110,10 +110,10 @@ export async function GET(req: Request) {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // Fetch the user's bookmarked blogs
+    // Fetch the user's bookmarked items
     const { data: bookmarks, error: bookmarkError } = await sb!
       .from("blog_bookmarks")
-      .select("blog_id")
+      .select("blog_id, source, content_type")
       .eq("user_id", session.id);
 
     if (bookmarkError) return NextResponse.json({ error: bookmarkError.message }, { status: 400 });
@@ -122,19 +122,55 @@ export async function GET(req: Request) {
       return NextResponse.json({ blogs: [] });
     }
 
-    const blogIds = bookmarks.map(b => b.blog_id);
+    const { 
+      getStaffBlogBySlug, 
+      getStaffSurvivorStoryBySlug, 
+      getStaffCancerDocBySlug 
+    } = await import("@/lib/carcinoWork");
 
-    const { data: blogsData, error: blogsError } = await sb!
-      .from("blogs")
-      .select("id, user_id, title, slug, content, tags, views, likes, created_at, updated_at, hidden, users_public!blogs_user_id_fkey(name, username, avatar_url, bio)")
-      .in("id", blogIds)
-      .eq("hidden", false)
-      .order("created_at", { ascending: false });
+    const allItems = await Promise.all(bookmarks.map(async (bm) => {
+      if (bm.source === 'staff') {
+        let data = null;
+        if (bm.content_type === 'blog') data = await getStaffBlogBySlug(bm.blog_id);
+        else if (bm.content_type === 'survivor_story') data = await getStaffSurvivorStoryBySlug(bm.blog_id);
+        else if (bm.content_type === 'cancer_doc') data = await getStaffCancerDocBySlug(bm.blog_id);
+        
+        if (data) {
+          return {
+            ...data,
+            source: 'staff',
+            content_type: bm.content_type,
+            // Map to the shape expected by dashboard if different
+            authorName: data.authorName || data.author || "Staff",
+          };
+        }
+        return null;
+      } else {
+        // Community content
+        let table = "blogs";
+        if (bm.content_type === 'survivor_story') table = "survivorstories";
+        else if (bm.content_type === 'cancer_doc') table = "cancer_docs";
 
-    if (blogsError) return NextResponse.json({ error: blogsError.message }, { status: 400 });
+        const { data, error } = await sb!
+          .from(table)
+          .select("*, users_public(name, username, avatar_url, bio)")
+          .eq("id", bm.blog_id)
+          .maybeSingle();
+        
+        if (data && !error) {
+          const mapped = mapBlog(data);
+          return {
+            ...mapped,
+            source: 'community',
+            content_type: bm.content_type
+          };
+        }
+        return null;
+      }
+    }));
 
-    const blogs = (blogsData ?? []).map(mapBlog);
-    return NextResponse.json({ blogs });
+    const validItems = allItems.filter(Boolean);
+    return NextResponse.json({ blogs: validItems });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

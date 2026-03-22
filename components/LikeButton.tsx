@@ -10,6 +10,8 @@ interface LikeButtonProps {
     isAuthenticated: boolean;
     userId: string | null;
     isBanned?: boolean;
+    source?: "community" | "staff";
+    content_type?: "blog" | "survivor_story" | "cancer_doc";
 }
 
 export default function LikeButton({
@@ -19,6 +21,8 @@ export default function LikeButton({
     isAuthenticated,
     userId,
     isBanned = false,
+    source = "community",
+    content_type = "blog",
 }: LikeButtonProps) {
     const [liked, setLiked] = useState(initialLiked);
     const [likeCount, setLikeCount] = useState(initialLikes);
@@ -44,7 +48,12 @@ export default function LikeButton({
             const res = await fetch("/api/blogs/interact", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "like", blogId }),
+                body: JSON.stringify({ 
+                    action: "like", 
+                    blogId,
+                    source,
+                    content_type
+                }),
             });
 
             if (!res.ok) {

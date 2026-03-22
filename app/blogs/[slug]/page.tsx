@@ -39,6 +39,11 @@ export default async function Page({ params }: Props) {
     console.error("Error fetching blog entry:", e);
   }
 
+  if (!entry) {
+    const { getStaffBlogBySlug } = await import("@/lib/carcinoWork");
+    entry = await getStaffBlogBySlug(slug);
+  }
+
   try {
     const res = await getAllBlogs();
     allBlogs = res as BlogEntry[];
