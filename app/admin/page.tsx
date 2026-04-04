@@ -1,6 +1,12 @@
 "use client";
 import Image from "next/image";
-import React, { useEffect, useMemo, useState, useRef, type FormEvent } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  type FormEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -16,7 +22,7 @@ import {
   FileText,
   Heart,
   MessageSquare,
-  Zap
+  Zap,
 } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { ProfilePictureEditor } from "@/components/admin/pfp-cropper";
@@ -25,13 +31,59 @@ import { DynamicBackgroundHues } from "@/components/ui/dynamic-background-hues";
 // Supabase client remains for storage (avatars). Data CRUD now goes through secured API.
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY!,
 );
 
 export default function AdminPage() {
   const router = useRouter();
   const [unlocked, setUnlocked] = useState(false);
   const [error, setError] = useState("");
+
+  const [glossaryWords, setGlossaryWords] = useState([
+    {
+      id: "1",
+      word: "Metastasis",
+      meaning:
+        "The spread of cancer cells from the original tumor to other parts of the body through blood or lymph vessels.",
+    },
+    {
+      id: "2",
+      word: "Carcinoma",
+      meaning:
+        "A type of cancer that begins in the skin or tissue that lines internal organs.",
+    },
+    {
+      id: "3",
+      word: "Malignant",
+      meaning:
+        "Cancerous. Malignant cells can invade nearby tissue and spread to other parts of the body.",
+    },
+    {
+      id: "4",
+      word: "Biopsy",
+      meaning:
+        "A procedure where a small tissue sample is removed and examined to check for cancer.",
+    },
+    {
+      id: "5",
+      word: "Remission",
+      meaning:
+        "A period when signs and symptoms of cancer are reduced or have disappeared.",
+    },
+  ]);
+  const [glossarySearch, setGlossarySearch] = useState("");
+  const [glossaryEditing, setGlossaryEditing] = useState<string | null>(null);
+  const [glossaryEditData, setGlossaryEditData] = useState({
+    word: "",
+    meaning: "",
+  });
+  const filteredGlossary = glossaryWords.filter((w) => {
+    const term = glossarySearch.toLowerCase().trim();
+    if (!term) return true;
+    return (
+      w.word.toLowerCase().includes(term)
+    );
+  });
 
   type UserRow = {
     id: string;
@@ -105,49 +157,105 @@ export default function AdminPage() {
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [croppingImage, setCroppingImage] = useState<string | null>(null);
   const [croppingUserId, setCroppingUserId] = useState<string | null>(null);
-  const [lastResponseDebug, setLastResponseDebug] = useState<string | null>(null);
+  const [lastResponseDebug, setLastResponseDebug] = useState<string | null>(
+    null,
+  );
   const [currentUser, setCurrentUser] = useState<UserRow | null>(null);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [employeesOpen, setEmployeesOpen] = useState(false);
   const [publicUsers, setPublicUsers] = useState<PublicUserRow[]>([]);
   const [publicUsersOpen, setPublicUsersOpen] = useState(false);
   const [publicUsersLoading, setPublicUsersLoading] = useState(false);
-  const [selfForm, setSelfForm] = useState({ username: "", email: "", name: "", password: "", description: "", department: "" });
-  const [userEdits, setUserEdits] = useState<Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string; department: string; is_legacy: boolean; is_banned: boolean }>>({});
-  const [publicUserEdits, setPublicUserEdits] = useState<Record<string, { username: string; email: string; name: string; bio: string; password: string; is_banned: boolean }>>({});
+  const [selfForm, setSelfForm] = useState({
+    username: "",
+    email: "",
+    name: "",
+    password: "",
+    description: "",
+    department: "",
+  });
+  const [userEdits, setUserEdits] = useState<
+    Record<
+      string,
+      {
+        username: string;
+        email: string;
+        name: string;
+        password: string;
+        admin_access: boolean;
+        position: string;
+        description: string;
+        department: string;
+        is_legacy: boolean;
+        is_banned: boolean;
+      }
+    >
+  >({});
+  const [publicUserEdits, setPublicUserEdits] = useState<
+    Record<
+      string,
+      {
+        username: string;
+        email: string;
+        name: string;
+        bio: string;
+        password: string;
+        is_banned: boolean;
+      }
+    >
+  >({});
   const [savingSelf, setSavingSelf] = useState(false);
   const [savingUser, setSavingUser] = useState<Record<string, boolean>>({});
-  const [savingPublicUser, setSavingPublicUser] = useState<Record<string, boolean>>({});
+  const [savingPublicUser, setSavingPublicUser] = useState<
+    Record<string, boolean>
+  >({});
   const [selfEditing, setSelfEditing] = useState(false);
   const [verifying, setVerifying] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
   const [userSearch, setUserSearch] = useState("");
   const [publicUserSearch, setPublicUserSearch] = useState("");
-  const [newUser, setNewUser] = useState({ username: "", email: "", name: "", password: "", position: "", description: "", department: "" });
+  const [newUser, setNewUser] = useState({
+    username: "",
+    email: "",
+    name: "",
+    password: "",
+    position: "",
+    description: "",
+    department: "",
+  });
   const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
   const [submissionsLoading, setSubmissionsLoading] = useState(false);
   const [reviewing, setReviewing] = useState<Record<string, boolean>>({});
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
-  const [expandedPublicUserId, setExpandedPublicUserId] = useState<string | null>(null);
+  const [expandedPublicUserId, setExpandedPublicUserId] = useState<
+    string | null
+  >(null);
   const [activeTab, setActiveTab] = useState<
-    "action-centre" | "articles" | "blogs" | "survivors" | "system"
+    "action-centre" | "articles" | "blogs" | "glossary" | "survivors" | "system"
   >("action-centre");
   const [blogs, setBlogs] = useState<any[]>([]);
   const [stories, setStories] = useState<any[]>([]);
   const [systemCheckResults, setSystemCheckResults] = useState<any>(null);
   const [systemCheckLoading, setSystemCheckLoading] = useState(false);
-  const [activeReviewTab, setActiveReviewTab] = useState<"articles" | "stories" | "blogs">("articles"); // Keeping for internal logic if needed, but UI tabs are removed
+  const [activeReviewTab, setActiveReviewTab] = useState<
+    "articles" | "stories" | "blogs"
+  >("articles"); // Keeping for internal logic if needed, but UI tabs are removed
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const cardClass = "rounded-[44px] border border-white/10 shadow-2xl transition-all duration-500 overflow-hidden isolation-isolate group/card admin-card";
-  const inputClass = "bg-white/5 border border-white/10 rounded-2xl px-3 py-2 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-[#6D54B5]";
+  const cardClass =
+    "rounded-[44px] border border-white/10 shadow-2xl transition-all duration-500 overflow-hidden isolation-isolate group/card admin-card";
+  const inputClass =
+    "bg-white/5 border border-white/10 rounded-2xl px-3 py-2 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-[#6D54B5]";
   const textareaClass = `${inputClass} min-h-[100px]`;
-  const primaryButton = "bg-[#6D54B5] hover:bg-[#5a45a0] text-white px-4 py-2 rounded-lg font-semibold shadow-lg shadow-[#6D54B5]/30 transition hover:cursor-pointer disabled:opacity-60";
-  const subtleButton = "border border-white/15 bg-white/5 text-white px-4 py-2 rounded-lg hover:bg-white/10 transition hover:cursor-pointer disabled:opacity-60";
-  const ghostButton = "text-sm text-white/80 hover:text-white underline underline-offset-4 hover:cursor-pointer disabled:opacity-60";
+  const primaryButton =
+    "bg-[#6D54B5] hover:bg-[#5a45a0] text-white px-4 py-2 rounded-lg font-semibold shadow-lg shadow-[#6D54B5]/30 transition hover:cursor-pointer disabled:opacity-60";
+  const subtleButton =
+    "border border-white/15 bg-white/5 text-white px-4 py-2 rounded-lg hover:bg-white/10 transition hover:cursor-pointer disabled:opacity-60";
+  const ghostButton =
+    "text-sm text-white/80 hover:text-white underline underline-offset-4 hover:cursor-pointer disabled:opacity-60";
 
   // Force default cursor on admin page (global CSS hides it for the fancy cursor elsewhere)
   useEffect(() => {
@@ -172,7 +280,10 @@ export default function AdminPage() {
       try {
         const res = await fetch("/api/admin", { method: "GET" });
         const data = await res.json().catch(() => ({}));
-        setLastResponseDebug((prev) => `${prev || ''}\nCHECK_SESSION:\n${JSON.stringify(data, null, 2)}`);
+        setLastResponseDebug(
+          (prev) =>
+            `${prev || ""}\nCHECK_SESSION:\n${JSON.stringify(data, null, 2)}`,
+        );
         if (res.ok && data?.authenticated) {
           setUnlocked(true);
           if (data.user) {
@@ -187,7 +298,10 @@ export default function AdminPage() {
               department: data.user.department ?? "",
             });
           }
-          const tasks: Array<Promise<unknown>> = [fetchSelfProfilePicture(), fetchDocsWithPictures({ silent: true })];
+          const tasks: Array<Promise<unknown>> = [
+            fetchSelfProfilePicture(),
+            fetchDocsWithPictures({ silent: true }),
+          ];
           const submissionsStatus = data.user?.admin_access ? "pending" : "all";
           tasks.push(fetchSubmissions(submissionsStatus));
           if (data.user?.admin_access) {
@@ -216,7 +330,8 @@ export default function AdminPage() {
     if (activeTab === "articles") fetchDocsWithPictures({ silent: true });
     if (activeTab === "blogs") fetchBlogs({ silent: true });
     if (activeTab === "survivors") fetchStories({ silent: true });
-    if (activeTab === "action-centre" && currentUser?.admin_access) fetchUsers();
+    if (activeTab === "action-centre" && currentUser?.admin_access)
+      fetchUsers();
   }, [activeTab]);
 
   // async function fetchDocs() {
@@ -246,7 +361,9 @@ export default function AdminPage() {
         body: JSON.stringify({ action: "list_docs" }),
       });
       const data = await res.json().catch(() => ({}));
-      setLastResponseDebug((prev) => `${prev || ''}\nDOCS_RES:\n${JSON.stringify(data, null, 2)}`);
+      setLastResponseDebug(
+        (prev) => `${prev || ""}\nDOCS_RES:\n${JSON.stringify(data, null, 2)}`,
+      );
 
       if (!res.ok) {
         setError(data?.error || "Failed to load docs");
@@ -320,21 +437,25 @@ export default function AdminPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        setCurrentUser((prev) => (prev ? { ...prev, profilePicture: data.url ?? null } : prev));
+        setCurrentUser((prev) =>
+          prev ? { ...prev, profilePicture: data.url ?? null } : prev,
+        );
       }
     } catch (err) {
       console.error("fetchSelfProfilePicture error", err);
     }
   }
 
-  async function fetchSubmissions(status: "pending" | "approved" | "rejected" | "all" = "pending") {
+  async function fetchSubmissions(
+    status: "pending" | "approved" | "rejected" | "all" = "pending",
+  ) {
     setSubmissionsLoading(true);
     try {
       const fetchType = async (type: "articles" | "stories" | "blogs") => {
         const actionMap = {
           articles: "list_doc_submissions",
           stories: "list_story_submissions",
-          blogs: "list_blog_submissions"
+          blogs: "list_blog_submissions",
         };
         const res = await fetch("/api/admin", {
           method: "POST",
@@ -343,7 +464,10 @@ export default function AdminPage() {
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok && Array.isArray(data.submissions)) {
-          return data.submissions.map((s: any) => ({ ...s, contentType: type }));
+          return data.submissions.map((s: any) => ({
+            ...s,
+            contentType: type,
+          }));
         }
         return [];
       };
@@ -351,7 +475,7 @@ export default function AdminPage() {
       const results = await Promise.all([
         fetchType("articles"),
         fetchType("stories"),
-        fetchType("blogs")
+        fetchType("blogs"),
       ]);
 
       const allSubmissions = results.flat().sort((a, b) => {
@@ -388,15 +512,33 @@ export default function AdminPage() {
       });
 
       const data = await res.json().catch(() => ({}));
-      setLastResponseDebug((p) => `${p || ""}\nUPLOAD_RES:\n${JSON.stringify(data, null, 2)}`);
+      setLastResponseDebug(
+        (p) => `${p || ""}\nUPLOAD_RES:\n${JSON.stringify(data, null, 2)}`,
+      );
 
       if (!res.ok) throw new Error(data.error || "Failed to upload image");
 
       const url = data.avatar_url || null;
 
-      setDocs((prev) => prev.map((d) => (d.author_user_id === userId ? { ...d, profilePicture: url || d.profilePicture || null } : d)));
-      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, profilePicture: url || u.profilePicture || null } : u)));
-      setCurrentUser((prev) => (prev && prev.id === userId ? { ...prev, profilePicture: url || prev.profilePicture || null } : prev));
+      setDocs((prev) =>
+        prev.map((d) =>
+          d.author_user_id === userId
+            ? { ...d, profilePicture: url || d.profilePicture || null }
+            : d,
+        ),
+      );
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId
+            ? { ...u, profilePicture: url || u.profilePicture || null }
+            : u,
+        ),
+      );
+      setCurrentUser((prev) =>
+        prev && prev.id === userId
+          ? { ...prev, profilePicture: url || prev.profilePicture || null }
+          : prev,
+      );
     } catch (err) {
       console.error("Upload error", err);
       setError("Failed to upload image");
@@ -405,16 +547,28 @@ export default function AdminPage() {
     }
   }
 
-  async function handleDeleteContent(id: string, type: "articles" | "blogs" | "survivors") {
-    const labels = { articles: "article", blogs: "blog post", survivors: "survivor story" };
-    if (!confirm(`Are you sure you want to hide this ${labels[type]}? It will no longer be visible to the public.`)) return;
+  async function handleDeleteContent(
+    id: string,
+    type: "articles" | "blogs" | "survivors",
+  ) {
+    const labels = {
+      articles: "article",
+      blogs: "blog post",
+      survivors: "survivor story",
+    };
+    if (
+      !confirm(
+        `Are you sure you want to hide this ${labels[type]}? It will no longer be visible to the public.`,
+      )
+    )
+      return;
 
     setLoading(true);
     try {
       const actionMap = {
         articles: "delete_doc",
         blogs: "delete_blog",
-        survivors: "delete_story"
+        survivors: "delete_story",
       };
 
       const res = await fetch("/api/admin", {
@@ -424,7 +578,7 @@ export default function AdminPage() {
           action: actionMap[type],
           docId: type === "articles" ? id : undefined,
           blogId: type === "blogs" ? id : undefined,
-          storyId: type === "survivors" ? id : undefined
+          storyId: type === "survivors" ? id : undefined,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -443,19 +597,27 @@ export default function AdminPage() {
     }
   }
 
-  async function handleReviewSubmission(type: "articles" | "stories" | "blogs", submissionId: string, decision: "approve" | "reject") {
+  async function handleReviewSubmission(
+    type: "articles" | "stories" | "blogs",
+    submissionId: string,
+    decision: "approve" | "reject",
+  ) {
     setReviewing((s) => ({ ...s, [submissionId]: true }));
     try {
       const actionMap = {
         articles: "review_doc_submission",
         stories: "review_story_submission",
-        blogs: "review_blog_submission"
+        blogs: "review_blog_submission",
       };
 
       const res = await fetch("/api/admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: actionMap[type], submissionId, decision }),
+        body: JSON.stringify({
+          action: actionMap[type],
+          submissionId,
+          decision,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -483,7 +645,9 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (res.ok && data.settings) {
-        const maint = data.settings.find((s: any) => s.key === "maintenance_mode");
+        const maint = data.settings.find(
+          (s: any) => s.key === "maintenance_mode",
+        );
         if (maint) {
           setMaintenanceMode(maint.value?.enabled ?? false);
         }
@@ -503,7 +667,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           action: "update_site_settings",
           key: "maintenance_mode",
-          value: { enabled: !maintenanceMode }
+          value: { enabled: !maintenanceMode },
         }),
       });
       const data = await res.json();
@@ -530,7 +694,9 @@ export default function AdminPage() {
         body: JSON.stringify({ action: "logout" }),
       });
       const data = await res.json().catch(() => ({}));
-      setLastResponseDebug((prev) => `${prev || ''}\nLOGOUT:\n${JSON.stringify(data, null, 2)}`);
+      setLastResponseDebug(
+        (prev) => `${prev || ""}\nLOGOUT:\n${JSON.stringify(data, null, 2)}`,
+      );
     } catch (err) {
       console.error("logout error", err);
     } finally {
@@ -554,7 +720,21 @@ export default function AdminPage() {
       const data = await res.json().catch(() => ({}));
       if (res.ok && Array.isArray(data.users)) {
         setUsers(data.users);
-        const initialEdits: Record<string, { username: string; email: string; name: string; password: string; admin_access: boolean; position: string; description: string; department: string; is_legacy: boolean; is_banned: boolean }> = {};
+        const initialEdits: Record<
+          string,
+          {
+            username: string;
+            email: string;
+            name: string;
+            password: string;
+            admin_access: boolean;
+            position: string;
+            description: string;
+            department: string;
+            is_legacy: boolean;
+            is_banned: boolean;
+          }
+        > = {};
         data.users.forEach((u: UserRow) => {
           initialEdits[u.id] = {
             username: u.username ?? "",
@@ -590,7 +770,17 @@ export default function AdminPage() {
       const data = await res.json().catch(() => ({}));
       if (res.ok && Array.isArray(data.users)) {
         setPublicUsers(data.users);
-        const initialEdits: Record<string, { username: string; email: string; name: string; bio: string; password: string; is_banned: boolean }> = {};
+        const initialEdits: Record<
+          string,
+          {
+            username: string;
+            email: string;
+            name: string;
+            bio: string;
+            password: string;
+            is_banned: boolean;
+          }
+        > = {};
         data.users.forEach((u: PublicUserRow) => {
           initialEdits[u.id] = {
             username: u.username ?? "",
@@ -659,7 +849,10 @@ export default function AdminPage() {
       const res = await fetch("/api/admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "delete_public_user", targetUserId: userId }),
+        body: JSON.stringify({
+          action: "delete_public_user",
+          targetUserId: userId,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -671,7 +864,6 @@ export default function AdminPage() {
       setError("Delete failed");
     }
   }
-
 
   async function handleUpdateSelf(e: FormEvent) {
     e.preventDefault();
@@ -694,7 +886,10 @@ export default function AdminPage() {
         body: JSON.stringify(body),
       });
       const data = await res.json().catch(() => ({}));
-      setLastResponseDebug((prev) => `${prev || ''}\nUPDATE_SELF:\n${JSON.stringify(data, null, 2)}`);
+      setLastResponseDebug(
+        (prev) =>
+          `${prev || ""}\nUPDATE_SELF:\n${JSON.stringify(data, null, 2)}`,
+      );
       if (!res.ok) {
         setError(data?.error || "Update failed");
       } else {
@@ -746,7 +941,10 @@ export default function AdminPage() {
         body: JSON.stringify(body),
       });
       const data = await res.json().catch(() => ({}));
-      setLastResponseDebug((prev) => `${prev || ''}\nUPDATE_USER(${userId}):\n${JSON.stringify(data, null, 2)}`);
+      setLastResponseDebug(
+        (prev) =>
+          `${prev || ""}\nUPDATE_USER(${userId}):\n${JSON.stringify(data, null, 2)}`,
+      );
       if (!res.ok) {
         setError(data?.error || "Update failed");
       } else {
@@ -785,7 +983,15 @@ export default function AdminPage() {
       if (!res.ok) {
         setError(data?.error || "Create user failed");
       } else {
-        setNewUser({ username: "", email: "", name: "", password: "", position: "", description: "", department: "" });
+        setNewUser({
+          username: "",
+          email: "",
+          name: "",
+          password: "",
+          position: "",
+          description: "",
+          department: "",
+        });
         await fetchUsers();
       }
     } catch (err) {
@@ -796,7 +1002,12 @@ export default function AdminPage() {
 
   async function handleDeleteUser(userId: string) {
     setError("");
-    if (!confirm("Are you sure you want to purge this user? They will be moved to legacy writers and lose admin access.")) return;
+    if (
+      !confirm(
+        "Are you sure you want to purge this user? They will be moved to legacy writers and lose admin access.",
+      )
+    )
+      return;
     try {
       const res = await fetch("/api/admin", {
         method: "POST",
@@ -820,12 +1031,18 @@ export default function AdminPage() {
     return users.filter((u) =>
       [u.name, u.username, u.email, u.position, u.department]
         .filter(Boolean)
-        .some((v) => String(v).toLowerCase().includes(term))
+        .some((v) => String(v).toLowerCase().includes(term)),
     );
   }, [userSearch, users]);
 
-  const activeFilteredUsers = useMemo(() => filteredUsers.filter((u) => !u.is_legacy), [filteredUsers]);
-  const legacyFilteredUsers = useMemo(() => filteredUsers.filter((u) => u.is_legacy), [filteredUsers]);
+  const activeFilteredUsers = useMemo(
+    () => filteredUsers.filter((u) => !u.is_legacy),
+    [filteredUsers],
+  );
+  const legacyFilteredUsers = useMemo(
+    () => filteredUsers.filter((u) => u.is_legacy),
+    [filteredUsers],
+  );
 
   const filteredPublicUsers = useMemo(() => {
     const term = publicUserSearch.toLowerCase().trim();
@@ -833,7 +1050,7 @@ export default function AdminPage() {
     return publicUsers.filter((u) =>
       [u.name, u.username, u.email, u.bio]
         .filter(Boolean)
-        .some((v) => String(v).toLowerCase().includes(term))
+        .some((v) => String(v).toLowerCase().includes(term)),
     );
   }, [publicUserSearch, publicUsers]);
 
@@ -860,7 +1077,10 @@ export default function AdminPage() {
   }
 
   return (
-    <div ref={containerRef} className="relative min-h-screen min-w-screen overflow-hidden bg-[#2A292F] text-white">
+    <div
+      ref={containerRef}
+      className="relative min-h-screen min-w-screen overflow-hidden bg-[#2A292F] text-white"
+    >
       <DynamicBackgroundHues containerRef={containerRef} />
 
       <div className="relative z-10 px-4 py-10 pt-24 md:pt-36">
@@ -877,7 +1097,9 @@ export default function AdminPage() {
                 Admin Dashboard
               </h1>
               <p className="text-lg md:text-xl text-white/50 font-dmsans max-w-2xl mx-auto">
-                The place where <span className="text-white font-semibold">YOU</span> can bring a change through research and storytelling.
+                The place where{" "}
+                <span className="text-white font-semibold">YOU</span> can bring
+                a change through research and storytelling.
               </p>
             </motion.div>
 
@@ -915,7 +1137,10 @@ export default function AdminPage() {
               >
                 Action Centre
                 {activeTab === "action-centre" && (
-                  <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
+                  <motion.div
+                    layoutId="tab-underline"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
+                  />
                 )}
               </button>
             )}
@@ -925,7 +1150,10 @@ export default function AdminPage() {
             >
               Articles
               {activeTab === "articles" && (
-                <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
+                <motion.div
+                  layoutId="tab-underline"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
+                />
               )}
             </button>
             <button
@@ -934,7 +1162,10 @@ export default function AdminPage() {
             >
               Blogs
               {activeTab === "blogs" && (
-                <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
+                <motion.div
+                  layoutId="tab-underline"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
+                />
               )}
             </button>
             <button
@@ -943,7 +1174,22 @@ export default function AdminPage() {
             >
               Stories
               {activeTab === "survivors" && (
-                <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
+                <motion.div
+                  layoutId="tab-underline"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
+                />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab("glossary")}
+              className={`relative px-4 py-3 text-sm font-medium transition-all ${activeTab === "glossary" ? "text-white" : "text-white/50 hover:text-white/80"}`}
+            >
+              Glossary
+              {activeTab === "glossary" && (
+                <motion.div
+                  layoutId="tab-underline"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
+                />
               )}
             </button>
             {currentUser?.admin_access && (
@@ -953,7 +1199,10 @@ export default function AdminPage() {
               >
                 System
                 {activeTab === "system" && (
-                  <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
+                  <motion.div
+                    layoutId="tab-underline"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
+                  />
                 )}
               </button>
             )}
@@ -978,15 +1227,15 @@ export default function AdminPage() {
                         icon: Clock,
                         color: "text-amber-400",
                         bg: "bg-amber-400/10",
-                        description: "Awaiting administrative action"
+                        description: "Awaiting administrative action",
                       },
                       {
                         label: "Society Members",
-                        value: users.filter(u => !u.is_legacy).length,
+                        value: users.filter((u) => !u.is_legacy).length,
                         icon: Users,
                         color: "text-purple-400",
                         bg: "bg-purple-400/10",
-                        description: "Active employees & contributors"
+                        description: "Active employees & contributors",
                       },
                       {
                         label: "Community",
@@ -994,8 +1243,8 @@ export default function AdminPage() {
                         icon: Globe,
                         color: "text-emerald-400",
                         bg: "bg-emerald-400/10",
-                        description: "Registered public accounts"
-                      }
+                        description: "Registered public accounts",
+                      },
                     ].map((stat, i) => (
                       <motion.div
                         key={stat.label}
@@ -1010,11 +1259,19 @@ export default function AdminPage() {
                         <div className="cardGlass-shine pointer-events-none" />
                         <div className="relative z-10 flex items-start justify-between">
                           <div className="space-y-1">
-                            <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">{stat.label}</p>
-                            <h3 className="text-4xl font-tttravelsnext font-bold">{stat.value}</h3>
-                            <p className="text-xs text-white/30 font-dmsans mt-2">{stat.description}</p>
+                            <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">
+                              {stat.label}
+                            </p>
+                            <h3 className="text-4xl font-tttravelsnext font-bold">
+                              {stat.value}
+                            </h3>
+                            <p className="text-xs text-white/30 font-dmsans mt-2">
+                              {stat.description}
+                            </p>
                           </div>
-                          <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform duration-500`}>
+                          <div
+                            className={`p-3 rounded-2xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform duration-500`}
+                          >
                             <stat.icon size={24} strokeWidth={1.5} />
                           </div>
                         </div>
@@ -1025,7 +1282,9 @@ export default function AdminPage() {
 
                   {/* Pending Submissions */}
                   <section className="flex flex-col gap-4">
-                    <div className={`${cardClass} p-8 relative overflow-hidden`}>
+                    <div
+                      className={`${cardClass} p-8 relative overflow-hidden`}
+                    >
                       <div className="glass-noise" />
                       <div className="cardGlass-borders" />
                       <div className="cardGlass-tint" />
@@ -1034,8 +1293,12 @@ export default function AdminPage() {
                       <div className="relative z-10">
                         <div className="flex items-center justify-between mb-6">
                           <div>
-                            <h2 className="text-xl font-wintersolace">Pending Submissions</h2>
-                            <p className="text-sm text-white/50 mt-1">Review and approve content from authors.</p>
+                            <h2 className="text-xl font-wintersolace">
+                              Pending Submissions
+                            </h2>
+                            <p className="text-sm text-white/50 mt-1">
+                              Review and approve content from authors.
+                            </p>
                           </div>
                         </div>
                         <button
@@ -1047,19 +1310,24 @@ export default function AdminPage() {
                         </button>
                       </div>
 
-
-
                       {submissionsLoading && submissions.length === 0 ? (
                         <div className="flex flex-col items-center gap-4 py-16 justify-center">
                           <div className="relative">
                             <div className="h-16 w-16 animate-spin rounded-full border-2 border-white/5 border-t-purple-500" />
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <Zap size={20} className="text-purple-400 animate-pulse" />
+                              <Zap
+                                size={20}
+                                className="text-purple-400 animate-pulse"
+                              />
                             </div>
                           </div>
                           <div className="space-y-1 text-center">
-                            <p className="text-sm font-bold text-white/80 uppercase tracking-widest">Scanning Data Vault</p>
-                            <p className="text-xs text-white/30">Retrieving latest submissions from the network...</p>
+                            <p className="text-sm font-bold text-white/80 uppercase tracking-widest">
+                              Scanning Data Vault
+                            </p>
+                            <p className="text-xs text-white/30">
+                              Retrieving latest submissions from the network...
+                            </p>
                           </div>
                         </div>
                       ) : submissions.length === 0 ? (
@@ -1068,20 +1336,48 @@ export default function AdminPage() {
                             <ShieldCheck size={32} strokeWidth={1} />
                           </div>
                           <div className="space-y-1">
-                            <p className="text-sm font-bold text-white/60 uppercase tracking-widest">Safe & Secure</p>
-                            <p className="text-xs text-white/40 italic">Action centre is clear. All pending reviews processed.</p>
+                            <p className="text-sm font-bold text-white/60 uppercase tracking-widest">
+                              Safe & Secure
+                            </p>
+                            <p className="text-xs text-white/40 italic">
+                              Action centre is clear. All pending reviews
+                              processed.
+                            </p>
                           </div>
                         </div>
                       ) : (
                         <div className="grid grid-cols-1 gap-4">
                           {submissions.map((s, idx) => {
                             const type = s.contentType || "articles";
-                            const isNew = type === "articles" ? !s.doc_id : type === "stories" ? !s.story_id : !s.blog_id;
-                            const kind = isNew ? "New Submission" : "Update Request";
-                            const authorLabel = type === "articles" ? (s.author?.name || s.author?.username || "Researcher") : (s.author?.name || s.author?.username || "Contributor");
-                            const isOwn = currentUser && (type === "articles" ? s.author_user_id === currentUser.id : s.user_id === currentUser.id);
+                            const isNew =
+                              type === "articles"
+                                ? !s.doc_id
+                                : type === "stories"
+                                  ? !s.story_id
+                                  : !s.blog_id;
+                            const kind = isNew
+                              ? "New Submission"
+                              : "Update Request";
+                            const authorLabel =
+                              type === "articles"
+                                ? s.author?.name ||
+                                  s.author?.username ||
+                                  "Researcher"
+                                : s.author?.name ||
+                                  s.author?.username ||
+                                  "Contributor";
+                            const isOwn =
+                              currentUser &&
+                              (type === "articles"
+                                ? s.author_user_id === currentUser.id
+                                : s.user_id === currentUser.id);
 
-                            const TabIcon = type === "articles" ? FileText : type === "stories" ? Heart : MessageSquare;
+                            const TabIcon =
+                              type === "articles"
+                                ? FileText
+                                : type === "stories"
+                                  ? Heart
+                                  : MessageSquare;
 
                             return (
                               <motion.div
@@ -1091,50 +1387,83 @@ export default function AdminPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.05 }}
                                 className="group/card relative overflow-hidden rounded-[44px] border border-white/5 p-6 hover:bg-white/[0.04] transition-all duration-300 isolation-isolate admin-card"
-                                style={{ "--card-radius": "44px" } as React.CSSProperties}
-                            >
+                                style={
+                                  {
+                                    "--card-radius": "44px",
+                                  } as React.CSSProperties
+                                }
+                              >
                                 <div className="cardGlass-tint" />
                                 <div className="glass-noise" />
                                 <div className="cardGlass-borders pointer-events-none" />
                                 <div className="cardGlass-shine pointer-events-none" />
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
                                   <div className="flex gap-5">
-                                    <div className={`mt-1 h-12 w-12 rounded-2xl flex items-center justify-center bg-white/5 text-white/40 border border-white/5 group-hover:bg-purple-500/10 group-hover:text-purple-400 group-hover:border-purple-500/20 transition-all duration-500`}>
+                                    <div
+                                      className={`mt-1 h-12 w-12 rounded-2xl flex items-center justify-center bg-white/5 text-white/40 border border-white/5 group-hover:bg-purple-500/10 group-hover:text-purple-400 group-hover:border-purple-500/20 transition-all duration-500`}
+                                    >
                                       <TabIcon size={22} strokeWidth={1.5} />
                                     </div>
                                     <div className="space-y-1">
                                       <div className="flex items-center gap-3">
-                                        <span className={`px-2 py-0.5 rounded-[6px] text-[10px] font-black uppercase tracking-wider ${isNew ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
+                                        <span
+                                          className={`px-2 py-0.5 rounded-[6px] text-[10px] font-black uppercase tracking-wider ${isNew ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"}`}
+                                        >
                                           {kind}
                                         </span>
-                                        <span className="text-[10px] text-white/30 uppercase tracking-[0.1em] font-medium">By {authorLabel}</span>
+                                        <span className="text-[10px] text-white/30 uppercase tracking-[0.1em] font-medium">
+                                          By {authorLabel}
+                                        </span>
                                         {s.created_at && (
                                           <span className="text-[10px] text-white/20">
-                                            • {new Date(s.created_at).toLocaleDateString()}
+                                            •{" "}
+                                            {new Date(
+                                              s.created_at,
+                                            ).toLocaleDateString()}
                                           </span>
                                         )}
                                       </div>
-                                      <h3 
+                                      <h3
                                         className="text-lg font-bold text-white/90 transition-colors group-hover/card:text-[var(--hover-heading-color)]"
-                                        style={type === "articles" ? { "--hover-heading-color": (s.colour || "#d8b4fe") } as React.CSSProperties : {}}
+                                        style={
+                                          type === "articles"
+                                            ? ({
+                                                "--hover-heading-color":
+                                                  s.colour || "#d8b4fe",
+                                              } as React.CSSProperties)
+                                            : {}
+                                        }
                                       >
                                         {s.title}
                                       </h3>
-                                      <p className="text-sm text-white/40 line-clamp-1 group-hover:text-white/60 transition-colors">{s.content}</p>
+                                      <p className="text-sm text-white/40 line-clamp-1 group-hover:text-white/60 transition-colors">
+                                        {s.content}
+                                      </p>
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-3 self-end md:self-center">
                                     {isOwn ? (
                                       <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
-                                        <ShieldCheck size={14} className="text-white/20" />
-                                        <span className="text-xs text-white/30 font-medium italic">Self-review restricted</span>
+                                        <ShieldCheck
+                                          size={14}
+                                          className="text-white/20"
+                                        />
+                                        <span className="text-xs text-white/30 font-medium italic">
+                                          Self-review restricted
+                                        </span>
                                       </div>
                                     ) : (
                                       <>
                                         <motion.button
                                           whileHover={{ scale: 1.05 }}
                                           whileTap={{ scale: 0.95 }}
-                                          onClick={() => handleReviewSubmission(type, s.id, "reject")}
+                                          onClick={() =>
+                                            handleReviewSubmission(
+                                              type,
+                                              s.id,
+                                              "reject",
+                                            )
+                                          }
                                           disabled={Boolean(reviewing[s.id])}
                                           className="flex items-center gap-2 px-5 py-2.5 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 hover:border-red-500/20 text-red-400/60 hover:text-red-400 rounded-2xl text-sm font-bold transition-all duration-300 disabled:opacity-50"
                                         >
@@ -1144,7 +1473,13 @@ export default function AdminPage() {
                                         <motion.button
                                           whileHover={{ scale: 1.05, y: -2 }}
                                           whileTap={{ scale: 0.95 }}
-                                          onClick={() => handleReviewSubmission(type, s.id, "approve")}
+                                          onClick={() =>
+                                            handleReviewSubmission(
+                                              type,
+                                              s.id,
+                                              "approve",
+                                            )
+                                          }
                                           disabled={Boolean(reviewing[s.id])}
                                           className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:border-emerald-500/40 text-emerald-400 rounded-2xl text-sm font-bold shadow-lg shadow-emerald-500/5 hover:shadow-emerald-500/10 transition-all duration-300 disabled:opacity-50"
                                         >
@@ -1156,7 +1491,10 @@ export default function AdminPage() {
                                   </div>
                                 </div>
                                 <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <ArrowRight size={16} className="text-white/10" />
+                                  <ArrowRight
+                                    size={16}
+                                    className="text-white/10"
+                                  />
                                 </div>
                               </motion.div>
                             );
@@ -1176,8 +1514,13 @@ export default function AdminPage() {
                     <div className="relative z-10">
                       <div className="flex items-center justify-between mb-8">
                         <div>
-                          <h2 className="text-xl font-wintersolace">Employee Management</h2>
-                          <p className="text-sm text-white/50 mt-1">Manage society members and their administrative roles.</p>
+                          <h2 className="text-xl font-wintersolace">
+                            Employee Management
+                          </h2>
+                          <p className="text-sm text-white/50 mt-1">
+                            Manage society members and their administrative
+                            roles.
+                          </p>
                         </div>
                         <div className="flex items-center gap-4">
                           <input
@@ -1186,7 +1529,11 @@ export default function AdminPage() {
                             value={userSearch}
                             onChange={(e) => setUserSearch(e.target.value)}
                           />
-                          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-flex">
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="inline-flex"
+                          >
                             <button
                               className="relative px-5 py-2.5 rounded-full overflow-hidden backdrop-blur-sm font-dmsans transition-all duration-300"
                               onClick={() => setShowAddEmployee((v) => !v)}
@@ -1203,46 +1550,145 @@ export default function AdminPage() {
                         {showAddEmployee && (
                           <motion.div
                             initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                            animate={{ opacity: 1, height: "auto", marginBottom: 40 }}
+                            animate={{
+                              opacity: 1,
+                              height: "auto",
+                              marginBottom: 40,
+                            }}
                             exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                             className="overflow-hidden"
                           >
-                            <div className="p-8 rounded-[44px] border border-white/10 bg-white/[0.03] backdrop-blur-3xl relative group" style={{ "--card-radius": "44px" } as React.CSSProperties}>
+                            <div
+                              className="p-8 rounded-[44px] border border-white/10 bg-white/[0.03] backdrop-blur-3xl relative group"
+                              style={
+                                {
+                                  "--card-radius": "44px",
+                                } as React.CSSProperties
+                              }
+                            >
                               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
                                 <div className="space-y-2">
-                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">Full Name</label>
-                                  <input className={`${inputClass} w-full focus:ring-purple-500/50`} placeholder="E.g. Dr. John Doe" value={newUser.name} onChange={(e) => setNewUser(s => ({ ...s, name: e.target.value }))} />
+                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">
+                                    Full Name
+                                  </label>
+                                  <input
+                                    className={`${inputClass} w-full focus:ring-purple-500/50`}
+                                    placeholder="E.g. Dr. John Doe"
+                                    value={newUser.name}
+                                    onChange={(e) =>
+                                      setNewUser((s) => ({
+                                        ...s,
+                                        name: e.target.value,
+                                      }))
+                                    }
+                                  />
                                 </div>
                                 <div className="space-y-2">
-                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">Username</label>
-                                  <input className={`${inputClass} w-full focus:ring-purple-500/50`} placeholder="@username" value={newUser.username} onChange={(e) => setNewUser(s => ({ ...s, username: e.target.value }))} />
+                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">
+                                    Username
+                                  </label>
+                                  <input
+                                    className={`${inputClass} w-full focus:ring-purple-500/50`}
+                                    placeholder="@username"
+                                    value={newUser.username}
+                                    onChange={(e) =>
+                                      setNewUser((s) => ({
+                                        ...s,
+                                        username: e.target.value,
+                                      }))
+                                    }
+                                  />
                                 </div>
                                 <div className="space-y-2">
-                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">Email Address</label>
-                                  <input className={`${inputClass} w-full focus:ring-purple-500/50`} placeholder="email@example.com" value={newUser.email} onChange={(e) => setNewUser(s => ({ ...s, email: e.target.value }))} />
+                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">
+                                    Email Address
+                                  </label>
+                                  <input
+                                    className={`${inputClass} w-full focus:ring-purple-500/50`}
+                                    placeholder="email@example.com"
+                                    value={newUser.email}
+                                    onChange={(e) =>
+                                      setNewUser((s) => ({
+                                        ...s,
+                                        email: e.target.value,
+                                      }))
+                                    }
+                                  />
                                 </div>
                                 <div className="space-y-2">
-                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">Secure Password</label>
-                                  <input type="password" className={`${inputClass} w-full focus:ring-purple-500/50`} placeholder="••••••••" value={newUser.password} onChange={(e) => setNewUser(s => ({ ...s, password: e.target.value }))} />
+                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">
+                                    Secure Password
+                                  </label>
+                                  <input
+                                    type="password"
+                                    className={`${inputClass} w-full focus:ring-purple-500/50`}
+                                    placeholder="••••••••"
+                                    value={newUser.password}
+                                    onChange={(e) =>
+                                      setNewUser((s) => ({
+                                        ...s,
+                                        password: e.target.value,
+                                      }))
+                                    }
+                                  />
                                 </div>
                                 <div className="space-y-2">
-                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">Professional Role</label>
-                                  <input className={`${inputClass} w-full focus:ring-purple-500/50`} placeholder="e.g. Research Lead" value={newUser.position} onChange={(e) => setNewUser(s => ({ ...s, position: e.target.value }))} />
+                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">
+                                    Professional Role
+                                  </label>
+                                  <input
+                                    className={`${inputClass} w-full focus:ring-purple-500/50`}
+                                    placeholder="e.g. Research Lead"
+                                    value={newUser.position}
+                                    onChange={(e) =>
+                                      setNewUser((s) => ({
+                                        ...s,
+                                        position: e.target.value,
+                                      }))
+                                    }
+                                  />
                                 </div>
                                 <div className="space-y-2">
-                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">Department</label>
-                                  <input className={`${inputClass} w-full focus:ring-purple-500/50`} placeholder="e.g. Writers' Block" value={newUser.department} onChange={(e) => setNewUser(s => ({ ...s, department: e.target.value }))} />
+                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">
+                                    Department
+                                  </label>
+                                  <input
+                                    className={`${inputClass} w-full focus:ring-purple-500/50`}
+                                    placeholder="e.g. Writers' Block"
+                                    value={newUser.department}
+                                    onChange={(e) =>
+                                      setNewUser((s) => ({
+                                        ...s,
+                                        department: e.target.value,
+                                      }))
+                                    }
+                                  />
                                 </div>
                                 <div className="space-y-2 md:col-span-3">
-                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">Contributor Bio</label>
-                                  <textarea className={`${textareaClass} w-full !min-h-[100px] focus:ring-purple-500/50`} placeholder="Short biography for the research community..." value={newUser.description} onChange={(e) => setNewUser(s => ({ ...s, description: e.target.value }))} />
+                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-black ml-1">
+                                    Contributor Bio
+                                  </label>
+                                  <textarea
+                                    className={`${textareaClass} w-full !min-h-[100px] focus:ring-purple-500/50`}
+                                    placeholder="Short biography for the research community..."
+                                    value={newUser.description}
+                                    onChange={(e) =>
+                                      setNewUser((s) => ({
+                                        ...s,
+                                        description: e.target.value,
+                                      }))
+                                    }
+                                  />
                                 </div>
                               </div>
                               <div className="mt-8 flex justify-end relative z-10">
                                 <button
                                   className="px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl text-sm font-bold shadow-xl shadow-purple-900/20 transition-all duration-300 transform active:scale-95"
-                                  onClick={async () => { await handleCreateUser(); setShowAddEmployee(false); }}
+                                  onClick={async () => {
+                                    await handleCreateUser();
+                                    setShowAddEmployee(false);
+                                  }}
                                 >
                                   Authorize Contributor
                                 </button>
@@ -1255,147 +1701,376 @@ export default function AdminPage() {
                       <div className="space-y-12">
                         {/* Active Employees Table */}
                         <div className="space-y-4">
-                          <h3 className="text-sm font-tttravelsnext font-bold text-white/40 uppercase tracking-[0.2em] ml-2">Active Society Members</h3>
+                          <h3 className="text-sm font-tttravelsnext font-bold text-white/40 uppercase tracking-[0.2em] ml-2">
+                            Active Society Members
+                          </h3>
                           <div className="overflow-x-auto no-scrollbar">
                             <table className="w-full text-sm">
                               <thead>
                                 <tr className="border-b border-white/5">
-                                  <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Contributor</th>
-                                  <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Role & Department</th>
-                                  <th className="text-center py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Auth Level</th>
-                                  <th className="text-right py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Actions</th>
+                                  <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">
+                                    Contributor
+                                  </th>
+                                  <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">
+                                    Role & Department
+                                  </th>
+                                  <th className="text-center py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">
+                                    Auth Level
+                                  </th>
+                                  <th className="text-right py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">
+                                    Actions
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-white/[0.02]">
                                 {activeFilteredUsers.length === 0 ? (
                                   <tr>
-                                    <td colSpan={4} className="py-10 text-center text-white/20 italic font-medium">No active members found</td>
+                                    <td
+                                      colSpan={4}
+                                      className="py-10 text-center text-white/20 italic font-medium"
+                                    >
+                                      No active members found
+                                    </td>
                                   </tr>
-                                ) : activeFilteredUsers.map((u, i) => {
-                                  const isExpanded = expandedUserId === u.id;
-                                  const edit = userEdits[u.id] ?? {};
-                                  return (
-                                    <React.Fragment key={u.id}>
-                                      <motion.tr
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: i * 0.03 }}
-                                        className={`group hover:bg-white/[0.03] transition-all cursor-pointer ${isExpanded ? 'bg-white/[0.03]' : ''}`}
-                                        onClick={() => setExpandedUserId(isExpanded ? null : u.id)}
-                                      >
-                                        <td className="py-5 px-6">
-                                          <div className="flex items-center gap-4">
-                                            <div className="relative h-11 w-11 rounded-full bg-white/5 border border-white/10 overflow-hidden ring-4 ring-white/[0.02] transition-transform group-hover:scale-105">
-                                              {u.profilePicture ? (
-                                                <img src={u.profilePicture} className="w-full h-full object-cover" alt="" />
-                                              ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-xs font-black text-white/20">
-                                                  {u.name?.[0] || u.username?.[0] || "?"}
-                                                </div>
-                                              )}
-                                            </div>
-                                            <div>
-                                              <div className="font-bold text-white/90 group-hover:text-white transition-colors">{u.name || u.username}</div>
-                                              <div className="text-[10px] text-white/30 lowercase font-medium">{u.email}</div>
-                                            </div>
-                                          </div>
-                                        </td>
-                                        <td className="py-5 px-6">
-                                          <div className="space-y-0.5">
-                                            <div className="text-sm font-bold text-white/70">{u.position || "Staff"}</div>
-                                            <div className="text-[10px] text-white/30 uppercase tracking-widest font-black">{u.department || "Unassigned"}</div>
-                                          </div>
-                                        </td>
-                                        <td className="py-5 px-6 text-center">
-                                          <div className="inline-flex">
-                                            {u.admin_access ? (
-                                              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-500/10 text-purple-300 border border-purple-500/20">
-                                                <ShieldCheck size={10} />
-                                                Administrator
-                                              </span>
-                                            ) : u.is_banned ? (
-                                              <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-red-500/10 text-red-300 border border-red-500/20">
-                                                Banned Account
-                                              </span>
-                                            ) : (
-                                              <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/5 text-white/30 border border-white/5">
-                                                Standard Access
-                                              </span>
-                                            )}
-                                          </div>
-                                        </td>
-                                        <td className="py-5 px-6 text-right">
-                                          <div className="flex items-center justify-end gap-2 text-[10px] font-black uppercase tracking-widest text-white/30 group-hover:text-white transition-all">
-                                            {isExpanded ? "Close" : "Modify"}
-                                            <ChevronRight size={14} className={`transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`} />
-                                          </div>
-                                        </td>
-                                      </motion.tr>
-                                      {isExpanded && (
-                                        <tr>
-                                          <td colSpan={5} className="p-6 bg-white/[0.01] border-b border-white/5">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl">
-                                              <div className="space-y-1.5">
-                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Full Name</label>
-                                                <input className={`${inputClass} w-full`} placeholder="Full name" value={edit.name} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, name: e.target.value } }))} />
-                                              </div>
-                                              <div className="space-y-1.5">
-                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Username</label>
-                                                <input className={`${inputClass} w-full`} placeholder="@username" value={edit.username} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, username: e.target.value } }))} />
-                                              </div>
-                                              <div className="space-y-1.5">
-                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Email</label>
-                                                <input type="email" className={`${inputClass} w-full`} placeholder="email@example.com" value={edit.email} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, email: e.target.value } }))} />
-                                              </div>
-                                              <div className="space-y-1.5">
-                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Position / Role</label>
-                                                <input className={`${inputClass} w-full`} placeholder="e.g. Research Lead" value={edit.position} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, position: e.target.value } }))} />
-                                              </div>
-                                              <div className="space-y-1.5">
-                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Department</label>
-                                                <input className={`${inputClass} w-full`} placeholder="e.g. Biology" value={edit.department} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, department: e.target.value } }))} />
-                                              </div>
-                                              <div className="space-y-1.5 md:col-span-1">
-                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Description / Bio</label>
-                                                <textarea className={`${textareaClass} w-full !min-h-[80px]`} placeholder="Short bio or description..." value={edit.description} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, description: e.target.value } }))} />
-                                              </div>
-                                              <div className="space-y-1.5">
-                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">New Password</label>
-                                                <input type="password" className={`${inputClass} w-full`} placeholder="Leave blank to keep current" value={edit.password} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, password: e.target.value } }))} />
-                                              </div>
-                                              <div className="space-y-1.5">
-                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Confirm Password</label>
-                                                <input type="password" className={`${inputClass} w-full`} placeholder="Repeat new password" onChange={(e) => {/* confirm is local UI only – validated on save */ }} />
-                                              </div>
-                                              <div className="space-y-1.5 flex items-center gap-4 pb-2 pt-2">
-                                                <input type="checkbox" id={`admin-${u.id}`} className="accent-purple-500 h-4 w-4" checked={edit.admin_access} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, admin_access: e.target.checked } }))} />
-                                                <label htmlFor={`admin-${u.id}`} className="text-xs font-bold uppercase tracking-widest text-white/80 cursor-pointer">Grant Admin Authorization</label>
-                                              </div>
-                                              {(() => {
-                                                const myPos = (currentUser?.position || "").toUpperCase();
-                                                const canBan = myPos === "CEO" || myPos === "COO";
-                                                const isSelf = u.id === currentUser?.id;
-                                                
-                                                if (!canBan || isSelf) return null;
-                                                
-                                                return (
-                                                  <div className="space-y-1.5 flex items-center gap-4 pb-2 pt-2">
-                                                    <input type="checkbox" id={`banned-${u.id}`} className="accent-red-500 h-4 w-4" checked={edit.is_banned} onChange={(e) => setUserEdits(s => ({ ...s, [u.id]: { ...edit, is_banned: e.target.checked } }))} />
-                                                    <label htmlFor={`banned-${u.id}`} className="text-xs font-bold uppercase tracking-widest text-red-400 cursor-pointer">Restrict Account Access (BAN)</label>
+                                ) : (
+                                  activeFilteredUsers.map((u, i) => {
+                                    const isExpanded = expandedUserId === u.id;
+                                    const edit = userEdits[u.id] ?? {};
+                                    return (
+                                      <React.Fragment key={u.id}>
+                                        <motion.tr
+                                          initial={{ opacity: 0, x: -10 }}
+                                          animate={{ opacity: 1, x: 0 }}
+                                          transition={{ delay: i * 0.03 }}
+                                          className={`group hover:bg-white/[0.03] transition-all cursor-pointer ${isExpanded ? "bg-white/[0.03]" : ""}`}
+                                          onClick={() =>
+                                            setExpandedUserId(
+                                              isExpanded ? null : u.id,
+                                            )
+                                          }
+                                        >
+                                          <td className="py-5 px-6">
+                                            <div className="flex items-center gap-4">
+                                              <div className="relative h-11 w-11 rounded-full bg-white/5 border border-white/10 overflow-hidden ring-4 ring-white/[0.02] transition-transform group-hover:scale-105">
+                                                {u.profilePicture ? (
+                                                  <img
+                                                    src={u.profilePicture}
+                                                    className="w-full h-full object-cover"
+                                                    alt=""
+                                                  />
+                                                ) : (
+                                                  <div className="w-full h-full flex items-center justify-center text-xs font-black text-white/20">
+                                                    {u.name?.[0] ||
+                                                      u.username?.[0] ||
+                                                      "?"}
                                                   </div>
-                                                );
-                                              })()}
-                                              <div className="flex justify-end gap-3 items-center">
-                                                <button onClick={() => handleDeleteUser(u.id)} className="text-xs font-bold text-red-400/60 hover:text-red-400 transition-colors uppercase tracking-widest mr-4">Purge User</button>
-                                                <button onClick={() => handleUpdateUser(u.id)} disabled={Boolean(savingUser[u.id])} className="px-6 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all">{savingUser[u.id] ? "Saving..." : "Apply Changes"}</button>
+                                                )}
+                                              </div>
+                                              <div>
+                                                <div className="font-bold text-white/90 group-hover:text-white transition-colors">
+                                                  {u.name || u.username}
+                                                </div>
+                                                <div className="text-[10px] text-white/30 lowercase font-medium">
+                                                  {u.email}
+                                                </div>
                                               </div>
                                             </div>
                                           </td>
-                                        </tr>
-                                      )}
-                                    </React.Fragment>
-                                  );
-                                })}
+                                          <td className="py-5 px-6">
+                                            <div className="space-y-0.5">
+                                              <div className="text-sm font-bold text-white/70">
+                                                {u.position || "Staff"}
+                                              </div>
+                                              <div className="text-[10px] text-white/30 uppercase tracking-widest font-black">
+                                                {u.department || "Unassigned"}
+                                              </div>
+                                            </div>
+                                          </td>
+                                          <td className="py-5 px-6 text-center">
+                                            <div className="inline-flex">
+                                              {u.admin_access ? (
+                                                <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                                                  <ShieldCheck size={10} />
+                                                  Administrator
+                                                </span>
+                                              ) : u.is_banned ? (
+                                                <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-red-500/10 text-red-300 border border-red-500/20">
+                                                  Banned Account
+                                                </span>
+                                              ) : (
+                                                <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/5 text-white/30 border border-white/5">
+                                                  Standard Access
+                                                </span>
+                                              )}
+                                            </div>
+                                          </td>
+                                          <td className="py-5 px-6 text-right">
+                                            <div className="flex items-center justify-end gap-2 text-[10px] font-black uppercase tracking-widest text-white/30 group-hover:text-white transition-all">
+                                              {isExpanded ? "Close" : "Modify"}
+                                              <ChevronRight
+                                                size={14}
+                                                className={`transition-transform duration-300 ${isExpanded ? "rotate-90" : ""}`}
+                                              />
+                                            </div>
+                                          </td>
+                                        </motion.tr>
+                                        {isExpanded && (
+                                          <tr>
+                                            <td
+                                              colSpan={5}
+                                              className="p-6 bg-white/[0.01] border-b border-white/5"
+                                            >
+                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl">
+                                                <div className="space-y-1.5">
+                                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">
+                                                    Full Name
+                                                  </label>
+                                                  <input
+                                                    className={`${inputClass} w-full`}
+                                                    placeholder="Full name"
+                                                    value={edit.name}
+                                                    onChange={(e) =>
+                                                      setUserEdits((s) => ({
+                                                        ...s,
+                                                        [u.id]: {
+                                                          ...edit,
+                                                          name: e.target.value,
+                                                        },
+                                                      }))
+                                                    }
+                                                  />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">
+                                                    Username
+                                                  </label>
+                                                  <input
+                                                    className={`${inputClass} w-full`}
+                                                    placeholder="@username"
+                                                    value={edit.username}
+                                                    onChange={(e) =>
+                                                      setUserEdits((s) => ({
+                                                        ...s,
+                                                        [u.id]: {
+                                                          ...edit,
+                                                          username:
+                                                            e.target.value,
+                                                        },
+                                                      }))
+                                                    }
+                                                  />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">
+                                                    Email
+                                                  </label>
+                                                  <input
+                                                    type="email"
+                                                    className={`${inputClass} w-full`}
+                                                    placeholder="email@example.com"
+                                                    value={edit.email}
+                                                    onChange={(e) =>
+                                                      setUserEdits((s) => ({
+                                                        ...s,
+                                                        [u.id]: {
+                                                          ...edit,
+                                                          email: e.target.value,
+                                                        },
+                                                      }))
+                                                    }
+                                                  />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">
+                                                    Position / Role
+                                                  </label>
+                                                  <input
+                                                    className={`${inputClass} w-full`}
+                                                    placeholder="e.g. Research Lead"
+                                                    value={edit.position}
+                                                    onChange={(e) =>
+                                                      setUserEdits((s) => ({
+                                                        ...s,
+                                                        [u.id]: {
+                                                          ...edit,
+                                                          position:
+                                                            e.target.value,
+                                                        },
+                                                      }))
+                                                    }
+                                                  />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">
+                                                    Department
+                                                  </label>
+                                                  <input
+                                                    className={`${inputClass} w-full`}
+                                                    placeholder="e.g. Biology"
+                                                    value={edit.department}
+                                                    onChange={(e) =>
+                                                      setUserEdits((s) => ({
+                                                        ...s,
+                                                        [u.id]: {
+                                                          ...edit,
+                                                          department:
+                                                            e.target.value,
+                                                        },
+                                                      }))
+                                                    }
+                                                  />
+                                                </div>
+                                                <div className="space-y-1.5 md:col-span-1">
+                                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">
+                                                    Description / Bio
+                                                  </label>
+                                                  <textarea
+                                                    className={`${textareaClass} w-full !min-h-[80px]`}
+                                                    placeholder="Short bio or description..."
+                                                    value={edit.description}
+                                                    onChange={(e) =>
+                                                      setUserEdits((s) => ({
+                                                        ...s,
+                                                        [u.id]: {
+                                                          ...edit,
+                                                          description:
+                                                            e.target.value,
+                                                        },
+                                                      }))
+                                                    }
+                                                  />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">
+                                                    New Password
+                                                  </label>
+                                                  <input
+                                                    type="password"
+                                                    className={`${inputClass} w-full`}
+                                                    placeholder="Leave blank to keep current"
+                                                    value={edit.password}
+                                                    onChange={(e) =>
+                                                      setUserEdits((s) => ({
+                                                        ...s,
+                                                        [u.id]: {
+                                                          ...edit,
+                                                          password:
+                                                            e.target.value,
+                                                        },
+                                                      }))
+                                                    }
+                                                  />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">
+                                                    Confirm Password
+                                                  </label>
+                                                  <input
+                                                    type="password"
+                                                    className={`${inputClass} w-full`}
+                                                    placeholder="Repeat new password"
+                                                    onChange={(e) => {
+                                                      /* confirm is local UI only – validated on save */
+                                                    }}
+                                                  />
+                                                </div>
+                                                <div className="space-y-1.5 flex items-center gap-4 pb-2 pt-2">
+                                                  <input
+                                                    type="checkbox"
+                                                    id={`admin-${u.id}`}
+                                                    className="accent-purple-500 h-4 w-4"
+                                                    checked={edit.admin_access}
+                                                    onChange={(e) =>
+                                                      setUserEdits((s) => ({
+                                                        ...s,
+                                                        [u.id]: {
+                                                          ...edit,
+                                                          admin_access:
+                                                            e.target.checked,
+                                                        },
+                                                      }))
+                                                    }
+                                                  />
+                                                  <label
+                                                    htmlFor={`admin-${u.id}`}
+                                                    className="text-xs font-bold uppercase tracking-widest text-white/80 cursor-pointer"
+                                                  >
+                                                    Grant Admin Authorization
+                                                  </label>
+                                                </div>
+                                                {(() => {
+                                                  const myPos = (
+                                                    currentUser?.position || ""
+                                                  ).toUpperCase();
+                                                  const canBan =
+                                                    myPos === "CEO" ||
+                                                    myPos === "COO";
+                                                  const isSelf =
+                                                    u.id === currentUser?.id;
+
+                                                  if (!canBan || isSelf)
+                                                    return null;
+
+                                                  return (
+                                                    <div className="space-y-1.5 flex items-center gap-4 pb-2 pt-2">
+                                                      <input
+                                                        type="checkbox"
+                                                        id={`banned-${u.id}`}
+                                                        className="accent-red-500 h-4 w-4"
+                                                        checked={edit.is_banned}
+                                                        onChange={(e) =>
+                                                          setUserEdits((s) => ({
+                                                            ...s,
+                                                            [u.id]: {
+                                                              ...edit,
+                                                              is_banned:
+                                                                e.target
+                                                                  .checked,
+                                                            },
+                                                          }))
+                                                        }
+                                                      />
+                                                      <label
+                                                        htmlFor={`banned-${u.id}`}
+                                                        className="text-xs font-bold uppercase tracking-widest text-red-400 cursor-pointer"
+                                                      >
+                                                        Restrict Account Access
+                                                        (BAN)
+                                                      </label>
+                                                    </div>
+                                                  );
+                                                })()}
+                                                <div className="flex justify-end gap-3 items-center">
+                                                  <button
+                                                    onClick={() =>
+                                                      handleDeleteUser(u.id)
+                                                    }
+                                                    className="text-xs font-bold text-red-400/60 hover:text-red-400 transition-colors uppercase tracking-widest mr-4"
+                                                  >
+                                                    Purge User
+                                                  </button>
+                                                  <button
+                                                    onClick={() =>
+                                                      handleUpdateUser(u.id)
+                                                    }
+                                                    disabled={Boolean(
+                                                      savingUser[u.id],
+                                                    )}
+                                                    className="px-6 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all"
+                                                  >
+                                                    {savingUser[u.id]
+                                                      ? "Saving..."
+                                                      : "Apply Changes"}
+                                                  </button>
+                                                </div>
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        )}
+                                      </React.Fragment>
+                                    );
+                                  })
+                                )}
                               </tbody>
                             </table>
                           </div>
@@ -1404,97 +2079,167 @@ export default function AdminPage() {
                         {/* Legacy Employees Table */}
                         <div className="space-y-4">
                           <div className="flex items-center gap-3 ml-2">
-                            <h3 className="text-sm font-tttravelsnext font-bold text-white/40 uppercase tracking-[0.2em]">Archived Members</h3>
-                            <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/5 text-[9px] font-black text-white/20 uppercase tracking-widest">Read Only</span>
+                            <h3 className="text-sm font-tttravelsnext font-bold text-white/40 uppercase tracking-[0.2em]">
+                              Archived Members
+                            </h3>
+                            <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/5 text-[9px] font-black text-white/20 uppercase tracking-widest">
+                              Read Only
+                            </span>
                           </div>
                           <div className="overflow-x-auto no-scrollbar">
                             <table className="w-full text-sm">
                               <thead>
                                 <tr className="border-b border-white/5">
-                                  <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Contributor</th>
-                                  <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Role & Department</th>
-                                  <th className="text-center py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Status</th>
-                                  <th className="text-right py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Actions</th>
+                                  <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">
+                                    Contributor
+                                  </th>
+                                  <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">
+                                    Role & Department
+                                  </th>
+                                  <th className="text-center py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">
+                                    Status
+                                  </th>
+                                  <th className="text-right py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">
+                                    Actions
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-white/[0.02]">
                                 {legacyFilteredUsers.length === 0 ? (
                                   <tr>
-                                    <td colSpan={4} className="py-10 text-center text-white/10 italic font-medium">No archived members found</td>
+                                    <td
+                                      colSpan={4}
+                                      className="py-10 text-center text-white/10 italic font-medium"
+                                    >
+                                      No archived members found
+                                    </td>
                                   </tr>
-                                ) : legacyFilteredUsers.map((u, i) => {
-                                  const isExpanded = expandedUserId === u.id;
-                                  return (
-                                    <React.Fragment key={u.id}>
-                                      <motion.tr
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        className={`group hover:bg-white/[0.02] transition-all cursor-pointer ${isExpanded ? 'bg-white/[0.02]' : ''}`}
-                                        onClick={() => setExpandedUserId(isExpanded ? null : u.id)}
-                                      >
-                                        <td className="py-5 px-6 opacity-60">
-                                          <div className="flex items-center gap-4">
-                                            <div className="h-11 w-11 rounded-full bg-white/5 border border-white/10 overflow-hidden grayscale opacity-50">
-                                              {u.profilePicture && <img src={u.profilePicture} className="w-full h-full object-cover" alt="" />}
-                                            </div>
-                                            <div>
-                                              <div className="font-bold text-white/80">{u.name || u.username}</div>
-                                              <div className="text-[10px] text-white/30 lowercase font-medium">{u.email}</div>
-                                            </div>
-                                          </div>
-                                        </td>
-                                        <td className="py-5 px-6 opacity-60">
-                                          <div className="space-y-0.5">
-                                            <div className="text-sm font-bold text-white/60">{u.position || "Staff"}</div>
-                                            <div className="text-[10px] text-white/30 uppercase tracking-widest font-black">{u.department || "Unassigned"}</div>
-                                          </div>
-                                        </td>
-                                        <td className="py-5 px-6 text-center">
-                                          <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/10">
-                                            Legacy Member
-                                          </span>
-                                        </td>
-                                        <td className="py-5 px-6 text-right">
-                                          <div className="flex items-center justify-end gap-2 text-[10px] font-black uppercase tracking-widest text-white/20 group-hover:text-white transition-all">
-                                            {isExpanded ? "Hide Details" : "View Record"}
-                                            <ChevronRight size={14} className={`transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`} />
-                                          </div>
-                                        </td>
-                                      </motion.tr>
-                                      {isExpanded && (
-                                        <tr>
-                                          <td colSpan={5} className="p-8 bg-black/10 border-b border-white/5">
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl">
-                                              <div className="space-y-1">
-                                                <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">Full Name</p>
-                                                <p className="text-sm text-white/60">{u.name || "N/A"}</p>
+                                ) : (
+                                  legacyFilteredUsers.map((u, i) => {
+                                    const isExpanded = expandedUserId === u.id;
+                                    return (
+                                      <React.Fragment key={u.id}>
+                                        <motion.tr
+                                          initial={{ opacity: 0 }}
+                                          animate={{ opacity: 1 }}
+                                          className={`group hover:bg-white/[0.02] transition-all cursor-pointer ${isExpanded ? "bg-white/[0.02]" : ""}`}
+                                          onClick={() =>
+                                            setExpandedUserId(
+                                              isExpanded ? null : u.id,
+                                            )
+                                          }
+                                        >
+                                          <td className="py-5 px-6 opacity-60">
+                                            <div className="flex items-center gap-4">
+                                              <div className="h-11 w-11 rounded-full bg-white/5 border border-white/10 overflow-hidden grayscale opacity-50">
+                                                {u.profilePicture && (
+                                                  <img
+                                                    src={u.profilePicture}
+                                                    className="w-full h-full object-cover"
+                                                    alt=""
+                                                  />
+                                                )}
                                               </div>
-                                              <div className="space-y-1">
-                                                <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">Identity</p>
-                                                <p className="text-sm text-white/60">@{u.username}</p>
-                                              </div>
-                                              <div className="space-y-1">
-                                                <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">Primary Contact</p>
-                                                <p className="text-sm text-white/60">{u.email}</p>
-                                              </div>
-                                              <div className="space-y-1">
-                                                <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">Service Period</p>
-                                                <p className="text-sm text-white/40 italic">Historical data preserved</p>
-                                              </div>
-                                              <div className="md:col-span-4 space-y-1">
-                                                <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">Archived Biography</p>
-                                                <p className="text-sm text-white/50 leading-relaxed whitespace-pre-wrap italic">"{u.description || "No bio available in archives."}"</p>
-                                              </div>
-                                              <div className="md:col-span-4 flex justify-end">
-                                                <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] border border-white/5 px-4 py-2 rounded-xl">Immutable Archive Record</span>
+                                              <div>
+                                                <div className="font-bold text-white/80">
+                                                  {u.name || u.username}
+                                                </div>
+                                                <div className="text-[10px] text-white/30 lowercase font-medium">
+                                                  {u.email}
+                                                </div>
                                               </div>
                                             </div>
                                           </td>
-                                        </tr>
-                                      )}
-                                    </React.Fragment>
-                                  );
-                                })}
+                                          <td className="py-5 px-6 opacity-60">
+                                            <div className="space-y-0.5">
+                                              <div className="text-sm font-bold text-white/60">
+                                                {u.position || "Staff"}
+                                              </div>
+                                              <div className="text-[10px] text-white/30 uppercase tracking-widest font-black">
+                                                {u.department || "Unassigned"}
+                                              </div>
+                                            </div>
+                                          </td>
+                                          <td className="py-5 px-6 text-center">
+                                            <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/10">
+                                              Legacy Member
+                                            </span>
+                                          </td>
+                                          <td className="py-5 px-6 text-right">
+                                            <div className="flex items-center justify-end gap-2 text-[10px] font-black uppercase tracking-widest text-white/20 group-hover:text-white transition-all">
+                                              {isExpanded
+                                                ? "Hide Details"
+                                                : "View Record"}
+                                              <ChevronRight
+                                                size={14}
+                                                className={`transition-transform duration-300 ${isExpanded ? "rotate-90" : ""}`}
+                                              />
+                                            </div>
+                                          </td>
+                                        </motion.tr>
+                                        {isExpanded && (
+                                          <tr>
+                                            <td
+                                              colSpan={5}
+                                              className="p-8 bg-black/10 border-b border-white/5"
+                                            >
+                                              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl">
+                                                <div className="space-y-1">
+                                                  <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">
+                                                    Full Name
+                                                  </p>
+                                                  <p className="text-sm text-white/60">
+                                                    {u.name || "N/A"}
+                                                  </p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                  <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">
+                                                    Identity
+                                                  </p>
+                                                  <p className="text-sm text-white/60">
+                                                    @{u.username}
+                                                  </p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                  <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">
+                                                    Primary Contact
+                                                  </p>
+                                                  <p className="text-sm text-white/60">
+                                                    {u.email}
+                                                  </p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                  <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">
+                                                    Service Period
+                                                  </p>
+                                                  <p className="text-sm text-white/40 italic">
+                                                    Historical data preserved
+                                                  </p>
+                                                </div>
+                                                <div className="md:col-span-4 space-y-1">
+                                                  <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">
+                                                    Archived Biography
+                                                  </p>
+                                                  <p className="text-sm text-white/50 leading-relaxed whitespace-pre-wrap italic">
+                                                    "
+                                                    {u.description ||
+                                                      "No bio available in archives."}
+                                                    "
+                                                  </p>
+                                                </div>
+                                                <div className="md:col-span-4 flex justify-end">
+                                                  <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] border border-white/5 px-4 py-2 rounded-xl">
+                                                    Immutable Archive Record
+                                                  </span>
+                                                </div>
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        )}
+                                      </React.Fragment>
+                                    );
+                                  })
+                                )}
                               </tbody>
                             </table>
                           </div>
@@ -1513,8 +2258,13 @@ export default function AdminPage() {
                     <div className="relative z-10">
                       <div className="flex items-center justify-between mb-8">
                         <div>
-                          <h2 className="text-xl font-wintersolace">Public Community</h2>
-                          <p className="text-sm text-white/50 mt-1">Monitor registered community members and subscribers.</p>
+                          <h2 className="text-xl font-wintersolace">
+                            Public Community
+                          </h2>
+                          <p className="text-sm text-white/50 mt-1">
+                            Monitor registered community members and
+                            subscribers.
+                          </p>
                         </div>
                         <input
                           className={`${inputClass} !rounded-full !px-6 !py-2.5 !bg-black/20 w-64`}
@@ -1528,9 +2278,15 @@ export default function AdminPage() {
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b border-white/5">
-                              <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Community Profile</th>
-                              <th className="text-center py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Access Level</th>
-                              <th className="text-right py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Actions</th>
+                              <th className="text-left py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">
+                                Community Profile
+                              </th>
+                              <th className="text-center py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">
+                                Access Level
+                              </th>
+                              <th className="text-right py-5 px-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">
+                                Actions
+                              </th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-white/[0.02]">
@@ -1542,116 +2298,282 @@ export default function AdminPage() {
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.03 }}
-                                    className={`group hover:bg-white/[0.03] transition-all cursor-pointer ${isExpanded ? 'bg-white/[0.03]' : ''}`}
-                                    onClick={() => setExpandedPublicUserId(isExpanded ? null : u.id)}
+                                    className={`group hover:bg-white/[0.03] transition-all cursor-pointer ${isExpanded ? "bg-white/[0.03]" : ""}`}
+                                    onClick={() =>
+                                      setExpandedPublicUserId(
+                                        isExpanded ? null : u.id,
+                                      )
+                                    }
                                   >
                                     <td className="py-5 px-6">
                                       <div className="flex items-center gap-4">
                                         <div className="h-11 w-11 rounded-full bg-white/5 border border-white/10 overflow-hidden ring-4 ring-white/[0.02] transition-transform group-hover:scale-105">
-                                          {u.avatar_url && <img src={u.avatar_url} className="w-full h-full object-cover" alt="" />}
+                                          {u.avatar_url && (
+                                            <img
+                                              src={u.avatar_url}
+                                              className="w-full h-full object-cover"
+                                              alt=""
+                                            />
+                                          )}
                                         </div>
-                                          <div>
-                                            <div className="flex items-center gap-2">
-                                              <div className="font-bold text-white/90 group-hover:text-white transition-colors">{u.name || u.username || "Anonymous User"}</div>
-                                              {u.is_banned && (
-                                                <span className="px-1.5 py-0.5 rounded-md bg-red-500/20 text-red-500 text-[8px] font-black uppercase tracking-tighter border border-red-500/30">
-                                                  Banned
-                                                </span>
-                                              )}
+                                        <div>
+                                          <div className="flex items-center gap-2">
+                                            <div className="font-bold text-white/90 group-hover:text-white transition-colors">
+                                              {u.name ||
+                                                u.username ||
+                                                "Anonymous User"}
                                             </div>
-                                            <div className="text-[10px] text-white/30 lowercase font-medium">{u.email}</div>
+                                            {u.is_banned && (
+                                              <span className="px-1.5 py-0.5 rounded-md bg-red-500/20 text-red-500 text-[8px] font-black uppercase tracking-tighter border border-red-500/30">
+                                                Banned
+                                              </span>
+                                            )}
                                           </div>
+                                          <div className="text-[10px] text-white/30 lowercase font-medium">
+                                            {u.email}
+                                          </div>
+                                        </div>
                                       </div>
                                     </td>
                                     <td className="py-5 px-6 text-center">
                                       <div className="inline-flex">
-                                          {u.is_banned ? (
-                                            <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse">
-                                              Banned Account
-                                            </span>
-                                          ) : u.is_employee ? (
-                                            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-500/10 text-purple-300 border border-purple-500/20">
-                                              Society Contributor
-                                            </span>
-                                          ) : (
-                                            <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/5 text-white/30 border border-white/5">
-                                              Public Member
-                                            </span>
-                                          )}
+                                        {u.is_banned ? (
+                                          <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse">
+                                            Banned Account
+                                          </span>
+                                        ) : u.is_employee ? (
+                                          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                                            Society Contributor
+                                          </span>
+                                        ) : (
+                                          <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/5 text-white/30 border border-white/5">
+                                            Public Member
+                                          </span>
+                                        )}
                                       </div>
                                     </td>
                                     <td className="py-5 px-6 text-right">
                                       <div className="flex items-center justify-end gap-2 text-[10px] font-black uppercase tracking-widest text-white/30 group-hover:text-white transition-all">
                                         {isExpanded ? "Close" : "Control"}
-                                        <ChevronRight size={14} className={`transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`} />
+                                        <ChevronRight
+                                          size={14}
+                                          className={`transition-transform duration-300 ${isExpanded ? "rotate-90" : ""}`}
+                                        />
                                       </div>
                                     </td>
                                   </motion.tr>
-                                  {isExpanded && (() => {
-                                    const pubEdit = publicUserEdits[u.id] ?? { username: u.username ?? "", email: u.email ?? "", name: u.name ?? "", bio: u.bio ?? "", password: "", is_banned: Boolean(u.is_banned) };
-                                    return (
-                                      <tr>
-                                        <td colSpan={3} className="p-6 bg-white/[0.01] border-b border-white/5">
-                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mb-6">
-                                            <div className="space-y-1.5">
-                                              <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Display Name</label>
-                                              <input className={`${inputClass} w-full`} placeholder="Full name" value={pubEdit.name} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, name: e.target.value } }))} />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                              <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Username</label>
-                                              <input className={`${inputClass} w-full`} placeholder="@username" value={pubEdit.username} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, username: e.target.value } }))} />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                              <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Email</label>
-                                              <input type="email" className={`${inputClass} w-full`} placeholder="email@example.com" value={pubEdit.email} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, email: e.target.value } }))} />
-                                            </div>
-                                            <div className="space-y-1.5 md:col-span-2">
-                                              <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Bio</label>
-                                              <textarea className={`${textareaClass} w-full !min-h-[80px]`} placeholder="Short bio..." value={pubEdit.bio} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, bio: e.target.value } }))} />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                              <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">New Password</label>
-                                              <input type="password" className={`${inputClass} w-full`} placeholder="Leave blank to keep current" value={pubEdit.password} onChange={(e) => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, password: e.target.value } }))} />
-                                            </div>
-                                            {(() => {
-                                              const myPos = (currentUser?.position || "").toUpperCase();
-                                              const canBan = myPos === "CEO" || myPos === "COO";
-                                              // For public users, we check by email if it's the current employee
-                                              const isSelf = u.email?.toLowerCase() === currentUser?.email?.toLowerCase();
-                                              
-                                              if (!canBan || isSelf) return null;
-                                              
-                                              return (
-                                                <div className="space-y-1.5 md:col-span-2 flex items-center gap-4 py-4">
-                                                  <div 
-                                                    className={`flex items-center gap-3 px-6 py-4 rounded-[28px] border transition-all cursor-pointer select-none grow ${pubEdit.is_banned ? "bg-red-500/10 border-red-500/30" : "bg-white/5 border-white/10 hover:bg-white/[0.08]"}`}
-                                                    onClick={() => setPublicUserEdits(s => ({ ...s, [u.id]: { ...pubEdit, is_banned: !pubEdit.is_banned } }))}
-                                                  >
-                                                    <div className={`w-12 h-6 rounded-full relative transition-colors duration-500 ${pubEdit.is_banned ? "bg-red-500" : "bg-white/10"}`}>
-                                                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-500 ${pubEdit.is_banned ? "translate-x-7" : "translate-x-1"}`} />
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                      <span className={`text-xs font-black uppercase tracking-widest ${pubEdit.is_banned ? "text-red-400" : "text-white/60"}`}>
-                                                        {pubEdit.is_banned ? "Banned Permanently" : "Active & Verified"}
-                                                      </span>
-                                                      <span className="text-[10px] text-white/30 font-medium">Restricts all write access, comments, likes and profile editing.</span>
+                                  {isExpanded &&
+                                    (() => {
+                                      const pubEdit = publicUserEdits[u.id] ?? {
+                                        username: u.username ?? "",
+                                        email: u.email ?? "",
+                                        name: u.name ?? "",
+                                        bio: u.bio ?? "",
+                                        password: "",
+                                        is_banned: Boolean(u.is_banned),
+                                      };
+                                      return (
+                                        <tr>
+                                          <td
+                                            colSpan={3}
+                                            className="p-6 bg-white/[0.01] border-b border-white/5"
+                                          >
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mb-6">
+                                              <div className="space-y-1.5">
+                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">
+                                                  Display Name
+                                                </label>
+                                                <input
+                                                  className={`${inputClass} w-full`}
+                                                  placeholder="Full name"
+                                                  value={pubEdit.name}
+                                                  onChange={(e) =>
+                                                    setPublicUserEdits((s) => ({
+                                                      ...s,
+                                                      [u.id]: {
+                                                        ...pubEdit,
+                                                        name: e.target.value,
+                                                      },
+                                                    }))
+                                                  }
+                                                />
+                                              </div>
+                                              <div className="space-y-1.5">
+                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">
+                                                  Username
+                                                </label>
+                                                <input
+                                                  className={`${inputClass} w-full`}
+                                                  placeholder="@username"
+                                                  value={pubEdit.username}
+                                                  onChange={(e) =>
+                                                    setPublicUserEdits((s) => ({
+                                                      ...s,
+                                                      [u.id]: {
+                                                        ...pubEdit,
+                                                        username:
+                                                          e.target.value,
+                                                      },
+                                                    }))
+                                                  }
+                                                />
+                                              </div>
+                                              <div className="space-y-1.5">
+                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">
+                                                  Email
+                                                </label>
+                                                <input
+                                                  type="email"
+                                                  className={`${inputClass} w-full`}
+                                                  placeholder="email@example.com"
+                                                  value={pubEdit.email}
+                                                  onChange={(e) =>
+                                                    setPublicUserEdits((s) => ({
+                                                      ...s,
+                                                      [u.id]: {
+                                                        ...pubEdit,
+                                                        email: e.target.value,
+                                                      },
+                                                    }))
+                                                  }
+                                                />
+                                              </div>
+                                              <div className="space-y-1.5 md:col-span-2">
+                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">
+                                                  Bio
+                                                </label>
+                                                <textarea
+                                                  className={`${textareaClass} w-full !min-h-[80px]`}
+                                                  placeholder="Short bio..."
+                                                  value={pubEdit.bio}
+                                                  onChange={(e) =>
+                                                    setPublicUserEdits((s) => ({
+                                                      ...s,
+                                                      [u.id]: {
+                                                        ...pubEdit,
+                                                        bio: e.target.value,
+                                                      },
+                                                    }))
+                                                  }
+                                                />
+                                              </div>
+                                              <div className="space-y-1.5">
+                                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">
+                                                  New Password
+                                                </label>
+                                                <input
+                                                  type="password"
+                                                  className={`${inputClass} w-full`}
+                                                  placeholder="Leave blank to keep current"
+                                                  value={pubEdit.password}
+                                                  onChange={(e) =>
+                                                    setPublicUserEdits((s) => ({
+                                                      ...s,
+                                                      [u.id]: {
+                                                        ...pubEdit,
+                                                        password:
+                                                          e.target.value,
+                                                      },
+                                                    }))
+                                                  }
+                                                />
+                                              </div>
+                                              {(() => {
+                                                const myPos = (
+                                                  currentUser?.position || ""
+                                                ).toUpperCase();
+                                                const canBan =
+                                                  myPos === "CEO" ||
+                                                  myPos === "COO";
+                                                // For public users, we check by email if it's the current employee
+                                                const isSelf =
+                                                  u.email?.toLowerCase() ===
+                                                  currentUser?.email?.toLowerCase();
+
+                                                if (!canBan || isSelf)
+                                                  return null;
+
+                                                return (
+                                                  <div className="space-y-1.5 md:col-span-2 flex items-center gap-4 py-4">
+                                                    <div
+                                                      className={`flex items-center gap-3 px-6 py-4 rounded-[28px] border transition-all cursor-pointer select-none grow ${pubEdit.is_banned ? "bg-red-500/10 border-red-500/30" : "bg-white/5 border-white/10 hover:bg-white/[0.08]"}`}
+                                                      onClick={() =>
+                                                        setPublicUserEdits(
+                                                          (s) => ({
+                                                            ...s,
+                                                            [u.id]: {
+                                                              ...pubEdit,
+                                                              is_banned:
+                                                                !pubEdit.is_banned,
+                                                            },
+                                                          }),
+                                                        )
+                                                      }
+                                                    >
+                                                      <div
+                                                        className={`w-12 h-6 rounded-full relative transition-colors duration-500 ${pubEdit.is_banned ? "bg-red-500" : "bg-white/10"}`}
+                                                      >
+                                                        <div
+                                                          className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-500 ${pubEdit.is_banned ? "translate-x-7" : "translate-x-1"}`}
+                                                        />
+                                                      </div>
+                                                      <div className="flex flex-col">
+                                                        <span
+                                                          className={`text-xs font-black uppercase tracking-widest ${pubEdit.is_banned ? "text-red-400" : "text-white/60"}`}
+                                                        >
+                                                          {pubEdit.is_banned
+                                                            ? "Banned Permanently"
+                                                            : "Active & Verified"}
+                                                        </span>
+                                                        <span className="text-[10px] text-white/30 font-medium">
+                                                          Restricts all write
+                                                          access, comments,
+                                                          likes and profile
+                                                          editing.
+                                                        </span>
+                                                      </div>
                                                     </div>
                                                   </div>
-                                                </div>
-                                              );
-                                            })()}
-                                          </div>
-                                          <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                              <button onClick={() => handleDeletePublicUser(u.id)} className="px-5 py-2.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 transition-all uppercase tracking-widest">Suspend Account</button>
-                                              <p className="text-[10px] text-white/20 italic">Registered on {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'Unknown date'}</p>
+                                                );
+                                              })()}
                                             </div>
-                                            <button onClick={() => handleUpdatePublicUser(u.id)} disabled={Boolean(savingPublicUser[u.id])} className="px-6 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all">{savingPublicUser[u.id] ? "Saving..." : "Save Changes"}</button>
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    );
-                                  })()}
+                                            <div className="flex items-center justify-between">
+                                              <div className="flex items-center gap-3">
+                                                <button
+                                                  onClick={() =>
+                                                    handleDeletePublicUser(u.id)
+                                                  }
+                                                  className="px-5 py-2.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 transition-all uppercase tracking-widest"
+                                                >
+                                                  Suspend Account
+                                                </button>
+                                                <p className="text-[10px] text-white/20 italic">
+                                                  Registered on{" "}
+                                                  {u.created_at
+                                                    ? new Date(
+                                                        u.created_at,
+                                                      ).toLocaleDateString()
+                                                    : "Unknown date"}
+                                                </p>
+                                              </div>
+                                              <button
+                                                onClick={() =>
+                                                  handleUpdatePublicUser(u.id)
+                                                }
+                                                disabled={Boolean(
+                                                  savingPublicUser[u.id],
+                                                )}
+                                                className="px-6 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all"
+                                              >
+                                                {savingPublicUser[u.id]
+                                                  ? "Saving..."
+                                                  : "Save Changes"}
+                                              </button>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      );
+                                    })()}
                                 </React.Fragment>
                               );
                             })}
@@ -1667,8 +2589,13 @@ export default function AdminPage() {
                 <div className="space-y-8">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                     <div>
-                      <h2 className="text-2xl font-wintersolace">Research Articles</h2>
-                      <p className="text-sm text-white/50 mt-1">Manage our growing database of cancer research and information.</p>
+                      <h2 className="text-2xl font-wintersolace">
+                        Research Articles
+                      </h2>
+                      <p className="text-sm text-white/50 mt-1">
+                        Manage our growing database of cancer research and
+                        information.
+                      </p>
                     </div>
                     <motion.div
                       whileHover={{ scale: 1.05 }}
@@ -1703,8 +2630,12 @@ export default function AdminPage() {
                 <div className="space-y-8">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                     <div>
-                      <h2 className="text-2xl font-wintersolace">Blogger's Hub</h2>
-                      <p className="text-sm text-white/50 mt-1">Manage community blog posts and updates.</p>
+                      <h2 className="text-2xl font-wintersolace">
+                        Blogger's Hub
+                      </h2>
+                      <p className="text-sm text-white/50 mt-1">
+                        Manage community blog posts and updates.
+                      </p>
                     </div>
                     <motion.div
                       whileHover={{ scale: 1.05 }}
@@ -1738,8 +2669,12 @@ export default function AdminPage() {
                 <div className="space-y-8">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                     <div>
-                      <h2 className="text-2xl  font-wintersolace">Survivor Stories</h2>
-                      <p className="text-sm text-white/50 mt-1">Publish and manage narratives of resilience and hope.</p>
+                      <h2 className="text-2xl  font-wintersolace">
+                        Survivor Stories
+                      </h2>
+                      <p className="text-sm text-white/50 mt-1">
+                        Publish and manage narratives of resilience and hope.
+                      </p>
                     </div>
                     <motion.div
                       whileHover={{ scale: 1.05 }}
@@ -1769,10 +2704,153 @@ export default function AdminPage() {
                 </div>
               )}
 
+              {activeTab === "glossary" && (
+                    <div className="space-y-8">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                        <div>
+                          <h2 className="text-2xl font-wintersolace">
+                            Glossary
+                          </h2>
+                          <p className="text-sm text-white/50 mt-1">
+                            Manage difficult medical terms and their meanings.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Search bar */}
+                      <div className="relative overflow-hidden isolation-isolate rounded-[44px] border border-white/10 bg-white/[0.02] backdrop-blur-md">
+                        <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4 relative z-10 w-full">
+                          <input
+                            className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all w-full"
+                            placeholder="Search words..."
+                            value={glossarySearch}
+                            onChange={(e) => setGlossarySearch(e.target.value)}
+                          />
+                          <div className="text-xs text-white/30 font-medium px-4 whitespace-nowrap">
+                            {filteredGlossary.length} words
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Words grid */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {filteredGlossary.map((entry) => (
+                          <motion.article
+                            layout
+                            key={entry.id}
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="rounded-[44px] border border-white/10 backdrop-blur shadow-2xl text-white relative overflow-hidden transition-all duration-300 hover:border-white/20 isolation-isolate group/card admin-card flex flex-col p-7"
+                            style={
+                              { "--card-radius": "44px" } as React.CSSProperties
+                            }
+                          >
+                            <div className="cardGlass-tint" />
+                            <div className="glass-noise" />
+                            <div className="cardGlass-borders pointer-events-none" />
+                            <div className="cardGlass-shine pointer-events-none" />
+
+                            <div className="relative z-10 space-y-4">
+                              {/* Word */}
+                              <div className="space-y-1">
+                                <p className="text-[10px] uppercase tracking-[0.2em] text-purple-400 font-bold">
+                                  Word
+                                </p>
+                                {glossaryEditing === entry.id ? (
+                                  <input
+                                    className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm text-white w-full focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                    value={glossaryEditData.word}
+                                    onChange={(e) =>
+                                      setGlossaryEditData((s) => ({
+                                        ...s,
+                                        word: e.target.value,
+                                      }))
+                                    }
+                                  />
+                                ) : (
+                                  <h3 className="text-xl font-bold font-tttravelsnext uppercase text-white">
+                                    {entry.word}
+                                  </h3>
+                                )}
+                              </div>
+
+                              {/* Meaning */}
+                              <div className="space-y-1">
+                                <p className="text-[10px] uppercase tracking-[0.2em] text-purple-400 font-bold">
+                                  Meaning
+                                </p>
+                                {glossaryEditing === entry.id ? (
+                                  <textarea
+                                    className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm text-white w-full min-h-[80px] focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                    value={glossaryEditData.meaning}
+                                    onChange={(e) =>
+                                      setGlossaryEditData((s) => ({
+                                        ...s,
+                                        meaning: e.target.value,
+                                      }))
+                                    }
+                                  />
+                                ) : (
+                                  <p className="text-sm text-white/60 leading-relaxed">
+                                    {entry.meaning}
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Editing */}
+                              <div className="flex gap-3 pt-2">
+                                {glossaryEditing === entry.id ? (
+                                  <>
+                                    <button
+                                      onClick={() => {
+                                        setGlossaryWords((prev) =>
+                                          prev.map((w) =>
+                                            w.id === entry.id
+                                              ? { ...w, ...glossaryEditData }
+                                              : w,
+                                          ),
+                                        );
+                                        setGlossaryEditing(null);
+                                      }}
+                                      className="px-5 py-2 rounded-full bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all"
+                                    >
+                                      Save
+                                    </button>
+                                    <button
+                                      onClick={() => setGlossaryEditing(null)}
+                                      className="px-5 py-2 rounded-full border border-white/10 bg-white/5 text-white/70 text-xs font-bold hover:bg-white/10 transition-all"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </>
+                                ) : (
+                                  <button
+                                    onClick={() => {
+                                      setGlossaryEditing(entry.id);
+                                      setGlossaryEditData({
+                                        word: entry.word,
+                                        meaning: entry.meaning,
+                                      });
+                                    }}
+                                    className="px-5 py-2 rounded-full border border-white/10 bg-white/5 text-white/70 text-xs font-bold hover:bg-white/10 transition-all"
+                                  >
+                                    Edit
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </motion.article>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
               {activeTab === "system" && currentUser?.admin_access && (
                 <div className="space-y-8">
                   {/* Maintenance Mode Card */}
-                  <section className={`${cardClass} p-8 relative overflow-hidden`}>
+                  <section
+                    className={`${cardClass} p-8 relative overflow-hidden`}
+                  >
                     <div className="glass-noise" />
                     <div className="cardGlass-borders" />
                     <div className="cardGlass-tint" />
@@ -1781,11 +2859,18 @@ export default function AdminPage() {
                     <div className="relative z-10 space-y-6">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h2 className="text-2xl font-wintersolace text-white">Maintenance Mode</h2>
-                          <p className="text-sm text-white/50 mt-1">Restrict public access to the website while performing updates.</p>
+                          <h2 className="text-2xl font-wintersolace text-white">
+                            Maintenance Mode
+                          </h2>
+                          <p className="text-sm text-white/50 mt-1">
+                            Restrict public access to the website while
+                            performing updates.
+                          </p>
                         </div>
                         <div className="flex items-center gap-4">
-                          {maintenanceLoading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />}
+                          {maintenanceLoading && (
+                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                          )}
                           <button
                             onClick={toggleMaintenanceMode}
                             disabled={maintenanceLoading}
@@ -1794,22 +2879,32 @@ export default function AdminPage() {
                             <motion.div
                               animate={{ x: maintenanceMode ? 32 : 4 }}
                               className="absolute top-1 w-5 h-5 bg-white rounded-full shadow-lg"
-                              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                              transition={{
+                                type: "spring",
+                                stiffness: 500,
+                                damping: 30,
+                              }}
                             />
                           </button>
                         </div>
                       </div>
                       <div className="mt-2 p-4 rounded-2xl bg-white/[0.03] border border-white/5">
                         <p className="text-xs text-white/40 leading-relaxed font-dmsans">
-                          <span className="text-white font-bold uppercase tracking-wider block mb-1">Warning:</span>
-                          When enabled, visitors will be redirected to the maintenance page. Admin panel and API will remain accessible.
-                          Make sure to toggle it off once your work is complete.
+                          <span className="text-white font-bold uppercase tracking-wider block mb-1">
+                            Warning:
+                          </span>
+                          When enabled, visitors will be redirected to the
+                          maintenance page. Admin panel and API will remain
+                          accessible. Make sure to toggle it off once your work
+                          is complete.
                         </p>
                       </div>
                     </div>
                   </section>
 
-                  <section className={`${cardClass} p-8 relative overflow-hidden`}>
+                  <section
+                    className={`${cardClass} p-8 relative overflow-hidden`}
+                  >
                     <div className="glass-noise" />
                     <div className="cardGlass-borders" />
                     <div className="cardGlass-tint" />
@@ -1817,7 +2912,9 @@ export default function AdminPage() {
 
                     <div className="relative z-10 space-y-6">
                       <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-wintersolace text-white">System Verification</h2>
+                        <h2 className="text-2xl font-wintersolace text-white">
+                          System Verification
+                        </h2>
                         <button
                           onClick={async () => {
                             setSystemCheckLoading(true);
@@ -1825,7 +2922,9 @@ export default function AdminPage() {
                               const res = await fetch("/api/admin", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ action: "system_check" }),
+                                body: JSON.stringify({
+                                  action: "system_check",
+                                }),
                               });
                               const data = await res.json();
                               setSystemCheckResults(data.results);
@@ -1838,7 +2937,9 @@ export default function AdminPage() {
                           disabled={systemCheckLoading}
                           className={primaryButton}
                         >
-                          {systemCheckLoading ? "Running..." : "Run System Check"}
+                          {systemCheckLoading
+                            ? "Running..."
+                            : "Run System Check"}
                         </button>
                       </div>
 
