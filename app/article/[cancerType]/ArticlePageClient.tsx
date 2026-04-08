@@ -17,6 +17,7 @@ import { DynamicBackgroundHues } from "@/components/ui/dynamic-background-hues";
 
 import type { ArticleWithAvatar, ArticleSummary } from "@/lib/docsRepository";
 import { useEffect } from "react";
+import { withGlossary, type GlossaryEntry } from "@/lib/withGlossary";
 
 interface ArticlePageClientProps {
   article: ArticleWithAvatar;
@@ -48,6 +49,17 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   const authorLabel = article.author ?? "Unknown Author";
   const positionLabel = article.position ?? "";
   const containerRef = useRef<HTMLDivElement>(null);
+  const [glossary, setGlossary] = useState<GlossaryEntry[]>([]);
+
+  useEffect(() => {
+    fetch("/api/glossary")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.glossary) setGlossary(data.glossary);
+      })
+      .catch((err) => console.error("Failed to fetch glossary", err));
+  }, []);
+
   useEffect(() => {
     // Record view
     fetch("/api/blogs/interact", {
@@ -166,8 +178,8 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   w-full max-w-none sm:max-w-4xl
   dark:prose-invert
   font-dmsans
-  break-words [overflow-wrap:anywhere] overflow-hidden
-  ${readmore ? "" : "max-h-[50vh] sm:max-h-[60vh] overflow-hidden"}
+  break-words [overflow-wrap:anywhere]
+  ${readmore ? "overflow-visible" : "max-h-[50vh] sm:max-h-[60vh] overflow-hidden"}
 `}
                 style={
                   !readmore
@@ -185,15 +197,15 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                     h1: (props) => <h1 className="text-2xl sm:text-3xl font-bold mt-8 mb-4 break-words [overflow-wrap:anywhere]" {...props} />,
                     h2: (props) => <h2 className="text-xl sm:text-2xl font-bold mt-8 mb-4 break-words [overflow-wrap:anywhere]" {...props} />,
                     h3: (props) => <h3 className="text-lg sm:text-xl font-bold mt-6 mb-3 break-words [overflow-wrap:anywhere]" {...props} />,
-                    p: (props) => <p className="mb-4 last:mb-0 leading-relaxed break-words [overflow-wrap:anywhere]" {...props} />,
+                    p: (props) => <p className="mb-4 last:mb-0 leading-relaxed break-words [overflow-wrap:anywhere]">{withGlossary(props.children, glossary)}</p>,
                     a: (props) => (
                       <a className="text-primary hover:text-primary/80 underline break-words [overflow-wrap:anywhere]" {...props} />
                     ),
                     ul: (props) => <ul className="list-disc list-outside ml-6 my-4 space-y-2 break-words [overflow-wrap:anywhere]" {...props} />,
-                    li: (props) => <li className="break-words [overflow-wrap:anywhere]" {...props} />,
+                    li: (props) => <li className="break-words [overflow-wrap:anywhere]">{withGlossary(props.children, glossary)}</li>,
                     ol: (props) => <ol className="list-decimal list-outside ml-6 my-4 space-y-2 break-words [overflow-wrap:anywhere]" {...props} />,
                     blockquote: (props) => (
-                      <blockquote className="border-l-4 border-primary/30 pl-4 italic my-4" {...props} />
+                      <blockquote className="border-l-4 border-primary/30 pl-4 italic my-4">{withGlossary(props.children, glossary)}</blockquote>
                     ),
                     code: (props) => (
                       <code className="bg-muted text-muted-foreground px-1.5 py-0.5 rounded" {...props} />
@@ -211,7 +223,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                       <th className="px-4 py-3 text-left text-xs font-bold text-white/70 uppercase tracking-wider" {...props} />
                     ),
                     td: (props) => (
-                      <td className="px-4 py-3 text-sm text-white/50 border-t border-white/5" {...props} />
+                      <td className="px-4 py-3 text-sm text-white/50 border-t border-white/5">{withGlossary(props.children, glossary)}</td>
                     ),
                     img: (props: ImgHTMLAttributes<HTMLImageElement>) => {
                       const src = typeof props.src === "string" ? props.src : undefined;

@@ -39,40 +39,75 @@ export default function AdminPage() {
   const [unlocked, setUnlocked] = useState(false);
   const [error, setError] = useState("");
 
-  const [glossaryWords, setGlossaryWords] = useState([
-    {
-      id: "1",
-      word: "Metastasis",
-      meaning:
-        "The spread of cancer cells from the original tumor to other parts of the body through blood or lymph vessels.",
-    },
-    {
-      id: "2",
-      word: "Carcinoma",
-      meaning:
-        "A type of cancer that begins in the skin or tissue that lines internal organs.",
-    },
-    {
-      id: "3",
-      word: "Malignant",
-      meaning:
-        "Cancerous. Malignant cells can invade nearby tissue and spread to other parts of the body.",
-    },
-    {
-      id: "4",
-      word: "Biopsy",
-      meaning:
-        "A procedure where a small tissue sample is removed and examined to check for cancer.",
-    },
-    {
-      id: "5",
-      word: "Remission",
-      meaning:
-        "A period when signs and symptoms of cancer are reduced or have disappeared.",
-    },
-  ]);
+  const [glossaryWords, setGlossaryWords] = useState<any[]>([]);
+  
+  async function fetchGlossary() {
+    try {
+      const res = await fetch("/api/glossary");
+      const data = await res.json();
+      if (res.ok) setGlossaryWords(data.glossary || []);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function handleSaveGlossary(id: string) {
+    try {
+      const res = await fetch("/api/glossary", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, word: glossaryEditData.word, meaning: glossaryEditData.meaning })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to save");
+      }
+      setGlossaryEditing(null);
+      fetchGlossary();
+    } catch(e: any) {
+      alert(e.message);
+    }
+  }
+
+  async function handleDeleteGlossary(id: string) {
+    if (!confirm("Are you sure you want to delete this glossary term?")) return;
+    try {
+      const res = await fetch("/api/glossary", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to delete");
+      }
+      fetchGlossary();
+    } catch(e: any) {
+      alert(e.message);
+    }
+  }
+
+  async function handleAddGlossary() {
+    if (!newGlossary.word || !newGlossary.meaning) return;
+    try {
+      const res = await fetch("/api/glossary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newGlossary)
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to add word");
+      }
+      setNewGlossary({ word: "", meaning: "" });
+      fetchGlossary();
+    } catch(e: any) {
+      alert(e.message);
+    }
+  }
   const [glossarySearch, setGlossarySearch] = useState("");
   const [glossaryEditing, setGlossaryEditing] = useState<string | null>(null);
+  const [newGlossary, setNewGlossary] = useState({ word: "", meaning: "" });
   const [glossaryEditData, setGlossaryEditData] = useState({
     word: "",
     meaning: "",
@@ -332,6 +367,7 @@ export default function AdminPage() {
     if (activeTab === "survivors") fetchStories({ silent: true });
     if (activeTab === "action-centre" && currentUser?.admin_access)
       fetchUsers();
+    if (activeTab === "glossary") fetchGlossary();
   }, [activeTab]);
 
   // async function fetchDocs() {
@@ -2717,6 +2753,30 @@ export default function AdminPage() {
                         </div>
                       </div>
 
+                      <div className="relative overflow-hidden isolation-isolate rounded-[44px] border border-white/10 bg-white/[0.02] backdrop-blur-md px-6 py-4">
+                        <h3 className="text-white font-medium mb-3">Add New Word</h3>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <input 
+                            className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50" 
+                            placeholder="Word" 
+                            value={newGlossary.word}
+                            onChange={(e) => setNewGlossary(s => ({ ...s, word: e.target.value }))}
+                          />
+                          <input 
+                            className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 flex-1" 
+                            placeholder="Meaning" 
+                            value={newGlossary.meaning}
+                            onChange={(e) => setNewGlossary(s => ({ ...s, meaning: e.target.value }))}
+                          />
+                          <button 
+                            onClick={handleAddGlossary}
+                            className="px-5 py-2 rounded-full bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      </div>
+
                       {/* Search bar */}
                       <div className="relative overflow-hidden isolation-isolate rounded-[44px] border border-white/10 bg-white/[0.02] backdrop-blur-md">
                         <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4 relative z-10 w-full">
@@ -2802,16 +2862,7 @@ export default function AdminPage() {
                                 {glossaryEditing === entry.id ? (
                                   <>
                                     <button
-                                      onClick={() => {
-                                        setGlossaryWords((prev) =>
-                                          prev.map((w) =>
-                                            w.id === entry.id
-                                              ? { ...w, ...glossaryEditData }
-                                              : w,
-                                          ),
-                                        );
-                                        setGlossaryEditing(null);
-                                      }}
+                                      onClick={() => handleSaveGlossary(entry.id)}
                                       className="px-5 py-2 rounded-full bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all"
                                     >
                                       Save
@@ -2824,18 +2875,26 @@ export default function AdminPage() {
                                     </button>
                                   </>
                                 ) : (
-                                  <button
-                                    onClick={() => {
-                                      setGlossaryEditing(entry.id);
-                                      setGlossaryEditData({
-                                        word: entry.word,
-                                        meaning: entry.meaning,
-                                      });
-                                    }}
-                                    className="px-5 py-2 rounded-full border border-white/10 bg-white/5 text-white/70 text-xs font-bold hover:bg-white/10 transition-all"
-                                  >
-                                    Edit
-                                  </button>
+                                  <>
+                                    <button
+                                      onClick={() => {
+                                        setGlossaryEditing(entry.id);
+                                        setGlossaryEditData({
+                                          word: entry.word,
+                                          meaning: entry.meaning,
+                                        });
+                                      }}
+                                      className="px-5 py-2 rounded-full border border-white/10 bg-white/5 text-white/70 text-xs font-bold hover:bg-white/10 transition-all"
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteGlossary(entry.id)}
+                                      className="px-5 py-2 rounded-full border border-red-500/30 bg-red-500/10 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all"
+                                    >
+                                      Delete
+                                    </button>
+                                  </>
                                 )}
                               </div>
                             </div>

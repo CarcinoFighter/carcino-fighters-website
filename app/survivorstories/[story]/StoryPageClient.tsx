@@ -19,6 +19,7 @@ import type {
   SurvivorStory,
   SurvivorStorySummary,
 } from "@/lib/survivorStoriesRepository";
+import { withGlossary, type GlossaryEntry } from "@/lib/withGlossary";
 
 const colors = [
   "#E39E2E",
@@ -87,6 +88,8 @@ export default function StoryPageClient({
   const [userId, setUserId] = useState<string | null>(null);
   const [initialLiked, setInitialLiked] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
+  const [glossary, setGlossary] = useState<GlossaryEntry[]>([]);
+
 
   React.useEffect(() => {
     // Record view
@@ -128,7 +131,15 @@ export default function StoryPageClient({
         // silently fall back to relatedProp
       }
     })();
+
+    fetch("/api/glossary")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.glossary) setGlossary(data.glossary);
+      })
+      .catch((err) => console.error("Failed to fetch glossary", err));
   }, []);
+
 
   const getMainTitleFontSize = (title: string) => {
     if (title.length > 50)
@@ -200,8 +211,8 @@ export default function StoryPageClient({
                 w-full max-w-none sm:max-w-5xl
                 dark:prose-invert
                 font-dmsans 
-                break-words [overflow-wrap:anywhere] overflow-hidden
-                ${expanded ? "" : "max-h-[60vh] sm:max-h-[80vh] overflow-hidden"}
+                break-words [overflow-wrap:anywhere]
+                ${expanded ? "overflow-visible" : "max-h-[60vh] sm:max-h-[80vh] overflow-hidden"}
               `}
             style={
               !expanded
@@ -239,8 +250,7 @@ export default function StoryPageClient({
                 p: (props) => (
                   <p
                     className="mb-4 last:mb-0 leading-relaxed break-words [overflow-wrap:anywhere]"
-                    {...props}
-                  />
+                  >{withGlossary(props.children, glossary)}</p>
                 ),
                 a: (props) => (
                   <a
@@ -257,8 +267,7 @@ export default function StoryPageClient({
                 li: (props) => (
                   <li
                     className="break-words [overflow-wrap:anywhere]"
-                    {...props}
-                  />
+                  >{withGlossary(props.children, glossary)}</li>
                 ),
                 ol: (props) => (
                   <ol
@@ -269,8 +278,7 @@ export default function StoryPageClient({
                 blockquote: (props) => (
                   <blockquote
                     className="border-l-4 border-primary/30 pl-4 italic my-4"
-                    {...props}
-                  />
+                  >{withGlossary(props.children, glossary)}</blockquote>
                 ),
                 code: (props) => (
                   <code
@@ -302,8 +310,7 @@ export default function StoryPageClient({
                 td: (props) => (
                   <td
                     className="px-4 py-3 text-sm text-white/50 border-t border-white/5"
-                    {...props}
-                  />
+                  >{withGlossary(props.children, glossary)}</td>
                 ),
                 img: ({ src, alt }) => (
                   <MDImage
