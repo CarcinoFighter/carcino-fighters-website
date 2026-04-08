@@ -5,6 +5,7 @@ export type GlossaryEntry = {
   id: string;
   word: string;
   meaning: string;
+  aliases?: string; // Comma-separated variations
 };
 
 function escapeRegExp(string: string) {
@@ -14,10 +15,20 @@ function escapeRegExp(string: string) {
 export function withGlossary(node: ReactNode, glossary: GlossaryEntry[]): ReactNode {
   if (!glossary || glossary.length === 0 || !node) return node;
 
-  const words = glossary.map((g) => escapeRegExp(g.word));
-  words.sort((a, b) => b.length - a.length);
+  const allWords: string[] = [];
+  glossary.forEach(g => {
+    allWords.push(escapeRegExp(g.word));
+    if (g.aliases) {
+      g.aliases.split(',').forEach(alias => {
+        const trimmed = alias.trim();
+        if (trimmed) allWords.push(escapeRegExp(trimmed));
+      });
+    }
+  });
+
+  allWords.sort((a, b) => b.length - a.length);
   
-  const regex = new RegExp(`\\b(${words.join('|')})\\b`, 'gi');
+  const regex = new RegExp(`\\b(${allWords.join('|')})\\b`, 'gi');
 
   const processString = (text: string): ReactNode[] | string => {
     const parts = text.split(regex);
@@ -28,7 +39,13 @@ export function withGlossary(node: ReactNode, glossary: GlossaryEntry[]): ReactN
       if (i % 2 === 0) return part;
 
       const lowerMatch = part.toLowerCase();
-      const entry = glossary.find((g) => g.word.toLowerCase() === lowerMatch);
+      const entry = glossary.find((g) => {
+        if (g.word.toLowerCase() === lowerMatch) return true;
+        if (g.aliases) {
+          return g.aliases.split(',').some(alias => alias.trim().toLowerCase() === lowerMatch);
+        }
+        return false;
+      });
       
       if (entry) {
         return (

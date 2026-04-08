@@ -56,7 +56,7 @@ export default function AdminPage() {
       const res = await fetch("/api/glossary", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, word: glossaryEditData.word, meaning: glossaryEditData.meaning })
+        body: JSON.stringify({ id, word: glossaryEditData.word, meaning: glossaryEditData.meaning, aliases: glossaryEditData.aliases })
       });
       if (!res.ok) {
         const data = await res.json();
@@ -99,7 +99,7 @@ export default function AdminPage() {
         const data = await res.json();
         throw new Error(data.error || "Failed to add word");
       }
-      setNewGlossary({ word: "", meaning: "" });
+      setNewGlossary({ word: "", meaning: "", aliases: "" });
       fetchGlossary();
     } catch(e: any) {
       alert(e.message);
@@ -107,10 +107,11 @@ export default function AdminPage() {
   }
   const [glossarySearch, setGlossarySearch] = useState("");
   const [glossaryEditing, setGlossaryEditing] = useState<string | null>(null);
-  const [newGlossary, setNewGlossary] = useState({ word: "", meaning: "" });
+  const [newGlossary, setNewGlossary] = useState({ word: "", meaning: "", aliases: "" });
   const [glossaryEditData, setGlossaryEditData] = useState({
     word: "",
     meaning: "",
+    aliases: "",
   });
   const filteredGlossary = glossaryWords.filter((w) => {
     const term = glossarySearch.toLowerCase().trim();
@@ -2757,10 +2758,16 @@ export default function AdminPage() {
                         <h3 className="text-white font-medium mb-3">Add New Word</h3>
                         <div className="flex flex-col sm:flex-row gap-3">
                           <input 
-                            className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50" 
-                            placeholder="Word" 
+                            className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 w-full sm:w-1/4" 
+                            placeholder="Primary Word" 
                             value={newGlossary.word}
                             onChange={(e) => setNewGlossary(s => ({ ...s, word: e.target.value }))}
+                          />
+                          <input 
+                            className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 w-full sm:w-1/4" 
+                            placeholder="Aliases (comma separated)" 
+                            value={newGlossary.aliases}
+                            onChange={(e) => setNewGlossary(s => ({ ...s, aliases: e.target.value }))}
                           />
                           <input 
                             className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 flex-1" 
@@ -2814,23 +2821,44 @@ export default function AdminPage() {
                               {/* Word */}
                               <div className="space-y-1">
                                 <p className="text-[10px] uppercase tracking-[0.2em] text-purple-400 font-bold">
-                                  Word
+                                  Word & Aliases
                                 </p>
                                 {glossaryEditing === entry.id ? (
-                                  <input
-                                    className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm text-white w-full focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                                    value={glossaryEditData.word}
-                                    onChange={(e) =>
-                                      setGlossaryEditData((s) => ({
-                                        ...s,
-                                        word: e.target.value,
-                                      }))
-                                    }
-                                  />
+                                  <div className="flex flex-col gap-2">
+                                    <input
+                                      className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm text-white w-full focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                      placeholder="Primary Word"
+                                      value={glossaryEditData.word}
+                                      onChange={(e) =>
+                                        setGlossaryEditData((s) => ({
+                                          ...s,
+                                          word: e.target.value,
+                                        }))
+                                      }
+                                    />
+                                    <input
+                                      className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm text-white w-full focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                      placeholder="Aliases (comma separated)"
+                                      value={glossaryEditData.aliases}
+                                      onChange={(e) =>
+                                        setGlossaryEditData((s) => ({
+                                          ...s,
+                                          aliases: e.target.value,
+                                        }))
+                                      }
+                                    />
+                                  </div>
                                 ) : (
-                                  <h3 className="text-xl font-bold font-tttravelsnext uppercase text-white">
-                                    {entry.word}
-                                  </h3>
+                                  <div className="space-y-1">
+                                    <h3 className="text-xl font-bold font-tttravelsnext uppercase text-white">
+                                      {entry.word}
+                                    </h3>
+                                    {entry.aliases && (
+                                      <p className="text-[10px] text-white/40 italic">
+                                        Also: {entry.aliases}
+                                      </p>
+                                    )}
+                                  </div>
                                 )}
                               </div>
 
@@ -2882,6 +2910,7 @@ export default function AdminPage() {
                                         setGlossaryEditData({
                                           word: entry.word,
                                           meaning: entry.meaning,
+                                          aliases: entry.aliases || "",
                                         });
                                       }}
                                       className="px-5 py-2 rounded-full border border-white/10 bg-white/5 text-white/70 text-xs font-bold hover:bg-white/10 transition-all"
