@@ -62,14 +62,14 @@ export async function POST(req: Request) {
   if (!session?.admin_access) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
-  const { word, meaning } = body;
-  console.log("Adding glossary word:", { word, meaning });
+  const { word, meaning, aliases } = body;
+  console.log("Adding glossary word:", { word, meaning, aliases });
   
   if (!word || !meaning) return NextResponse.json({ error: "Word and meaning are required" }, { status: 400 });
 
   const { data, error } = await sb!
     .from("glossary")
-    .insert({ word, meaning })
+    .insert({ word, meaning, aliases: aliases || "" })
     .select()
     .single();
 
@@ -86,12 +86,12 @@ export async function PUT(req: Request) {
   if (!session?.admin_access) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
-  const { id, word, meaning } = body;
+  const { id, word, meaning, aliases } = body;
   if (!id || !word || !meaning) return NextResponse.json({ error: "id, word, and meaning are required" }, { status: 400 });
 
   const { data, error } = await sb!
     .from("glossary")
-    .update({ word, meaning })
+    .update({ word, meaning, aliases: aliases || "" })
     .eq("id", id)
     .select()
     .single();
