@@ -16,6 +16,7 @@ import type { BlogEntry, BlogSummary } from "@/lib/blogsRepository";
 import { motion } from "framer-motion";
 import { DynamicBackgroundHues } from "@/components/ui/dynamic-background-hues";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
+import { withGlossary, type GlossaryEntry } from "@/lib/withGlossary";
 
 const colors = [
   "#E39E2E",
@@ -67,6 +68,17 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
   const [userId, setUserId] = useState<string | null>(null);
   const [initialLiked, setInitialLiked] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
+  const [glossary, setGlossary] = useState<GlossaryEntry[]>([]);
+
+  useEffect(() => {
+    fetch("/api/glossary")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.glossary) setGlossary(data.glossary);
+      })
+      .catch((err) => console.error("Failed to fetch glossary", err));
+  }, []);
+
 
   useEffect(() => {
     // Record view (anonymous)
@@ -140,8 +152,8 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
               w-full max-w-none sm:max-w-5xl
               dark:prose-invert
               font-dmsans
-              break-words [overflow-wrap:anywhere] overflow-hidden
-              ${expanded ? "" : "max-h-[60vh] sm:max-h-[80vh] overflow-hidden"}
+              break-words [overflow-wrap:anywhere]
+              ${expanded ? "overflow-visible" : "max-h-[60vh] sm:max-h-[80vh] overflow-hidden"}
             `}
           style={
             !expanded
@@ -159,12 +171,12 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
               h1: (props) => <h1 className="text-2xl sm:text-3xl font-bold mt-8 mb-4 break-words [overflow-wrap:anywhere]" {...props} />,
               h2: (props) => <h2 className="text-xl sm:text-2xl font-bold mt-8 mb-4 break-words [overflow-wrap:anywhere]" {...props} />,
               h3: (props) => <h3 className="text-lg sm:text-xl font-bold mt-6 mb-3 break-words [overflow-wrap:anywhere]" {...props} />,
-              p: (props) => <p className="mb-4 last:mb-0 leading-relaxed text-white/80 break-words [overflow-wrap:anywhere]" {...props} />,
+              p: (props) => <p className="mb-4 last:mb-0 leading-relaxed text-white/80 break-words [overflow-wrap:anywhere]">{withGlossary(props.children, glossary)}</p>,
               a: (props) => <a className="text-primary hover:text-primary/80 underline break-words [overflow-wrap:anywhere]" {...props} />,
               ul: (props) => <ul className="list-disc list-outside ml-6 my-4 space-y-2 text-white/70 break-words [overflow-wrap:anywhere]" {...props} />,
-              li: (props) => <li className="leading-relaxed break-words [overflow-wrap:anywhere]" {...props} />,
+              li: (props) => <li className="leading-relaxed break-words [overflow-wrap:anywhere]">{withGlossary(props.children, glossary)}</li>,
               ol: (props) => <ol className="list-decimal list-outside ml-6 my-4 space-y-2 text-white/70 break-words [overflow-wrap:anywhere]" {...props} />,
-              blockquote: (props) => <blockquote className="border-l-4 border-primary/30 pl-4 italic my-4 text-white/60 w-full break-words [overflow-wrap:anywhere]" {...props} />,
+              blockquote: (props) => <blockquote className="border-l-4 border-primary/30 pl-4 italic my-4 text-white/60 w-full break-words [overflow-wrap:anywhere]">{withGlossary(props.children, glossary)}</blockquote>,
               code: (props) => <code className="bg-white/5 text-white/90 px-1.5 py-0.5 rounded" {...props} />,
               pre: (props) => <pre className="bg-white/5 p-4 rounded-lg overflow-x-auto my-4 border border-white/10 w-full max-w-full break-normal" {...props} />,
               table: (props) => (
@@ -177,7 +189,7 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
                 <th className="px-4 py-3 text-left text-xs font-bold text-white/70 uppercase tracking-wider" {...props} />
               ),
               td: (props) => (
-                <td className="px-4 py-3 text-sm text-white/50 border-t border-white/5" {...props} />
+                <td className="px-4 py-3 text-sm text-white/50 border-t border-white/5">{withGlossary(props.children, glossary)}</td>
               ),
               img: ({ src, alt }) => <MDImage src={typeof src === "string" ? src : undefined} alt={alt} />,
             }}
