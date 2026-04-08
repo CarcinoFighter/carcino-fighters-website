@@ -24,29 +24,15 @@ export function GlossaryTooltip({ word, meaning, children }: GlossaryTooltipProp
       <AnimatePresence>
         {isHovered && (
           <motion.span
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 5, scale: 0.95 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="!absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-[280px] sm:w-[320px] rounded-[44px] shadow-2xl z-[99999] isolate overflow-hidden pointer-events-none text-left liquid-glass backdrop-blur-2xl !shadow-none border border-white/10"
-            style={{ "--card-radius": "44px", position: 'absolute' } as React.CSSProperties}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.1 }}
+            className="!absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[200px] rounded shadow-xl z-[999999] pointer-events-none text-left bg-[#212121] border border-white/10 px-3 py-1.5"
+            style={{ position: 'absolute' } as React.CSSProperties}
           >
-            {/* Liquid Glass Base Layers */}
-            <span className="liquidGlass-effect pointer-events-none absolute inset-0 z-0" />
-            
-            {/* Frosted Layer with distortion pass-through */}
-            <span className="cardGlass-tint pointer-events-none absolute inset-0 opacity-100 !bg-[#1a1225]/60 z-[1] shadow-[inset_0.6px_0.6px_0.4px_rgba(255,255,255,0.4)]" />
-            <span className="absolute inset-0 bg-white/[0.02] pointer-events-none z-[2]" />
-            <span className="glass-noise absolute inset-0 opacity-30 pointer-events-none z-[3]" />
-            
-            {/* Border and Shine Layers */}
-            <span className="cardGlass-borders absolute inset-0 pointer-events-none z-[4]" />
-            <span className="cardGlass-shine absolute inset-0 pointer-events-none z-[5]" />
-            
-            <span className="relative z-10 flex flex-col p-6 px-8">
-              <span className="text-sm text-gray-100 leading-relaxed font-dmsans font-medium block whitespace-normal text-center drop-shadow-md">
-                {meaning}
-              </span>
+            <span className="text-[11px] text-white leading-tight font-dmsans block whitespace-normal">
+              {meaning}
             </span>
           </motion.span>
         )}
