@@ -56,11 +56,20 @@ const organizationHierarchy: Leader = {
           avatar: "/avatars/adiya.jpeg",
         },
         {
-          name: "Ariona Talukdar",
-          title: "PR Manager",
+          name: "Krit Agarwal",
+          title: "Head of Marketing",
           description:
-            "A quick learner with strong communication and problem-solving skills, she handles tasks with focus, clarity, and confidence.",
-          avatar: "/avatars/ariona.png",
+            "Well acquainted with pressure, chaos, and ambiguity- He excels in turning complexity into direction. Backed against a wall? He’ll break the entire thing down.",
+          avatar: "/avatars/dummy.png",
+          children: [
+            {
+              name: "Ariona Talukdar",
+              title: "PR Manager",
+              description:
+                "A quick learner with strong communication and problem-solving skills, she handles tasks with focus, clarity, and confidence.",
+              avatar: "/avatars/ariona.png",
+            },
+          ],
         },
       ],
     },
@@ -119,7 +128,6 @@ const organizationHierarchy: Leader = {
 
 const easeSoft: [number, number, number, number] = [0.33, 1, 0.68, 1]
 
-// Variants for the tree drawing effect - branching from center outward
 const treeVariants: Variants = {
   hidden: { opacity: 0 },
   show: {
@@ -189,7 +197,6 @@ function HolographicCard({
   const rotateX = useTransform(ySpring, [-0.5, 0.5], ["7deg", "-7deg"])
   const rotateY = useTransform(xSpring, [-0.5, 0.5], ["-7deg", "7deg"])
 
-  // Holographic sheen gradient position
   const sheenX = useTransform(xSpring, [-0.5, 0.5], ["0%", "100%"])
   const sheenY = useTransform(ySpring, [-0.5, 0.5], ["0%", "100%"])
 
@@ -201,12 +208,10 @@ function HolographicCard({
     const mouseX = e.clientX - rect.left
     const mouseY = e.clientY - rect.top
 
-    // Only update if mouse is within bounds to prevent edge jitter
     if (mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height) {
       const xPct = (mouseX / width) - 0.5
       const yPct = (mouseY / height) - 0.5
 
-      // Add threshold to prevent micro-movements
       const threshold = 0.02
       const currentX = x.get()
       const currentY = y.get()
@@ -238,7 +243,6 @@ function HolographicCard({
       }}
       initial={{ transform: "perspective(1000px) rotateX(0deg) rotateY(0deg)" }}
     >
-      {/* Dynamic Shine Layer - Reduced Intensity */}
       <motion.div
         className="absolute inset-0 opacity-0 group-hover:opacity-100 pointer-events-none z-50 mix-blend-overlay transition-opacity duration-300"
         style={{
@@ -309,7 +313,6 @@ function LeaderCard({ leader, isLoading }: { leader: Leader; isLoading?: boolean
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (hoverTimeoutRef.current) {
@@ -329,7 +332,6 @@ function LeaderCard({ leader, isLoading }: { leader: Leader; isLoading?: boolean
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current)
     }
-    // Add delay before hiding to prevent jitter
     hoverTimeoutRef.current = setTimeout(() => {
       setIsHovered(false)
     }, 100)
@@ -338,10 +340,8 @@ function LeaderCard({ leader, isLoading }: { leader: Leader; isLoading?: boolean
   const showExpanded = isExpanded || isHovered
   const currentRadius = showExpanded ? '44px' : '24px'
 
-  // Refined fluid dimensions
   const getCardWidth = () => {
     if (isMobile) return showExpanded ? 240 : 180
-    // Desktop fluid scaling - More generous base widths for larger screens
     let base = 180
     if (windowWidth >= 1440) base = 240
     else if (windowWidth >= 1200) base = 220
@@ -360,11 +360,8 @@ function LeaderCard({ leader, isLoading }: { leader: Leader; isLoading?: boolean
     <div className="relative z-0" style={{ borderRadius: currentRadius }}>
       <div
         className="relative overflow-hidden isolation-isolate liquid-glass !shadow-none backdrop-blur-md"
-        style={{
-          borderRadius: currentRadius,
-        }}
+        style={{ borderRadius: currentRadius }}
       >
-        {/* Card Glass Internal Layers */}
         <div className="liquidGlass-effect pointer-events-none"></div>
         <div className="cardGlass-tint pointer-events-none"></div>
         <div className="glass-noise"></div>
@@ -449,7 +446,6 @@ function HierarchyLevel({ leader, isLoading }: { leader: Leader; isLoading?: boo
 
       {hasChildren && (
         <div className="flex flex-col items-center w-full">
-          {/* Vertical line down from parent */}
           <motion.div variants={lineDrawVertical} className="w-[2px] h-10 bg-white/20 z-20 relative" />
 
           <div className="flex flex-col md:flex-row justify-center w-full">
@@ -460,18 +456,14 @@ function HierarchyLevel({ leader, isLoading }: { leader: Leader; isLoading?: boo
 
               return (
                 <div key={child.name} className="relative flex flex-col items-center flex-1 md:px-4">
-                  {/* Branching system (Desktop) */}
                   {!isOnly && (
                     <div className="hidden md:block absolute top-0 left-0 right-0 h-6 z-20 pointer-events-none">
-                      {/* Horizontal segment - Adjusted to not overlap curves */}
                       <div className={cn(
                         "absolute top-0 h-[2px] bg-white/20 transition-all duration-300",
                         isFirst ? "left-[calc(50%+24px)] right-0" :
                           isLast ? "left-0 right-[calc(50%+24px)]" :
                             "left-0 right-0"
                       )} />
-
-                      {/* Rounded corner overlays */}
                       {isFirst && (
                         <div className="absolute top-0 left-1/2 -translate-x-[1px] w-6 h-6 border-t-2 border-l-2 border-white/20 rounded-tl-[24px]" />
                       )}
@@ -481,7 +473,6 @@ function HierarchyLevel({ leader, isLoading }: { leader: Leader; isLoading?: boo
                     </div>
                   )}
 
-                  {/* Child stem - Offset lower for first/last to align with curves */}
                   <motion.div
                     variants={lineDrawVertical}
                     className={cn(
@@ -519,7 +510,6 @@ export default function Leadership() {
 
         if (response.ok && data.users) {
           const users: DBUser[] = data.users
-
           const mergeData = (leader: Leader): Leader => {
             const dbUser = users.find(u =>
               u.name?.toLowerCase() === leader.name.toLowerCase() ||
@@ -574,7 +564,6 @@ export default function Leadership() {
       const treeWidth = treeRef.current.scrollWidth
 
       if (treeWidth > containerWidth) {
-        // Add a small buffer (px-10 on each side is 80px total)
         const scale = (containerWidth - 40) / treeWidth
         setTreeScale(Math.max(0.4, scale))
       } else {
@@ -585,7 +574,6 @@ export default function Leadership() {
     const resizeObserver = new ResizeObserver(updateScale)
     if (containerRef.current) resizeObserver.observe(containerRef.current)
 
-    // Initial update and update after loading
     updateScale()
     const timer = setTimeout(updateScale, 500)
 
