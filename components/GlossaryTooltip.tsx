@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useLayoutEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 interface GlossaryTooltipProps {
@@ -9,9 +9,43 @@ interface GlossaryTooltipProps {
 
 export function GlossaryTooltip({ word, meaning, children }: GlossaryTooltipProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [position, setPosition] = useState({ x: "-50%", y: 0, side: "top" as "top" | "bottom" });
+  const tooltipRef = useRef<HTMLSpanElement>(null);
+  const containerRef = useRef<HTMLSpanElement>(null);
+
+  useLayoutEffect(() => {
+    if (isHovered && tooltipRef.current && containerRef.current) {
+      const tooltipRect = tooltipRef.current.getBoundingClientRect();
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const padding = 20;
+
+      let xOffset = 0;
+      let side: "top" | "bottom" = "top";
+
+      // Horizontal adjustment
+      if (tooltipRect.left < padding) {
+        xOffset = padding - tooltipRect.left;
+      } else if (tooltipRect.right > viewportWidth - padding) {
+        xOffset = viewportWidth - padding - tooltipRect.right;
+      }
+
+      // Vertical flip if near top
+      if (containerRect.top < 120) {
+        side = "bottom";
+      }
+
+      setPosition({ 
+        x: `calc(-50% + ${xOffset}px)`, 
+        y: 0,
+        side 
+      });
+    }
+  }, [isHovered]);
 
   return (
     <span 
+      ref={containerRef}
       className="relative inline cursor-help group"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -24,14 +58,33 @@ export function GlossaryTooltip({ word, meaning, children }: GlossaryTooltipProp
       <AnimatePresence>
         {isHovered && (
           <motion.span
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.1 }}
-            className="!absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[200px] rounded shadow-xl z-[999999] pointer-events-none text-left bg-[#212121] border border-white/10 px-3 py-1.5"
-            style={{ position: 'absolute' } as React.CSSProperties}
+            ref={tooltipRef}
+            initial={{ opacity: 0, scale: 0.95, y: position.side === "top" ? 5 : -5 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: position.side === "top" ? 5 : -5 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className={`!absolute left-1/2 z-[999999] w-max max-w-[250px] rounded-xl shadow-2xl pointer-events-none text-left backdrop-blur-md bg-black/80 border border-white/10 p-4 transition-all duration-300`}
+            style={{ 
+              position: 'absolute',
+              left: '50%',
+              transform: `translateX(${position.x})`,
+              ...(position.side === "top" ? { bottom: '100%', marginBottom: '12px' } : { top: '100%', marginTop: '12px' })
+            } as React.CSSProperties}
           >
-            <span className="text-[11px] text-white leading-tight font-dmsans block whitespace-normal">
+            {/* Arrow */}
+            <div 
+              className={`absolute left-1/2 -translate-x-1/2 border-8 border-transparent ${
+                position.side === "top" 
+                  ? "top-full border-t-black/80" 
+                  : "bottom-full border-b-black/80"
+              }`}
+              style={{
+                left: `calc(50% - ${parseInt(position.x.replace('calc(-50% + ', '').replace('px)', '')) || 0}px)`
+              }}
+            />
+
+            <span className="text-[13px] text-white/90 leading-relaxed font-dmsans block whitespace-normal">
+              <strong className="text-purple-400 block mb-1 uppercase tracking-wider text-[10px] font-black">{word}</strong>
               {meaning}
             </span>
           </motion.span>
