@@ -52,7 +52,7 @@ const organizationHierarchy: Leader = {
           name: "Adiya Roy",
           title: "Design Manager",
           description:
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+            "A designer who can't let go of his lattes or his love for cars. A creator from birth, he's dabbled in illustration, graphic design, video editing, photography, and much more.",
           avatar: "/avatars/adiya.jpeg",
         },
         {
@@ -60,7 +60,7 @@ const organizationHierarchy: Leader = {
           title: "Head of Marketing",
           description:
             "Well acquainted with pressure, chaos, and ambiguity- He excels in turning complexity into direction. Backed against a wall? He’ll break the entire thing down.",
-          avatar: "/avatars/dummy.png",
+          avatar: "/avatars/krit.jpg",
           children: [
             {
               name: "Ariona Talukdar",
@@ -80,13 +80,13 @@ const organizationHierarchy: Leader = {
         "Physicist by soul. Fights bugs, throws hands, hits gym. If it's complex, he's into it. If it's boring, he's out. Obsessed with clean design, clean lifts, and clean wins.",
       avatar: "/avatars/anjishnu.jpeg",
       children: [
-        {
-          name: "Naitik Chattaraj",
-          title: "Development Manager",
-          description:
-            "Codes like it's gravity. Fueled by caffeine and thinking in systems while dreaming in space. Leads devs, ships ideas, and refuses to believe bugs aren't just undocumented features.",
-          avatar: "/avatars/naitik.jpeg",
-        },
+        // {
+        //   name: "Naitik Chattaraj",
+        //   title: "Development Manager",
+        //   description:
+        //     "Codes like it's gravity. Fueled by caffeine and thinking in systems while dreaming in space. Leads devs, ships ideas, and refuses to believe bugs aren't just undocumented features.",
+        //   avatar: "/avatars/naitik.jpeg",
+        // },
       ],
     },
     {
@@ -107,15 +107,15 @@ const organizationHierarchy: Leader = {
               name: "Siran Pramanick",
               title: "Deputy Chief Editor",
               description:
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                "Hey there! I'm a young student hailing from Kolkata, India. My name means beauty, and perhaps that shows how I love to find beauty in literature, writing, music, art and history. I'm a fellow liberal arts enthusiast with a passion for writing, trying to change the world bit by bit with the power of words",
               avatar: "/avatars/siran.png",
             },
             {
               name: "Aryaka Sikdar",
               title: "Proofreading Manager",
               description:
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-              avatar: "/avatars/dummy.png",
+                "A researcher who balances equations and emotions with equal intensity. Juggling old Bollywood , curly hair routines, historical rabbit holes, and a lifelong habit of feeling everything a little too much.",
+              avatar: "/avatars/aryaka.jpeg",
             },
           ],
         },
