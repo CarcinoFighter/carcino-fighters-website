@@ -20,10 +20,35 @@ export async function generateMetadata({ params }: ArticlePageParams): Promise<M
     };
   }
 
+  const description = (article.content ?? "").replace(/[#*_`>\-\[\]!\(\)]/g, "").slice(0, 160);
+
   return {
     title: article.title,
+    description,
+    alternates: {
+      canonical: `/article/${slug}`,
+    },
+    openGraph: {
+      title: article.title,
+      description,
+      url: `/article/${slug}`,
+      type: "article",
+      images: [
+        {
+          url: "/logo.png",
+          alt: article.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description,
+      images: ["/logo.png"],
+    },
   };
 }
+
 
 interface ArticlePageParams {
   params: Promise<{ cancerType: string }>;
@@ -68,6 +93,9 @@ export default async function ArticlePage({ params }: ArticlePageParams) {
 
     url: `https://thecarcinofoundation.org/article/${slug}`,
 
+    datePublished: article.created_at,
+    dateModified: article.updated_at || article.created_at,
+
     author: {
       "@type": "Person",
       name: article.author || "Carcino Research Team",
@@ -87,6 +115,7 @@ export default async function ArticlePage({ params }: ArticlePageParams) {
       },
     },
   };
+
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",

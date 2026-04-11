@@ -11,6 +11,54 @@ import {
 } from "@/lib/blogsRepository";
 import Script from "next/script";
 import BlogPageClient from "./BlogPageClient";
+import { Metadata } from "next";
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  let entry: BlogEntry | null = null;
+
+  try {
+    entry = await getBlogBySlug(slug);
+  } catch (e) {
+    console.error("Error fetching entry for metadata:", e);
+  }
+  
+  if (!entry) {
+    const { getStaffBlogBySlug } = await import("@/lib/carcinoWork");
+    entry = await getStaffBlogBySlug(slug) as any as BlogEntry;
+  }
+
+  if (!entry) return { title: "Blog Post Not Found" };
+
+  const description = (entry.content || "").replace(/[#*_`>\-\[\]!\(\)]/g, "").slice(0, 160);
+
+  return {
+    title: entry.title,
+    description,
+    alternates: {
+      canonical: `/blogs/${slug}`,
+    },
+    openGraph: {
+      title: entry.title,
+      description,
+      url: `/blogs/${slug}`,
+      type: "article",
+      images: [
+        {
+          url: "/logo.png",
+          alt: entry.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: entry.title,
+      description,
+      images: ["/logo.png"],
+    },
+  };
+}
+
 
 interface Props {
   params: Promise<{
@@ -87,6 +135,8 @@ export default async function Page({ params }: Props) {
     headline: entry.title,
     description: (entry.content || "").replace(/[#*_`>\-\[\]!\(\)]/g, "").slice(0, 160),
     url: `https://thecarcinofoundation.org/blogs/${entry.slug}`,
+    datePublished: entry.created_at,
+    dateModified: entry.updated_at || entry.created_at,
     author: {
       "@type": "Person",
       name: entry.authorName || "Carcino Research Team",
@@ -98,6 +148,7 @@ export default async function Page({ params }: Props) {
     },
     mainEntityOfPage: { "@type": "WebPage" },
   };
+
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",

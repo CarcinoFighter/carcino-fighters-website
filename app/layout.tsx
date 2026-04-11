@@ -1,7 +1,7 @@
 import "./globals.css";
 import Script from "next/script";
 import type { Metadata } from "next";
-import { Geist, Space_Grotesk, Cinzel, Michroma } from "next/font/google";
+import { Geist, Space_Grotesk } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import { BannedBanner } from "@/components/BannedBanner";
@@ -63,22 +63,12 @@ const panchang = localFont({
   variable: "--font-panchang",
 });
 
-const michroma = Michroma({
-  variable: "--font-michroma",
-  subsets: ["latin"],
-  weight: "400"
-});
-
-
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
 });
 
-const cinzel = Cinzel({
-  variable: "--font-cinzel",
-  subsets: ["latin"],
-});
+
 const inter = localFont({
   src: [
     {
@@ -118,15 +108,42 @@ const dmsans = localFont({
   variable: "--font-dmsans",
 });
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.thecarcinofoundation.org"),
   title: {
     template: '%s | The Carcino Foundation',
-    default: "The Carcino Foundation – Breaking Down Cancer for Anyone and Everyone",
+    default: "The Carcino Foundation – Breaking Down Cancer for Anyone and Everyone",
   },
   description: "A simple hub, built to educate and help emerging and concurrent generations upon one of the leading causes of death in humanity.",
   verification: {
     google: "73412c894887f1e9",
   },
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "The Carcino Foundation",
+    description: "Breaking Down Cancer for Anyone and Everyone",
+    url: "https://www.thecarcinofoundation.org",
+    siteName: "The Carcino Foundation",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "The Carcino Foundation Logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Carcino Foundation",
+    description: "Breaking Down Cancer for Anyone and Everyone",
+    images: ["/logo.png"],
+  },
 };
+
 
 export default function RootLayout({
   children,
@@ -150,8 +167,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geist.variable} ${spaceGrotesk.variable} ${cinzel.variable} ${michroma.variable} ${panchang.variable} ${wintersolace.variable} ${inter.variable} 
+        className={`${geist.variable} ${spaceGrotesk.variable} ${panchang.variable} ${wintersolace.variable} ${inter.variable} 
         ${instrumentserifitalic.variable} ${tttravelsnext.variable} ${dmsans.variable} antialiased hide-scrollbar`}>
+
         <Script
           id="carcino-org-schema"
           type="application/ld+json"

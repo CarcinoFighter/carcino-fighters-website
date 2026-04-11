@@ -39,7 +39,7 @@ export default function MaintenancePage() {
                     >
                         <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-[#6D54B5] to-transparent" />
 
-                        <p className="text-sm font-michroma tracking-[0.2em] text-white/30 uppercase">
+                        <p className="text-sm font-panchang tracking-[0.2em] text-white/30 uppercase">
                             Coming Back Soon
                         </p>
                     </motion.div>
