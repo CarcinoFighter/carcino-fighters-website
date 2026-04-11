@@ -11,6 +11,54 @@ import {
 } from "@/lib/survivorStoriesRepository";
 import Script from "next/script";
 import StoryPageClient from "./StoryPageClient";
+import { Metadata } from "next";
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { story } = await params;
+  let storyData: SurvivorStory | null = null;
+
+  try {
+    storyData = await getSurvivorStoryBySlug(story);
+  } catch (e) {
+    console.error("Error fetching story for metadata:", e);
+  }
+
+  if (!storyData) {
+    const { getStaffSurvivorStoryBySlug } = await import("@/lib/carcinoWork");
+    storyData = await getStaffSurvivorStoryBySlug(story) as any as SurvivorStory;
+  }
+
+  if (!storyData) return { title: "Story Not Found" };
+
+  const description = (storyData.content || "").replace(/[#*_`>\-\[\]!\(\)]/g, "").slice(0, 160);
+
+  return {
+    title: storyData.title,
+    description,
+    alternates: {
+      canonical: `/survivorstories/${story}`,
+    },
+    openGraph: {
+      title: storyData.title,
+      description,
+      url: `/survivorstories/${story}`,
+      type: "article",
+      images: [
+        {
+          url: "/logo.png",
+          alt: storyData.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: storyData.title,
+      description,
+      images: ["/logo.png"],
+    },
+  };
+}
+
 
 const CARD_COLORS = [
   "#E39E2E",
@@ -93,6 +141,8 @@ export default async function Page({ params }: Props) {
       .replace(/[#*_`>\-\[\]!\(\)]/g, "")
       .slice(0, 160),
     url: `https://thecarcinofoundation.org/survivorstories/${storyData.slug}`,
+    datePublished: storyData.created_at,
+    dateModified: storyData.updated_at || storyData.created_at,
     author: {
       "@type": "Person",
       name: storyData.authorName || "Carcino Research Team",
@@ -104,6 +154,7 @@ export default async function Page({ params }: Props) {
     },
     mainEntityOfPage: { "@type": "MedicalWebPage" },
   };
+
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
