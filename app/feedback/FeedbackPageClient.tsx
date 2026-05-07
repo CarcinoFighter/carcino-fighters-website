@@ -16,27 +16,27 @@ const staggerContainer = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.08,
+      staggerChildren: 0.14,
+      delayChildren: 0.1,
     },
   },
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
+  hidden: { opacity: 0, y: 32 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.65, ease: easeSoft },
+    transition: { duration: 0.7, ease: easeSoft },
   },
 };
 
 const fadeScale = {
-  hidden: { opacity: 0, scale: 0.96 },
+  hidden: { opacity: 0, scale: 0.97 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.7, ease: easeSoft },
+    transition: { duration: 0.75, ease: easeSoft },
   },
 };
 
@@ -70,7 +70,7 @@ export function FeedbackPageClient() {
     target: heroRef,
     offset: ["start start", "end start"],
   });
-  const y = useTransform(scrollYProgress, [0, 1], [0, -150]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, -160]);
 
   // localstorage temp.
   React.useEffect(() => {
@@ -154,128 +154,161 @@ export function FeedbackPageClient() {
   return (
     <div
       ref={containerRef}
-      className="flex flex-col relative lg:block lg:h-screen w-full overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background hide-scrollbar"
+      className="flex flex-col relative lg:block lg:h-screen w-full overflow-y-scroll overflow-x-hidden items-start gap-0 bg-background hide-scrollbar"
     >
-      {/* Hero Section */}
+      {/* Hero Section — full-bleed dark, TCF-style */}
       <motion.div
         ref={heroRef}
-        className="relative w-full min-h-[50vh] lg:min-h-[60vh] flex items-center justify-center overflow-hidden"
+        className="relative w-full min-h-[58vh] lg:min-h-[68vh] flex items-end justify-start overflow-hidden bg-[#0a0a0f]"
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
       >
-        {/* Parallax background gradient */}
+        {/* Parallax background layer */}
         <motion.div
           className="absolute inset-0 pointer-events-none"
           style={{ y }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
-          <div className="absolute top-1/4 -left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 -right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+          {/* Deep dark base gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0e0b18] to-[#0a0a0f]" />
+          {/* Subtle orbs — restrained, not garish */}
+          <div className="absolute top-1/3 -left-32 w-[480px] h-[480px] bg-primary/8 rounded-full blur-[120px]" />
+          <div className="absolute bottom-0 right-0 w-[360px] h-[360px] bg-purple-700/6 rounded-full blur-[100px]" />
+          {/* Fine grain noise overlay */}
+          <div
+            className="absolute inset-0 opacity-[0.025]"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+              backgroundRepeat: "repeat",
+              backgroundSize: "128px 128px",
+            }}
+          />
         </motion.div>
 
-        {/* Content */}
-        <div className="relative z-10 w-full max-w-5xl mx-auto px-6 sm:px-10 lg:px-14 py-20">
+        {/* Hero content — left-aligned, TCF style */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 pt-24 pb-16 lg:pb-20">
+          {/* Eyebrow tag */}
           <motion.div
             variants={fadeUp}
-            className="flex items-center gap-3 mb-6"
+            className="inline-flex items-center gap-2.5 mb-7"
           >
-            <MessageSquare className="w-8 h-8 text-primary" />
-            <span className="text-sm font-dmsans text-muted-foreground uppercase tracking-wider">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+            <span className="text-[11px] font-dmsans text-white/40 uppercase tracking-[0.2em] font-medium">
               Your Voice Matters
             </span>
           </motion.div>
 
+          {/* Large editorial headline */}
           <motion.h1
             variants={fadeUp}
-            className="text-4xl sm:text-5xl lg:text-7xl xl:text-8xl font-instrumentserifitalic bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-primary/70 mb-6"
+            className="text-5xl sm:text-6xl lg:text-[5.5rem] xl:text-[6.5rem] font-instrumentserifitalic text-white leading-[1.02] mb-6 max-w-3xl"
           >
-            Share Your Feedback
+            Share Your
+            <br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-400 to-primary/60">
+              Feedback.
+            </span>
           </motion.h1>
 
           <motion.p
             variants={fadeUp}
-            className="text-base sm:text-lg font-dmsans text-muted-foreground max-w-2xl leading-relaxed"
+            className="text-base sm:text-lg font-dmsans text-white/45 max-w-xl leading-relaxed"
           >
-            Help us improve The Carcino Foundation. Whether it's a bug, feature
-            request, or just a thought—we're listening. Every piece of feedback
-            shapes our future.
+            Help us improve The Carcino Foundation. Whether it's a bug, a
+            feature request, or just a thought—we're listening. Every piece of
+            feedback shapes our future.
           </motion.p>
         </div>
+
+        {/* Bottom border fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
       </motion.div>
 
+      {/* Divider rule */}
+      <div className="w-full h-px bg-border/30" />
+
       {/* Main Content Grid */}
-      <div className="relative w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 pb-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Feedback Form */}
+      <div className="relative w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+
+          {/* ── Feedback Form ── */}
           <motion.div
             ref={formRef}
             variants={fadeScale}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: true, amount: 0.2 }}
             className="relative"
           >
-            <Card className="relative overflow-hidden p-8 sm:p-10 bg-card/50 backdrop-blur-sm border border-border/50">
-              {/* Liquid glass effects */}
+            <Card className="relative overflow-hidden p-8 sm:p-10 bg-card/40 backdrop-blur-md border border-border/40">
+              {/* Glass layering */}
               <div className="absolute inset-0 liquidGlass-effect pointer-events-none" />
               <div className="cardGlass-borders pointer-events-none" />
               <div className="cardGlass-shine pointer-events-none" />
               <div className="glass-noise" />
 
               <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <Sparkles className="w-6 h-6 text-primary" />
-                  <h2 className="text-2xl font-instrumentserifitalic text-foreground">
-                    Submit Feedback
-                  </h2>
+                {/* Form header */}
+                <div className="flex items-center gap-3 mb-8 pb-6 border-b border-border/30">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-instrumentserifitalic text-foreground leading-tight">
+                      Submit Feedback
+                    </h2>
+                    <p className="text-xs font-dmsans text-muted-foreground mt-0.5">
+                      All fields required
+                    </p>
+                  </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Name Input */}
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="name"
-                      className="font-dmsans text-sm text-muted-foreground"
-                    >
-                      Your Name
-                    </Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="John Doe"
-                      required
-                      className="bg-background/50 border-border/50 font-dmsans focus:border-primary transition-colors"
-                    />
-                  </div>
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* Name & Email side by side on sm+ */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="space-y-1.5">
+                      <Label
+                        htmlFor="name"
+                        className="font-dmsans text-xs font-medium text-muted-foreground uppercase tracking-wide"
+                      >
+                        Your Name
+                      </Label>
+                      <Input
+                        id="name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="John Doe"
+                        required
+                        className="bg-background/40 border-border/40 font-dmsans focus:border-primary/70 transition-colors h-10 text-sm"
+                      />
+                    </div>
 
-                  {/* Email Input */}
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="email"
-                      className="font-dmsans text-sm text-muted-foreground"
-                    >
-                      Email Address
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="john@example.com"
-                      required
-                      className="bg-background/50 border-border/50 font-dmsans focus:border-primary transition-colors"
-                    />
+                    <div className="space-y-1.5">
+                      <Label
+                        htmlFor="email"
+                        className="font-dmsans text-xs font-medium text-muted-foreground uppercase tracking-wide"
+                      >
+                        Email Address
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="john@example.com"
+                        required
+                        className="bg-background/40 border-border/40 font-dmsans focus:border-primary/70 transition-colors h-10 text-sm"
+                      />
+                    </div>
                   </div>
 
                   {/* Category Selection */}
-                  <div className="space-y-2">
-                    <Label className="font-dmsans text-sm text-muted-foreground">
+                  <div className="space-y-1.5">
+                    <Label className="font-dmsans text-xs font-medium text-muted-foreground uppercase tracking-wide">
                       Category
                     </Label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-2.5">
                       {(
                         ["general", "bug", "feature", "improvement"] as const
                       ).map((cat) => (
@@ -283,10 +316,10 @@ export function FeedbackPageClient() {
                           key={cat}
                           type="button"
                           onClick={() => setCategory(cat)}
-                          className={`px-4 py-2.5 rounded-lg border font-dmsans text-sm transition-all ${
+                          className={`px-4 py-2.5 rounded-lg border font-dmsans text-xs font-medium tracking-wide transition-all duration-200 ${
                             category === cat
-                              ? "border-primary bg-primary/10 text-primary"
-                              : "border-border/50 bg-background/30 text-muted-foreground hover:border-primary/50"
+                              ? "border-primary/60 bg-primary/10 text-primary"
+                              : "border-border/40 bg-background/20 text-muted-foreground hover:border-primary/30 hover:text-foreground"
                           }`}
                         >
                           {getCategoryLabel(cat)}
@@ -295,11 +328,11 @@ export function FeedbackPageClient() {
                     </div>
                   </div>
 
-                  {/* Message Textarea */}
-                  <div className="space-y-2">
+                  {/* Message */}
+                  <div className="space-y-1.5">
                     <Label
                       htmlFor="message"
-                      className="font-dmsans text-sm text-muted-foreground"
+                      className="font-dmsans text-xs font-medium text-muted-foreground uppercase tracking-wide"
                     >
                       Your Message
                     </Label>
@@ -310,28 +343,27 @@ export function FeedbackPageClient() {
                       placeholder="Tell us what's on your mind..."
                       required
                       rows={6}
-                      className="bg-background/50 border-border/50 font-dmsans focus:border-primary transition-colors resize-none"
+                      className="bg-background/40 border-border/40 font-dmsans focus:border-primary/70 transition-colors resize-none text-sm"
                     />
                   </div>
 
-                  {/* Submit Button */}
+                  {/* Submit */}
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full group relative px-6 py-6 rounded-full overflow-hidden backdrop-blur-sm transition-all duration-300 font-dmsans font-medium hover:scale-[102%]"
+                    className="w-full group relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm transition-all duration-300 font-dmsans font-medium text-sm tracking-wide hover:scale-[101.5%] active:scale-[99%]"
                   >
                     <span className="relative z-10 flex items-center justify-center gap-2">
                       {isSubmitting ? (
-                        <>
-                          <span className="animate-pulse">Submitting...</span>
-                        </>
+                        <span className="animate-pulse">Submitting...</span>
                       ) : submitSuccess ? (
-                        <>
-                          <span>✓ Submitted!</span>
-                        </>
+                        <span className="flex items-center gap-1.5">
+                          <span className="text-base leading-none">✓</span>{" "}
+                          Submitted Successfully
+                        </span>
                       ) : (
                         <>
-                          Submit Feedback <Send className="w-4 h-4" />
+                          Submit Feedback <Send className="w-3.5 h-3.5" />
                         </>
                       )}
                     </span>
@@ -344,69 +376,81 @@ export function FeedbackPageClient() {
             </Card>
           </motion.div>
 
-          {/* Recent Feedback Display */}
+          {/* ── Recent Submissions ── */}
           <motion.div
             variants={fadeScale}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: true, amount: 0.2 }}
             className="relative"
           >
             <div className="sticky top-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <h2 className="text-2xl font-instrumentserifitalic text-foreground">
-                  Recent Submissions
-                </h2>
+              {/* Section header */}
+              <div className="flex items-center gap-3 mb-6 pb-5 border-b border-border/30">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  <h2 className="text-xl font-instrumentserifitalic text-foreground">
+                    Recent Submissions
+                  </h2>
+                </div>
+                {submissions.length > 0 && (
+                  <span className="ml-auto text-xs font-dmsans text-muted-foreground bg-muted/40 border border-border/30 px-2.5 py-1 rounded-full">
+                    {submissions.length}{" "}
+                    {submissions.length !== 1 ? "entries" : "entry"}
+                  </span>
+                )}
               </div>
 
-              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 hide-scrollbar">
+              <div className="space-y-3 max-h-[580px] overflow-y-auto pr-1 hide-scrollbar">
                 {submissions.length === 0 ? (
-                  <Card className="p-8 text-center bg-card/30 backdrop-blur-sm border border-border/30">
-                    <MessageSquare className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
-                    <p className="font-dmsans text-muted-foreground">
-                      No feedback yet. Be the first to share your thoughts!
+                  <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-border/30 rounded-xl bg-card/20">
+                    <MessageSquare className="w-10 h-10 text-muted-foreground/25 mb-4" />
+                    <p className="font-dmsans text-sm text-muted-foreground/60">
+                      No feedback yet.
                     </p>
-                  </Card>
+                    <p className="font-dmsans text-xs text-muted-foreground/40 mt-1">
+                      Be the first to share your thoughts.
+                    </p>
+                  </div>
                 ) : (
                   submissions.map((item, index) => (
                     <motion.div
                       key={item.id}
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05, duration: 0.4 }}
+                      transition={{ delay: index * 0.04, duration: 0.4 }}
                     >
                       <Card
-                        className="relative overflow-hidden p-6 bg-card/40 backdrop-blur-sm border border-border/40 group hover:border-primary/50 transition-all duration-300"
+                        className="relative overflow-hidden p-5 bg-card/35 backdrop-blur-sm border border-border/35 group hover:border-border/60 transition-all duration-300"
                         style={
                           {
                             "--hover-card-bg": getCategoryColor(item.category),
                           } as React.CSSProperties
                         }
                       >
-                        {/* Glass effects */}
                         <div className="absolute inset-0 liquidGlass-effect pointer-events-none" />
                         <div className="cardGlass-tint pointer-events-none" />
                         <div className="cardGlass-shine pointer-events-none" />
 
                         <div className="relative z-10">
-                          <div className="flex items-start justify-between gap-4 mb-3">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-dmsans font-semibold text-foreground transition-colors">
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap mb-1">
+                                <h3 className="font-dmsans font-semibold text-sm text-foreground truncate">
                                   {item.name}
                                 </h3>
                                 <span
-                                  className="px-2 py-0.5 rounded-full text-xs font-dmsans"
+                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-dmsans font-medium tracking-wide shrink-0"
                                   style={{
-                                    backgroundColor: `${getCategoryColor(item.category)}20`,
+                                    backgroundColor: `${getCategoryColor(item.category)}18`,
                                     color: getCategoryColor(item.category),
+                                    border: `1px solid ${getCategoryColor(item.category)}30`,
                                   }}
                                 >
                                   {getCategoryLabel(item.category)}
                                 </span>
                               </div>
-                              <p className="text-xs font-dmsans text-muted-foreground">
+                              <p className="text-[11px] font-dmsans text-muted-foreground/60">
                                 {new Date(item.timestamp).toLocaleDateString(
                                   "en-US",
                                   {
@@ -415,21 +459,21 @@ export function FeedbackPageClient() {
                                     year: "numeric",
                                     hour: "2-digit",
                                     minute: "2-digit",
-                                  },
+                                  }
                                 )}
                               </p>
                             </div>
 
                             <button
                               onClick={() => handleDelete(item.id)}
-                              className="p-2 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
+                              className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground/40 hover:text-destructive transition-colors shrink-0"
                               aria-label="Delete feedback"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
 
-                          <p className="font-dmsans text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                          <p className="font-dmsans text-xs text-muted-foreground/70 leading-relaxed line-clamp-3">
                             {item.message}
                           </p>
                         </div>
@@ -438,15 +482,6 @@ export function FeedbackPageClient() {
                   ))
                 )}
               </div>
-
-              {submissions.length > 0 && (
-                <div className="mt-4 text-center">
-                  <p className="text-xs font-dmsans text-muted-foreground">
-                    {submissions.length} submission
-                    {submissions.length !== 1 ? "s" : ""} stored locally
-                  </p>
-                </div>
-              )}
             </div>
           </motion.div>
         </div>
