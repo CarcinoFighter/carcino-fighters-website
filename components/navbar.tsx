@@ -246,7 +246,7 @@ export function Navbar() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 style={{ '--card-radius': '24px' } as React.CSSProperties}
-                className="absolute right-0 mt-2 w-[320px] md:w-[400px] lg:w-[450px] max-h-[380px] overflow-y-auto rounded-3xl shadow-2xl p-4 z-50 pointer-events-auto flex flex-col gap-1.5 scrollbar-thin scrollbar-thumb-white/10 overflow-hidden"
+                className="absolute right-0 mt-2 w-[320px] md:w-[400px] lg:w-[450px] max-h-[380px] overflow-y-auto rounded-44px shadow-2xl p-4 z-50 pointer-events-auto flex flex-col gap-1.5 scrollbar-thin scrollbar-thumb-white/10 overflow-hidden"
               >
                 {/* Frosted glass details to replicate exact card glass */}
                 <div className="absolute inset-0 z-0 bg-white/[0.01]" />
