@@ -245,16 +245,16 @@ export function Navbar() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                style={{ '--card-radius': '24px' } as React.CSSProperties}
-                className="absolute right-0 mt-2 w-[320px] md:w-[400px] lg:w-[450px] max-h-[380px] overflow-y-auto rounded-44px shadow-2xl p-4 z-50 pointer-events-auto flex flex-col gap-1.5 scrollbar-thin scrollbar-thumb-white/10 overflow-hidden"
+                style={{ '--card-radius': '44px' } as React.CSSProperties}
+                className="absolute right-0 top-full mt-2 w-[320px] md:w-[400px] lg:w-[450px] rounded-[44px] shadow-2xl z-50 pointer-events-auto overflow-hidden"
               >
                 {/* Frosted glass details to replicate exact card glass */}
-                <div className="absolute inset-0 z-0 bg-white/[0.01]" />
-                <div className="liquidGlass-effect"></div>
-                <div className="cardGlass-borders" />
-                <div className="cardGlass-shine" />
+                <div className="absolute inset-0 z-0 bg-white/1 backdrop-blur-[5px] pointer-events-none" />
+                <div className="liquidGlass-effect pointer-events-none "></div>
+                <div className="cardGlass-borders pointer-events-none " />
+                <div className="cardGlass-shine pointer-events-none " />
 
-                <div className="relative z-10 flex flex-col gap-1.5">
+                <div className="relative z-10 flex flex-col gap-1.5 p-4 max-h-[380px] overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
                   {searchResults.length > 0 ? (
                     searchResults.map((item: any) => (
                       <button
@@ -275,13 +275,13 @@ export function Navbar() {
                           </span>
                         </div>
                         {item.snippet && (
-                          <p className="text-[11px] text-muted-foreground line-clamp-2">
+                          <p className="text-[11px] text-gray-400 line-clamp-2">
                             {item.snippet}
                           </p>
                         )}
-                        <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+                        <div className="flex items-center gap-2 mt-1 text-[10px] text-gray-300">
                           <span className="truncate max-w-[120px]">By {item.author}</span>
-                          <span>•</span>
+                          <span className="text-gray-500">•</span>
                           <span>{new Date(item.date).toLocaleDateString()}</span>
                         </div>
                       </button>
