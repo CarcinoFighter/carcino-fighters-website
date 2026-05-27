@@ -100,15 +100,22 @@ export async function POST(req: Request) {
 
         if (action === "view") {
             if (source === 'community') {
-                let rpcName = "";
-                if (content_type === 'blog') rpcName = "increment_blog_views";
-                else if (content_type === 'survivor_story') rpcName = "increment_story_views";
-                
-                if (rpcName) {
-                    await sb.rpc(rpcName, {
-                        blog_id: blogId,
-                        story_id: blogId
-                    });
+                if (content_type === 'blog') {
+                    // increment_blog_views(blog_id) exists in DB
+                    await sb.rpc('increment_blog_views', { blog_id: blogId });
+                } else if (content_type === 'survivor_story') {
+                    // increment_story_views RPC does not exist — use direct table update
+                    const { data: current } = await sb
+                        .from('survivor_stories')
+                        .select('views')
+                        .eq('id', blogId)
+                        .maybeSingle();
+                    if (current !== null) {
+                        await sb
+                            .from('survivor_stories')
+                            .update({ views: (current?.views ?? 0) + 1 })
+                            .eq('id', blogId);
+                    }
                 }
             }
             return NextResponse.json({ ok: true });
@@ -144,18 +151,24 @@ export async function POST(req: Request) {
                     return NextResponse.json({ error: bookmarkErr.message }, { status: 400 });
                 }
             } else if (source === 'community') {
-                // Only increment likes for community content in our DB
-                let rpcName = "";
-                if (content_type === 'blog') rpcName = "increment_blog_likes";
-                else if (content_type === 'survivor_story') rpcName = "increment_story_likes";
-                
-                if (rpcName) {
-                    const { error } = await sb.rpc(rpcName, {
-                        blog_id: blogId,
-                        story_id: blogId // Some RPCs might use story_id
-                    });
-                    // Silently fail RPC if it doesn't exist, bookmark is still saved
+                if (content_type === 'blog') {
+                    // increment_blog_likes(blog_id) exists in DB
+                    await sb.rpc('increment_blog_likes', { blog_id: blogId });
+                } else if (content_type === 'survivor_story') {
+                    // increment_story_likes RPC does not exist — use direct table update
+                    const { data: current } = await sb
+                        .from('survivor_stories')
+                        .select('likes')
+                        .eq('id', blogId)
+                        .maybeSingle();
+                    if (current !== null) {
+                        await sb
+                            .from('survivor_stories')
+                            .update({ likes: (current?.likes ?? 0) + 1 })
+                            .eq('id', blogId);
+                    }
                 }
+                // Silently skip for other content types
             }
             
             return NextResponse.json({ ok: true });

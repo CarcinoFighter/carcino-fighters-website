@@ -69,6 +69,7 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
   const [initialLiked, setInitialLiked] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
   const [glossary, setGlossary] = useState<GlossaryEntry[]>([]);
+  const [viewCount, setViewCount] = useState(entry.views ?? 0);
 
   useEffect(() => {
     fetch("/api/glossary")
@@ -81,7 +82,7 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
 
 
   useEffect(() => {
-    // Record view (anonymous)
+    // Record view (anonymous) and update displayed count
     fetch("/api/blogs/interact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -91,7 +92,9 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
         source: entry.source || 'community', 
         content_type: 'blog' 
       }),
-    }).catch(() => { });
+    })
+      .then((r) => { if (r.ok) setViewCount((c) => c + 1); })
+      .catch(() => { });
 
     // Check auth status
     fetch(`/api/blogs/interact?blogId=${entry.id}&source=${entry.source || 'community'}&content_type=blog`)
@@ -132,7 +135,7 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
               <div className="liquidGlass-shine relative w-[102.5%] h-[100%] !top-[-0.1px] !left-[-2.3px]"></div>
               <span className="relative z-10 inline-flex items-center gap-1.5 text-white/40 text-xs sm:text-sm font-dmsans">
                 <Eye className="w-4 h-4" />
-                {entry.views ?? 0}
+                {viewCount}
               </span>
               <div className="relative z-10">
                 <LikeButton 

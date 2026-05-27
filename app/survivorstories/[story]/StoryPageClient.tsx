@@ -89,10 +89,11 @@ export default function StoryPageClient({
   const [initialLiked, setInitialLiked] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
   const [glossary, setGlossary] = useState<GlossaryEntry[]>([]);
+  const [viewCount, setViewCount] = useState(story.views ?? 0);
 
 
   React.useEffect(() => {
-    // Record view
+    // Record view and update displayed count
     fetch("/api/blogs/interact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -102,7 +103,9 @@ export default function StoryPageClient({
         source: story.source || 'community', 
         content_type: "survivor_story" 
       }),
-    }).catch(() => { });
+    })
+      .then((r) => { if (r.ok) setViewCount((c) => c + 1); })
+      .catch(() => { });
 
     // Check auth status
     fetch(`/api/blogs/interact?blogId=${story.id}&source=${story.source || 'community'}&content_type=survivor_story`)
@@ -185,7 +188,7 @@ export default function StoryPageClient({
                 <div className="liquidGlass-shine relative w-[102.5%] h-[100%] !top-[-0.1px] !left-[-2.3px]"></div>
                 <span className="relative z-10 inline-flex items-center gap-1.5 text-white/40 text-xs sm:text-sm font-dmsans">
                   <Eye className="w-4 h-4" />
-                  {story.views ?? 0}
+                  {viewCount}
                 </span>
                 <div className="relative z-10">
                   <LikeButton 
