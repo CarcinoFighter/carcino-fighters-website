@@ -85,11 +85,16 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
     fetch("/api/blogs/interact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "view", blogId: entry.id }),
+      body: JSON.stringify({ 
+        action: "view", 
+        blogId: entry.id, 
+        source: entry.source || 'community', 
+        content_type: 'blog' 
+      }),
     }).catch(() => { });
 
     // Check auth status
-    fetch(`/api/blogs/interact?blogId=${entry.id}`)
+    fetch(`/api/blogs/interact?blogId=${entry.id}&source=${entry.source || 'community'}&content_type=blog`)
       .then((r) => r.json())
       .then((data) => {
         setIsAuthenticated(!!data.authenticated);
