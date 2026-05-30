@@ -43,7 +43,7 @@ const organizationHierarchy: Leader = {
   children: [
     {
       name: "Adiya Roy",
-      title: "Chief Design Officer",
+      title: "Design Manager",
       description:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
       avatar: "/avatars/adiya.jpeg",

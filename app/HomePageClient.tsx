@@ -609,14 +609,13 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                         <Award size={40} />
                       </div>
                       <p className="text-xl lg:text-2xl font-instrumentserifitalic">
-                        Verified Research
+                        Rural Care
                       </p>
                     </CardHeader>
                     <CardContent>
-                      <p className="font-dmsans leading-[20px] text-muted-foreground text-sm lg:text-lg">
-                        Working with plenty of pioneers in the field of human
-                        and life science has helped us bring out the truth
-                        behind cancer.
+                      <p className="font-dmsans leading-[20px] text-white font-extralight lg:text-lg max-w-[80%]">
+                        We aim to contribute toward a more decentralized
+                        and equitable rural cancer support infrastructure.
                       </p>
                     </CardContent>
                   </Card>
@@ -628,16 +627,17 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                         className="animate-floaty"
                         style={{ animationDelay: "0.15s" }}
                       >
-                        <CalendarCheck size={40} />
+                        <PaintBucket size={40} />
                       </div>
                       <p className="text-xl lg:text-2xl font-instrumentserifitalic">
-                        Up-to-Date Articles
+                        Healthcare Equity
                       </p>
                     </CardHeader>
                     <CardContent>
-                      <p className="font-dmsans  leading-[20px] text-muted-foreground lg:text-lg">
-                        From start to finish, all our writers prioritize
-                        accuracy, ensuring up to date facts and studies.
+                      <p className="font-dmsans max-w-[80%] leading-[20px] text-white font-extralight lg:text-lg">
+                        No individual should progress to advanced-stage
+                        cancer due to delayed diagnosis,
+                        financial unawareness, or limited access to healthcare resources.
                       </p>
                     </CardContent>
                   </Card>
@@ -649,16 +649,16 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                         className="animate-floaty"
                         style={{ animationDelay: "0.3s" }}
                       >
-                        <PaintBucket size={40} />
+                        <UserCheck size={40} />
                       </div>
                       <p className="text-xl lg:text-2xl font-instrumentserifitalic">
-                        Made for Everyone
+                        Run by Students
                       </p>
                     </CardHeader>
                     <CardContent>
-                      <p className="font-dmsans leading-[20px] text-muted-foreground lg:text-lg">
-                        We try to keep things simple, to break the language
-                        barrier and improve communication.
+                      <p className="font-dmsans max-w-[80%] leading-[20px] text-white font-extralight lg:text-lg">
+                        We believe that our generation can redefine cancer.
+                        And we try our best to educate our community.
                       </p>
                     </CardContent>
                   </Card>
@@ -670,23 +670,23 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                         className="animate-floaty"
                         style={{ animationDelay: "0.45s" }}
                       >
-                        <UserCheck size={40} />
+                        <CalendarCheck size={40} />
                       </div>
                       <p className="text-xl lg:text-2xl font-instrumentserifitalic">
-                        Run by Students
+                        Early Detection
                       </p>
                     </CardHeader>
                     <CardContent>
-                      <p className="font-dmsans leading-[20px] text-muted-foreground lg:text-lg">
-                        We believe that our generation can fight cancer. And we
-                        try our best to educate our peers.
+                      <p className="font-dmsans max-w-[80%] leading-[20px] text-white font-extralight lg:text-lg">
+                        It is the strongest defense against cancer, and we work to ensure
+                        that no life is lost simply because the signs were missed too late.
                       </p>
                     </CardContent>
                   </Card>
                 </motion.div>
               </motion.div>
               <div className="lg:flex flex-col items-center gap-7 max-w-[50%] w-full h-full justify-center hidden">
-                <h2 className="font-instrumentserifitalic text-4xl max-w-[70%] text-center">
+                <h2 className="font-instrumentserifitalic text-4xl max-w-[50%] text-center">
                   “The human spirit was built to outlast despair. So, live life
                   to the fullest and don't think about things too much.”
                 </h2>
@@ -766,7 +766,7 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                   with the world.
                 </p>
 
-                <motion.div 
+                <motion.div
                   className="flex flex-row sm:ml-10 gap-3 max-sm:flex-col"
                   variants={staggerContainer}
                   initial="hidden"
