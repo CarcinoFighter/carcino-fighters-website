@@ -42,19 +42,19 @@ const organizationHierarchy: Leader = {
   avatar: "/avatars/rajannya.png",
   children: [
     {
-      name: "Adiya Roy",
-      title: "Design Manager",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      avatar: "/avatars/adiya.jpeg",
-    },
-    {
       name: "Agnihotra Nath",
       title: "Chief Operating Officer (COO)",
       description:
         "Loves designing and being autistic. This car enthusiast does not miss when it comes to perfection, efficiency and speed.",
       avatar: "/avatars/agni.png",
       children: [
+        {
+          name: "Adiya Roy",
+          title: "Design Manager",
+          description:
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+          avatar: "/avatars/adiya.jpeg",
+        },
         {
           name: "Ariona Talukdar",
           title: "PR Manager",
