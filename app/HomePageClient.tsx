@@ -252,7 +252,7 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
             whileInView="visible"
             viewport={{ once: true, amount: 0.6 }}
             variants={staggerContainer}
-            className="h-screen flex bg-transparent flex-col mb-10 items-center gap-[12rem] justify-center w-full overflow-y-hidden relative lg:static"
+            className="h-screen flex bg-transparent flex-col mb-10 items-center gap-[12rem] justify-center w-full overflow-y-hidden relative"
           >
             <motion.div
               style={{ y }}
@@ -263,7 +263,7 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
               variants={fadeScale}
             >
               <Image
-                src={`/landing/background_new.png`}
+                src={`/bg-pride.png`}
                 height={888}
                 width={1440}
                 alt="background"
@@ -289,18 +289,19 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                 {/* Chief Editor's Note button removed */}
               </motion.div>
               <ShinyText
-                text={"Breaking Down Cancer for Everyone"}
+                text={"Breaking Down Cancer for Everyone, With Pride."}
                 disabled={true}
                 speed={4}
-                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-[780px] [word-spacing:6px] sm:mt-3 max-sm:text-3xl max-sm:w-3/5 leading-[100%]"
+                className="text-2xl lg:text-5xl text-center xl:text-7xl font-wintersolace font-medium max-w-[1080px] [word-spacing:6px] sm:mt-3 max-sm:text-3xl max-sm:w-3/5 leading-[100%]"
                 textColor="#fafafa"
               />
               <motion.span
-                className="font-dmsans text-[#c6c6c6] text-2xl sm:max-w-[50%] sm:-mt-0 w-full text-center max-sm:text-xs max-sm:w-4/5 font-light leading-[109%]"
+                className="font-dmsans text-[#c6c6c6] text-2xl sm:max-w-[32%] sm:-mt-0 w-full text-center max-sm:text-xs max-sm:w-3/5 font-light leading-[109%]"
                 variants={fadeUp}
               >
-                Cancer affects millions of lives—but together, awareness, compassion,
-                and early detection can change the story.
+                Cancer affects millions of lives—but this Pride Month,
+                we stand for dignity, visibility, resilience, and
+                compassionate healthcare for everyone.
                 {/*but in a way everyone can understand. */}
               </motion.span>
               <div className="flex flex-col items-center gap-2">
@@ -573,7 +574,10 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
             whileInView="visible"
             viewport={{ once: true, amount: 0.35 }}
             variants={staggerContainer}
-            className="z-10 flex flex-col lg:gap-6 md:gap-4 gap-4 items-center lg:items-start text-center lg:text-left justify-center w-full lg:w-fit h-fit max-h-[1200px] lg:px-14 md:px-10 px-6 pb-6"
+            className="z-10 flex flex-col lg:gap-6 md:gap-4 gap-4 items-center lg:items-start text-center lg:text-left justify-center w-full lg:w-fit h-fit max-h-[1200px] lg:px-20 md:px-20 px-6 py-24"
+            style={{
+              background: "linear-gradient(to bottom, #000000 0%, transparent 15%, transparent 85%, #000000 100%), linear-gradient(105deg, #151516 0%, #211E23 52%, #09090A 100%)"
+            }}
           >
             {/* <MotionLabel
             className="border p-3 rounded-full font-space_grotesk text-base text-foreground"
