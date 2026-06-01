@@ -29,6 +29,7 @@ type Leader = {
   title: string
   description: string
   avatar: string
+  flags?: string[]
   children?: Leader[]
 }
 
@@ -40,6 +41,7 @@ const organizationHierarchy: Leader = {
   description:
     "A science enthusiast who's usually found lifting weights for peace, balancing deadlines with dopamine bike rides, travelling and learning languages. Mitosis deserves a standing ovation— biology said yes.",
   avatar: "/avatars/rajannya.png",
+  flags: ["/flags/raju.png"], // Provision to put the flag PNG paths here, e.g., ["/flags/india.png"]
   children: [
     {
       name: "Agnihotra Nath",
@@ -54,6 +56,7 @@ const organizationHierarchy: Leader = {
           description:
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
           avatar: "/avatars/adiya.jpeg",
+          flags: ["/flags/adiya-1.png", "/flags/adiya-2.png", "/flags/adiya-3.png"],
         },
         {
           name: "Ariona Talukdar",
@@ -93,6 +96,7 @@ const organizationHierarchy: Leader = {
           description:
             "This marine biology enthusiast is an impeccable photographer and multitasking pro, known for her incredible writing skills.",
           avatar: "/avatars/jiya.png",
+          flags: ["/flags/jiya.png"],
           children: [
             {
               name: "Siran Pramanick",
@@ -413,6 +417,14 @@ function LeaderCard({ leader, isLoading }: { leader: Leader; isLoading?: boolean
                 <p className="text-[10px] md:text-[11px] font-dmsans font-medium text-purple-300 uppercase px-2">
                   {leader.title}
                 </p>
+                {/* Flags Region */}
+                {leader.flags && leader.flags.length > 0 && (
+                  <div className="mt-2 flex items-center justify-center gap-1.5 h-5">
+                    {leader.flags.map((flagUrl, idx) => (
+                      <img key={idx} src={flagUrl} alt={`${leader.name} flag ${idx + 1}`} className="h-full w-auto object-contain rounded-sm shadow-sm" />
+                    ))}
+                  </div>
+                )}
               </div>
 
               <motion.div
