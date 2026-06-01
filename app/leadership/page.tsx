@@ -421,7 +421,7 @@ function LeaderCard({ leader, isLoading }: { leader: Leader; isLoading?: boolean
                 {leader.flags && leader.flags.length > 0 && (
                   <div className="mt-2 flex items-center justify-center gap-1.5 h-5">
                     {leader.flags.map((flagUrl, idx) => (
-                      <img key={idx} src={flagUrl} alt={`${leader.name} flag ${idx + 1}`} className="h-full w-auto object-contain rounded-sm shadow-sm" />
+                      <img key={idx} src={flagUrl} alt={`${leader.name} flag ${idx + 1}`} className="block h-full w-auto object-cover rounded-sm shadow-sm border border-white" />
                     ))}
                   </div>
                 )}
