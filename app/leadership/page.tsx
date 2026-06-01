@@ -96,7 +96,7 @@ const organizationHierarchy: Leader = {
           description:
             "This marine biology enthusiast is an impeccable photographer and multitasking pro, known for her incredible writing skills.",
           avatar: "/avatars/jiya.png",
-          flags: ["/flags/jiya.png"],
+          flags: ["/flags/jiya.png", "/flags/adiya-3.png"],
           children: [
             {
               name: "Siran Pramanick",
