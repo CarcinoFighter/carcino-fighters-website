@@ -16,7 +16,13 @@ import {
 import { Label } from "@/components/ui/label";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import { Footer } from "@/components/footer";
-import { motion, MotionConfig, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  MotionConfig,
+  useScroll,
+  useTransform,
+  AnimatePresence,
+} from "framer-motion";
 // import { useState } from "react";
 import ShinyText from "@/components/ShinyText";
 
@@ -60,10 +66,40 @@ export interface Article {
   color?: string | null;
 }
 
-
 interface HomePageProps {
   initialArticles: Article[];
 }
+
+type Doctor = {
+  id: string;
+  name: string;
+  designation: string;
+  department: string;
+  institution: string;
+  image: string;
+  profileUrl: string;
+};
+
+const oncologists = [
+  {
+    id: "1",
+    name: "Dr. Jyotirup Goswami",
+    image: "/oncologists/jyotirup-goswami.png",
+    designation: "Senior Consultant & Head",
+    department: "Department of Radiation Oncology",
+    institution: "BP Poddar Hospital & Medical Research Limited, Kolkata",
+    profileUrl: "#",
+  },
+  {
+    id: "2",
+    name: "Dr. Soirindhri Banerjee",
+    image: "/oncologists/soirindhri-banerjee.png",
+    designation: "Senior Clinical Fellow",
+    department: "Clinical Oncology",
+    institution: "Guy's and St Thomas' NHS Foundation Trust",
+    profileUrl: "#",
+  },
+];
 
 export function HomePageClient({ initialArticles }: HomePageProps) {
   const [articles, setArticles] = React.useState<Article[]>(initialArticles);
@@ -72,8 +108,13 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
   const [hoverColor, setHoverColor] = React.useState<string | null>(null);
   const [activeColor, setActiveColor] = React.useState<string | null>(null);
   const [ctaHoverColor, setCtaHoverColor] = React.useState<string | null>(null);
-  const [ctaActiveColor, setCtaActiveColor] = React.useState<string | null>(null);
+  const [ctaActiveColor, setCtaActiveColor] = React.useState<string | null>(
+    null,
+  );
   const [ctaHoverIcon, setCtaHoverIcon] = React.useState<string | null>(null);
+  const [selectedDoctor, setSelectedDoctor] = React.useState<Doctor | null>(
+    null,
+  );
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const heroRef = React.useRef<HTMLDivElement | null>(null);
   const articlesRef = React.useRef<HTMLDivElement | null>(null);
@@ -95,7 +136,6 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
   // const [opacity, setOpacity] = useState<number>(0);
 
   // Initial articles passed as props, fetch removed
-
 
   // React.useEffect(() => {
   //   let idleTimer: number | undefined;
@@ -126,7 +166,9 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
 
   const featuredArticles = React.useMemo<Article[]>(() => {
     if (articles.length === 0) return [];
-    return [...articles].sort(() => (articles as any)._seed ? 0 : Math.random() - 0.5).slice(0, 6);
+    return [...articles]
+      .sort(() => ((articles as any)._seed ? 0 : Math.random() - 0.5))
+      .slice(0, 6);
   }, [articles]);
 
   const homePageSchema = {
@@ -165,7 +207,6 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
   return (
     <>
       <div
-
         ref={containerRef}
         className=" flex flex-col relative lg:block lg:h-screen w-full overflow-y-scroll overflow-x-hidden items-start gap-20 bg-background hide-scrollbar"
       >
@@ -299,9 +340,9 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                 className="font-dmsans text-[#c6c6c6] text-2xl sm:max-w-[32%] sm:-mt-0 w-full text-center max-sm:text-xs max-sm:w-3/5 font-light leading-[109%]"
                 variants={fadeUp}
               >
-                Cancer affects millions of lives—but this Pride Month,
-                we stand for dignity, visibility, resilience, and
-                compassionate healthcare for everyone.
+                Cancer affects millions of lives—but this Pride Month, we stand
+                for dignity, visibility, resilience, and compassionate
+                healthcare for everyone.
                 {/*but in a way everyone can understand. */}
               </motion.span>
               <div className="flex flex-col items-center gap-2">
@@ -442,7 +483,8 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                       className="h-full block"
                       onMouseEnter={() => {
                         let c = (article as any).color?.trim();
-                        if (c?.length === 4) c = `#${c[1]}${c[1]}${c[2]}${c[2]}${c[3]}${c[3]}`;
+                        if (c?.length === 4)
+                          c = `#${c[1]}${c[1]}${c[2]}${c[2]}${c[3]}${c[3]}`;
                         setHoverColor(c || null);
                         if (c) setActiveColor(c);
                       }}
@@ -477,8 +519,14 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                             "
                           >
                             <div className="liquidGlass-effect pointer-events-none"></div>
-                            <div className="cardGlass-tint pointer-events-none opacity-0 group-hover/card:opacity-40 transition-opacity duration-300"
-                              style={(article as any).color ? { backgroundColor: (article as any).color } : {}}></div>
+                            <div
+                              className="cardGlass-tint pointer-events-none opacity-0 group-hover/card:opacity-40 transition-opacity duration-300"
+                              style={
+                                (article as any).color
+                                  ? { backgroundColor: (article as any).color }
+                                  : {}
+                              }
+                            ></div>
                             <div className="glass-noise"></div>
                             <div className="cardGlass-borders pointer-events-none"></div>
                             <div className="cardGlass-shine pointer-events-none"></div>
@@ -576,7 +624,8 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
             variants={staggerContainer}
             className="z-10 flex flex-col lg:gap-6 md:gap-4 gap-4 items-center lg:items-start text-center lg:text-left justify-center w-full lg:w-fit h-fit max-h-[1200px] lg:px-20 md:px-20 px-6 py-24"
             style={{
-              background: "linear-gradient(to bottom, #000000 0%, transparent 15%, transparent 85%, #000000 100%), linear-gradient(105deg, #151516 0%, #211E23 52%, #09090A 100%)"
+              background:
+                "linear-gradient(to bottom, #000000 0%, transparent 15%, transparent 85%, #000000 100%), linear-gradient(105deg, #151516 0%, #211E23 52%, #09090A 100%)",
             }}
           >
             {/* <MotionLabel
@@ -618,8 +667,8 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                     </CardHeader>
                     <CardContent>
                       <p className="font-dmsans leading-[20px] text-white font-extralight lg:text-lg max-w-[80%]">
-                        We aim to contribute toward a more decentralized
-                        and equitable rural cancer support infrastructure.
+                        We aim to contribute toward a more decentralized and
+                        equitable rural cancer support infrastructure.
                       </p>
                     </CardContent>
                   </Card>
@@ -639,9 +688,9 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                     </CardHeader>
                     <CardContent>
                       <p className="font-dmsans max-w-[80%] leading-[20px] text-white font-extralight lg:text-lg">
-                        No individual should progress to advanced-stage
-                        cancer due to delayed diagnosis,
-                        financial unawareness, or limited access to healthcare resources.
+                        No individual should progress to advanced-stage cancer
+                        due to delayed diagnosis, financial unawareness, or
+                        limited access to healthcare resources.
                       </p>
                     </CardContent>
                   </Card>
@@ -661,8 +710,8 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                     </CardHeader>
                     <CardContent>
                       <p className="font-dmsans max-w-[80%] leading-[20px] text-white font-extralight lg:text-lg">
-                        We believe that our generation can redefine cancer.
-                        And we try our best to educate our community.
+                        We believe that our generation can redefine cancer. And
+                        we try our best to educate our community.
                       </p>
                     </CardContent>
                   </Card>
@@ -682,8 +731,9 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                     </CardHeader>
                     <CardContent>
                       <p className="font-dmsans max-w-[80%] leading-[20px] text-white font-extralight lg:text-lg">
-                        It is the strongest defense against cancer, and we work to ensure
-                        that no life is lost simply because the signs were missed too late.
+                        It is the strongest defense against cancer, and we work
+                        to ensure that no life is lost simply because the signs
+                        were missed too late.
                       </p>
                     </CardContent>
                   </Card>
@@ -721,6 +771,160 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
             </div>
           </motion.div>
 
+          {/* Oncologists Section */}
+          <motion.section
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.25 }}
+            variants={staggerContainer}
+            className="relative z-10 w-full py-28 px-6 lg:px-14"
+          >
+            <motion.div
+              variants={fadeUp}
+              className="flex flex-col items-center text-center gap-5"
+            >
+              <h2 className="font-googlesansflex text-white text-4xl md:text-5xl lg:text-6xl">
+                Our panel of Oncologists:
+              </h2>
+
+              <p className="max-w-5xl text-white/70 font-googlesansflex text-sm md:text-base">
+                We are honored to work alongside oncologists whose expertise,
+                mentorship, clinical insight and belief in our mission help us
+                build a future where no one is left behind in the fight against
+                cancer.
+              </p>
+            </motion.div>
+
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              className="mt-16 flex flex-wrap justify-center gap-6 max-w-7xl mx-auto"
+            >
+              {oncologists.map((doctor) => (
+                <motion.button
+                  key={doctor.id}
+                  variants={fadeUp}
+                  whileHover={{
+                    y: -8,
+                    scale: 1.03,
+                  }}
+                  whileTap={{
+                    scale: 0.98,
+                  }}
+                  onClick={() => setSelectedDoctor(doctor)}
+                  className="group relative cursor-pointer shrink-0"
+                >
+                  <div className="absolute -inset-2 rounded-[34px] bg-[#A855F7]/20 blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                  <div className="relative overflow-hidden rounded-[28px] border border-white/10 w-[160px] h-[240px] sm:w-[190px] sm:h-[280px] lg:w-[220px] lg:h-[320px]">
+                    <Image
+                      src={doctor.image}
+                      alt={doctor.name}
+                      fill
+                      className="object-cover"
+                    />
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent" />
+
+                    <div className="absolute bottom-4 left-3 right-3">
+                      <p className="font-tttravelsnext font-semibold text-white text-center uppercase leading-tight text-xs sm:text-lg">
+                        {doctor.name}
+                      </p>
+                    </div>
+                  </div>
+                </motion.button>
+              ))}
+            </motion.div>
+          </motion.section>
+
+          <AnimatePresence>
+            {selectedDoctor && (
+              <motion.div
+                className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center px-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  duration: 0.15,
+                }}
+                onClick={() => setSelectedDoctor(null)}
+              >
+                <motion.div
+                  initial={{
+                    opacity: 0,
+                    scale: 0.95,
+                    y: 20,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    scale: 1,
+                    y: 0,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.97,
+                    y: 8,
+                  }}
+                  transition={{
+                    duration: 0.18,
+                    ease: "easeOut",
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                 className="relative overflow-hidden rounded-[44px] border border-white/[0.06] w-full max-w-[660px] cursor-default"
+                >
+                <div className="absolute inset-0 liquidGlass-effect pointer-events-none" />
+                <div className="absolute inset-0 backdrop-blur-xs pointer-events-none" />
+                <div className="absolute inset-0 bg-[#3B3B3B]/60 pointer-events-none" />
+                <div className="liquidGlass-shine pointer-events-none" />
+                <div className="glass-noise pointer-events-none" />
+                <div className="cardGlass-borders pointer-events-none" />
+                <div className="cardGlass-shine pointer-events-none" />
+
+                  <button
+                    onClick={() => setSelectedDoctor(null)}
+                    className="absolute top-5 right-5 z-20 text-white/50 hover:text-white transition-colors cursor-pointer text-2xl"
+                  >
+                    ×
+                  </button>
+                  <div className="relative z-10 flex flex-col md:flex-row">
+                    <div className="relative md:h-auto md:w-[200px] shrink-0 self-stretch min-h-[260px]">
+                      <Image
+                        src={selectedDoctor.image}
+                        alt={selectedDoctor.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="flex flex-col justify-center p-5 md:p-6 md:pl-8">
+                      <h3 className="font-googlesansflex font-bold text-white text-xl md:text-3xl leading-tight mt-3">
+                        {selectedDoctor.name}
+                      </h3>
+                      <div className="mt-2 flex flex-col gap-1 font-googlesansflex">
+                        <p className="text-white/90">
+                          {selectedDoctor.designation}
+                        </p>
+                        <p className="text-white/80">
+                          {selectedDoctor.department}
+                        </p>
+
+                        <p className="text-white/70">
+                          {selectedDoctor.institution}
+                        </p>
+                      </div>
+                      <Link
+                        href={selectedDoctor.profileUrl}
+                        className="mt-5 w-fit text-[#D8B4FE] underline cursor-pointer font-googlesansflex"
+                      >
+                        View Profile
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Call to action  */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -739,7 +943,7 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                   opacity: ctaHoverColor ? 0.6 : 0,
                   background: ctaActiveColor
                     ? `radial-gradient(circle at center, ${ctaActiveColor}66 0%, transparent 70%)`
-                    : "none"
+                    : "none",
                 }}
               />
 
@@ -753,7 +957,7 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                 <motion.h1
                   className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl leading-[0.95] font-instrumentserifitalic sm:ml-10 max-w-full py-2 sm:max-w-[70%] bg-clip-text text-transparent"
                   animate={{
-                    backgroundImage: `linear-gradient(to right, ${ctaHoverColor ? ctaActiveColor : '#70429b'} 0%, #dfcbf0 100%)`
+                    backgroundImage: `linear-gradient(to right, ${ctaHoverColor ? ctaActiveColor : "#70429b"} 0%, #dfcbf0 100%)`,
                   }}
                   transition={{ duration: 0.5, ease: "easeInOut" }}
                 >
@@ -782,8 +986,15 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                     <Button
                       variant="ghost"
                       className="group flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
-                      onMouseEnter={() => { setCtaHoverColor("#ECA92B"); setCtaActiveColor("#ECA92B"); setCtaHoverIcon("/icons/research.svg"); }}
-                      onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
+                      onMouseEnter={() => {
+                        setCtaHoverColor("#ECA92B");
+                        setCtaActiveColor("#ECA92B");
+                        setCtaHoverIcon("/icons/research.svg");
+                      }}
+                      onMouseLeave={() => {
+                        setCtaHoverColor(null);
+                        setCtaHoverIcon(null);
+                      }}
                     >
                       <Link
                         href="/internship/writer"
@@ -804,8 +1015,15 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                     <Button
                       variant="ghost"
                       className="group flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
-                      onMouseEnter={() => { setCtaHoverColor("#39C69C"); setCtaActiveColor("#39C69C"); setCtaHoverIcon("/icons/development.svg"); }}
-                      onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
+                      onMouseEnter={() => {
+                        setCtaHoverColor("#39C69C");
+                        setCtaActiveColor("#39C69C");
+                        setCtaHoverIcon("/icons/development.svg");
+                      }}
+                      onMouseLeave={() => {
+                        setCtaHoverColor(null);
+                        setCtaHoverIcon(null);
+                      }}
                     >
                       <Link
                         href="/internship/tech"
@@ -826,8 +1044,15 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                     <Button
                       variant="ghost"
                       className="group flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
-                      onMouseEnter={() => { setCtaHoverColor("#3373F2"); setCtaActiveColor("#3373F2"); setCtaHoverIcon("/icons/design.svg"); }}
-                      onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
+                      onMouseEnter={() => {
+                        setCtaHoverColor("#3373F2");
+                        setCtaActiveColor("#3373F2");
+                        setCtaHoverIcon("/icons/design.svg");
+                      }}
+                      onMouseLeave={() => {
+                        setCtaHoverColor(null);
+                        setCtaHoverIcon(null);
+                      }}
                     >
                       <Link
                         href="/internship/design"
@@ -848,8 +1073,15 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                     <Button
                       variant="ghost"
                       className="group flex flex-col sm:flex-row relative px-6 py-5 rounded-full overflow-hidden backdrop-blur-sm inset-shadow-foreground/10 transition-all duration-300 font-dmsans font-medium hover:scale-[105%]"
-                      onMouseEnter={() => { setCtaHoverColor("#EC3C6E"); setCtaActiveColor("#EC3C6E"); setCtaHoverIcon("/icons/marketing.svg"); }}
-                      onMouseLeave={() => { setCtaHoverColor(null); setCtaHoverIcon(null); }}
+                      onMouseEnter={() => {
+                        setCtaHoverColor("#EC3C6E");
+                        setCtaActiveColor("#EC3C6E");
+                        setCtaHoverIcon("/icons/marketing.svg");
+                      }}
+                      onMouseLeave={() => {
+                        setCtaHoverColor(null);
+                        setCtaHoverIcon(null);
+                      }}
                     >
                       <Link
                         href="/internship/marketing"
@@ -864,7 +1096,6 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                       <div className="absolute inset-0 liquidGlass-text pointer-events-none"></div>
                     </Button>
                   </motion.div>
-
                 </motion.div>
               </div>
 
@@ -875,7 +1106,7 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                   initial={false}
                   animate={{
                     opacity: ctaHoverIcon ? 0 : 0.8,
-                    scale: ctaHoverIcon ? 0.9 : 1
+                    scale: ctaHoverIcon ? 0.9 : 1,
                   }}
                   transition={{ duration: 0.6, ease: "easeInOut" }}
                 >
@@ -916,7 +1147,7 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
 
         {/* Footer */}
         <Footer></Footer>
-      </div >
+      </div>
     </>
   );
 }
