@@ -828,7 +828,7 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent" />
 
                     <div className="absolute bottom-4 left-3 right-3">
-                      <p className="font-googlesansflex font-bold text-white text-center uppercase leading-tight text-xs sm:text-xl">
+                      <p className="font-tttravelsnext font-semibold text-white text-center uppercase leading-tight text-xs sm:text-lg">
                         {doctor.name}
                       </p>
                     </div>
@@ -871,10 +871,12 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                     ease: "easeOut",
                   }}
                   onClick={(e) => e.stopPropagation()}
-                 className="relative overflow-hidden rounded-[36px] border border-white/[0.06] w-full max-w-[660px] cursor-default"
+                 className="relative overflow-hidden rounded-[44px] border border-white/[0.06] w-full max-w-[660px] cursor-default"
                 >
-                <div className="absolute inset-0 bg-white/5 backdrop-blur-2xl pointer-events-none" />
+                <div className="absolute inset-0 liquidGlass-effect pointer-events-none" />
+                <div className="absolute inset-0 backdrop-blur-xs pointer-events-none" />
                 <div className="absolute inset-0 bg-[#3B3B3B]/60 pointer-events-none" />
+                <div className="liquidGlass-shine pointer-events-none" />
                 <div className="glass-noise pointer-events-none" />
                 <div className="cardGlass-borders pointer-events-none" />
                 <div className="cardGlass-shine pointer-events-none" />
@@ -894,11 +896,11 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                         className="object-cover"
                       />
                     </div>
-                    <div className="flex flex-col justify-center p-5 md:p-6">
-                      <h3 className="font-googlesansflex font-bold text-white text-xl md:text-3xl leading-tight">
+                    <div className="flex flex-col justify-center p-5 md:p-6 md:pl-8">
+                      <h3 className="font-googlesansflex font-bold text-white text-xl md:text-3xl leading-tight mt-3">
                         {selectedDoctor.name}
                       </h3>
-                      <div className="mt-4 flex flex-col gap-1 font-googlesansflex">
+                      <div className="mt-2 flex flex-col gap-1 font-googlesansflex">
                         <p className="text-white/90">
                           {selectedDoctor.designation}
                         </p>
