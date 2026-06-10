@@ -12,6 +12,7 @@ import {
   CalendarCheck,
   PaintBucket,
   UserCheck,
+  X,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
@@ -871,21 +872,21 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                     ease: "easeOut",
                   }}
                   onClick={(e) => e.stopPropagation()}
-                 className="relative overflow-hidden rounded-[44px] border border-white/[0.06] w-full max-w-[660px] cursor-default"
+                  className="relative overflow-hidden rounded-[44px] border border-white/[0.06] w-full max-w-[660px]"
                 >
-                <div className="absolute inset-0 liquidGlass-effect pointer-events-none" />
-                <div className="absolute inset-0 backdrop-blur-xs pointer-events-none" />
-                <div className="absolute inset-0 bg-[#3B3B3B]/60 pointer-events-none" />
-                <div className="liquidGlass-shine pointer-events-none" />
-                <div className="glass-noise pointer-events-none" />
-                <div className="cardGlass-borders pointer-events-none" />
-                <div className="cardGlass-shine pointer-events-none" />
+                  <div className="absolute inset-0 liquidGlass-effect pointer-events-none" />
+                  <div className="absolute inset-0 backdrop-blur-xs pointer-events-none" />
+                  <div className="absolute inset-0 bg-[#3B3B3B]/60 pointer-events-none" />
+                  <div className="liquidGlass-shine pointer-events-none" />
+                  <div className="glass-noise pointer-events-none" />
+                  <div className="cardGlass-borders pointer-events-none" />
+                  <div className="cardGlass-shine pointer-events-none" />
 
                   <button
                     onClick={() => setSelectedDoctor(null)}
-                    className="absolute top-5 right-5 z-20 text-white/50 hover:text-white transition-colors cursor-pointer text-2xl"
+                    className="absolute top-4 right-4 z-20 text-white/40 hover:text-white transition-colors cursor-pointer text-base leading-none w-13 h-10 flex items-center justify-center"
                   >
-                    ×
+                    <X />
                   </button>
                   <div className="relative z-10 flex flex-col md:flex-row">
                     <div className="relative md:h-auto md:w-[200px] shrink-0 self-stretch min-h-[260px]">
@@ -896,22 +897,28 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                         className="object-cover"
                       />
                     </div>
-                    <div className="flex flex-col justify-center p-5 md:p-6 md:pl-8">
-                      <h3 className="font-googlesansflex font-bold text-white text-xl md:text-3xl leading-tight mt-3">
-                        {selectedDoctor.name}
-                      </h3>
-                      <div className="mt-2 flex flex-col gap-1 font-googlesansflex">
-                        <p className="text-white/90">
-                          {selectedDoctor.designation}
-                        </p>
-                        <p className="text-white/80">
-                          {selectedDoctor.department}
-                        </p>
 
-                        <p className="text-white/70">
-                          {selectedDoctor.institution}
-                        </p>
+                    <div className="flex flex-col justify-center p-3 md:p-3 md:pl-14">
+                      <div>
+                        <h3 className="font-googlesansflex font-bold text-white text-xl md:text-2xl leading-tight">
+                          {selectedDoctor.name}
+                        </h3>
+
+                        <div className="mt-1.5 flex flex-col gap-1 font-googlesansflex translate-y-2">
+                          <p className="text-white/90">
+                            {selectedDoctor.designation}
+                          </p>
+
+                          <p className="text-white/80">
+                            {selectedDoctor.department}
+                          </p>
+
+                          <p className="text-white/70">
+                            {selectedDoctor.institution}
+                          </p>
+                        </div>
                       </div>
+
                       <Link
                         href={selectedDoctor.profileUrl}
                         className="mt-5 w-fit text-[#D8B4FE] underline cursor-pointer font-googlesansflex"
