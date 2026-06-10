@@ -783,7 +783,7 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
               variants={fadeUp}
               className="flex flex-col items-center text-center gap-5"
             >
-              <h2 className="font-wintersolace text-white text-4xl md:text-5xl lg:text-6xl">
+              <h2 className="font-googlesansflex text-white text-4xl md:text-5xl lg:text-6xl">
                 Our panel of Oncologists:
               </h2>
 
@@ -816,7 +816,6 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                   onClick={() => setSelectedDoctor(doctor)}
                   className="group relative cursor-pointer shrink-0"
                 >
-                  {/* Purple glow */}
                   <div className="absolute -inset-2 rounded-[34px] bg-[#A855F7]/20 blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
                   <div className="relative overflow-hidden rounded-[28px] border border-white/10 w-[160px] h-[240px] sm:w-[190px] sm:h-[280px] lg:w-[220px] lg:h-[320px]">
                     <Image
@@ -829,7 +828,7 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent" />
 
                     <div className="absolute bottom-4 left-3 right-3">
-                      <p className="font-tttravelsnext text-white text-center uppercase leading-tight text-xs sm:text-sm">
+                      <p className="font-googlesansflex font-bold text-white text-center uppercase leading-tight text-xs sm:text-xl">
                         {doctor.name}
                       </p>
                     </div>
@@ -872,14 +871,13 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                     ease: "easeOut",
                   }}
                   onClick={(e) => e.stopPropagation()}
-                  className="relative overflow-hidden rounded-[36px] border border-white/10 w-full max-w-[760px] cursor-default"
+                 className="relative overflow-hidden rounded-[36px] border border-white/[0.06] w-full max-w-[660px] cursor-default"
                 >
-                  <div className="absolute inset-0 liquidGlass-effect pointer-events-none" />
-                  <div className="cardGlass-tint pointer-events-none" />
-                  <div className="glass-noise pointer-events-none" />
-                  <div className="cardGlass-borders pointer-events-none" />
-                  <div className="cardGlass-shine pointer-events-none" />
-                  <div className="absolute inset-0 liquidGlass-text pointer-events-none" />
+                <div className="absolute inset-0 bg-white/5 backdrop-blur-2xl pointer-events-none" />
+                <div className="absolute inset-0 bg-[#3B3B3B]/60 pointer-events-none" />
+                <div className="glass-noise pointer-events-none" />
+                <div className="cardGlass-borders pointer-events-none" />
+                <div className="cardGlass-shine pointer-events-none" />
 
                   <button
                     onClick={() => setSelectedDoctor(null)}
@@ -888,7 +886,7 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                     ×
                   </button>
                   <div className="relative z-10 flex flex-col md:flex-row">
-                    <div className="relative h-[260px] md:h-auto md:w-[250px] shrink-0">
+                    <div className="relative md:h-auto md:w-[200px] shrink-0 self-stretch min-h-[260px]">
                       <Image
                         src={selectedDoctor.image}
                         alt={selectedDoctor.name}
@@ -896,8 +894,8 @@ export function HomePageClient({ initialArticles }: HomePageProps) {
                         className="object-cover"
                       />
                     </div>
-                    <div className="flex flex-col justify-center p-6 md:p-8">
-                      <h3 className="font-tttravelsnext text-white text-3xl md:text-4xl leading-tight">
+                    <div className="flex flex-col justify-center p-5 md:p-6">
+                      <h3 className="font-googlesansflex font-bold text-white text-xl md:text-3xl leading-tight">
                         {selectedDoctor.name}
                       </h3>
                       <div className="mt-4 flex flex-col gap-1 font-googlesansflex">
