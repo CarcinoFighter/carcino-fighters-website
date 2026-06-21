@@ -218,10 +218,10 @@ export default function BlogsPage() {
                             <span className="text-white/40 text-[12px] sm:text-sm font-dmsans mb-2 block font-normal tracking-wide">
                               by {entry.authorName || "The Carcino Foundation"}
                             </span>
-                            <h3 className="text-xl sm:text-3xl md:text-3xl font-bold text-white mb-2 sm:mb-4 leading-tight font-tttravelsnext tracking-tight group-hover:text-purple-300 transition-colors duration-300">
+                            <h3 className="text-xl sm:text-3xl md:text-3xl font-bold text-white mb-2 sm:mb-4 leading-tight font-tttravelsnext tracking-tight group-hover:text-purple-300 transition-colors duration-300 notranslate">
                               {entry.title}
                             </h3>
-                            <p className="text-white/50 text-sm sm:text-base md:text-lg font-dmsans mb-4 sm:mb-6 line-clamp-2 max-w-2xl font-light leading-relaxed">
+                            <p className="text-white/50 text-sm sm:text-base md:text-lg font-dmsans mb-4 sm:mb-6 line-clamp-2 max-w-2xl font-light leading-relaxed notranslate">
                               {excerptFromContent(entry.content, 180) ?? "Dive into this article to learn more about the latest developments in cancer research."}
                             </p>
                             <span className="text-white/40 text-[12px] sm:text-sm font-dmsans font-normal">

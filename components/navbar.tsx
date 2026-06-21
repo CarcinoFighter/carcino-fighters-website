@@ -24,6 +24,7 @@ import {
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -155,6 +156,11 @@ export function Navbar() {
               ))}
             </NavigationMenuList>
           </NavigationMenu>
+        </div>
+
+        {/* Language Switcher */}
+        <div className="pointer-events-auto">
+          <LanguageSwitcher />
         </div>
 
         {/* Floating Auth Icon */}
@@ -312,6 +318,13 @@ export function Navbar() {
               <Award size={22} />
               Survivors
             </Link>
+            <div className="h-px bg-white/20 my-2" />
+
+            {/* Language Switcher for mobile screen */}
+            <div className="flex justify-start px-2 py-1">
+              <LanguageSwitcher />
+            </div>
+
             <div className="h-px bg-white/20 my-2" />
 
             <Link
