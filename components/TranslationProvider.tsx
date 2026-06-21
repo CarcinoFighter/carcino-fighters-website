@@ -21,6 +21,9 @@ export const LANGUAGES = [
   { code: "zh-CN", label: "Chinese (Simplified)", nativeName: "简体中文" },
 ];
 
+// Language codes that have a hand-crafted JSON locale file in /public/locales/
+const LOCALE_JSON_CODES = new Set(["hi", "bn"]);
+
 const STORAGE_KEY = "cf_language";
 const ORIGINAL_KEY = "__cf_original__";
 
@@ -38,6 +41,26 @@ const TranslationContext = createContext<TranslationContextType>({
 
 export function useTranslation() {
   return useContext(TranslationContext);
+}
+
+// In-memory cache for loaded locale JSON files so we only fetch once per session
+const localeCache = new Map<string, Record<string, string>>();
+
+/** Fetch the hand-crafted locale JSON for a language, with in-memory caching. */
+async function loadLocaleMap(lang: string): Promise<Record<string, string>> {
+  if (localeCache.has(lang)) return localeCache.get(lang)!;
+  try {
+    const res = await fetch(`/locales/${lang}.json`);
+    if (!res.ok) return {};
+    const raw = await res.json();
+    // Strip the _meta key — it's not a translation pair
+    const { _meta, ...map } = raw as Record<string, string>;
+    void _meta;
+    localeCache.set(lang, map);
+    return map;
+  } catch {
+    return {};
+  }
 }
 
 // Walk the DOM and collect all visible text nodes
@@ -117,8 +140,18 @@ export function TranslationProvider({
   // Stable ref so effects always read the latest language without needing it as a dep
   const currentLangRef = useRef("en");
 
-  // Core translation function — only processes nodes not yet translated.
-  // This makes multiple passes safe: each pass only picks up NEW nodes.
+  /**
+   * Core translation function.
+   *
+   * Pass 1 — JSON locale map (instant, no network):
+   *   For languages with a hand-crafted JSON file, look up each text node's
+   *   original English value in the map and apply the translation immediately.
+   *   This covers all known system strings with zero latency.
+   *
+   * Pass 2 — Auto-translate API (async, network):
+   *   Any nodes that weren't covered by the JSON map are sent to the API.
+   *   For languages without a JSON file, all nodes go here.
+   */
   const applyTranslation = useCallback(async (lang: string) => {
     const allNodes = getTextNodes(document.body);
 
@@ -128,18 +161,48 @@ export function TranslationProvider({
       return;
     }
 
-    // Only translate nodes that haven't been touched yet on this page
+    // Only process nodes not yet translated on this page
     const fresh = allNodes.filter(
       (node) => !(node as unknown as Record<string, string>)[ORIGINAL_KEY]
     );
 
-    if (fresh.length === 0) return; // Nothing new to translate
+    if (fresh.length === 0) return;
 
     setIsTranslating(true);
     saveOriginals(fresh);
 
+    // ── Pass 1: apply JSON locale map immediately ────────────────────────────
+    let needsApi = fresh;
+
+    if (LOCALE_JSON_CODES.has(lang)) {
+      const localeMap = await loadLocaleMap(lang);
+
+      if (Object.keys(localeMap).length > 0) {
+        const stillUntranslated: Text[] = [];
+
+        for (const node of fresh) {
+          const orig = (
+            node as unknown as Record<string, string>
+          )[ORIGINAL_KEY]?.trim();
+
+          if (orig && Object.prototype.hasOwnProperty.call(localeMap, orig)) {
+            node.textContent = localeMap[orig];
+          } else {
+            stillUntranslated.push(node);
+          }
+        }
+
+        needsApi = stillUntranslated;
+      }
+    }
+
+    // ── Pass 2: send remaining texts to the auto-translate API ───────────────
     const uniqueTexts = [
-      ...new Set(fresh.map((n) => n.textContent ?? "").filter(Boolean)),
+      ...new Set(
+        needsApi
+          .map((n) => (n as unknown as Record<string, string>)[ORIGINAL_KEY] ?? "")
+          .filter(Boolean)
+      ),
     ];
 
     if (uniqueTexts.length === 0) {
@@ -150,7 +213,7 @@ export function TranslationProvider({
     const translated = await translateBatch(uniqueTexts, lang);
     const map = new Map(uniqueTexts.map((t, i) => [t, translated[i]]));
 
-    for (const node of fresh) {
+    for (const node of needsApi) {
       const orig = (node as unknown as Record<string, string>)[ORIGINAL_KEY];
       if (orig && map.has(orig)) {
         node.textContent = map.get(orig)!;
