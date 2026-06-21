@@ -1,0 +1,69 @@
+{
+  "_meta": {
+    "language": "Hindi",
+    "languageCode": "hi",
+    "nativeName": "हिन्दी",
+    "lastUpdated": "2026-06-21",
+    "note": "Keys are exact English UI strings. Values are manual Hindi translations. This map is applied BEFORE the auto-translate API for instant, accurate rendering of system texts."
+  },
+
+  "Home": "होम",
+  "About": "हमारे बारे में",
+  "Articles": "लेख",
+  "Blogs": "ब्लॉग",
+  "Survivors": "जीवित बचे लोग",
+  "Dashboard": "डैशबोर्ड",
+  "Sign Up": "साइन अप",
+  "Sign In": "साइन इन",
+
+  "Select Language": "भाषा चुनें",
+
+  "Breaking Down Cancer for Everyone, With Pride.": "कैंसर को सबके लिए सरल बनाना, गर्व के साथ।",
+  "Cancer affects millions of lives—but this Pride Month, we stand for dignity, visibility, resilience, and compassionate healthcare for everyone.": "कैंसर लाखों जिंदगियों को प्रभावित करता है — लेकिन इस प्राइड माह में, हम सभी के लिए गरिमा, दृश्यता, लचीलेपन और दयालु स्वास्थ्य सेवा के लिए खड़े हैं।",
+  "Read Articles": "लेख पढ़ें",
+
+  "Article Gallery": "लेख गैलरी",
+  "Here's the latest collection of articles we offer, tailored to be understandable by everyone, made with love and care by our Writing Team.": "यहाँ हमारे लेखों का नवीनतम संग्रह है, जिसे सभी के लिए समझने योग्य बनाया गया है, हमारी लेखन टीम द्वारा प्यार और देखभाल के साथ तैयार किया गया।",
+  "Visit the Articles Tab": "लेख टैब पर जाएं",
+  "Loading articles...": "लेख लोड हो रहे हैं...",
+  "No articles found.": "कोई लेख नहीं मिला।",
+  "Research Article": "शोध लेख",
+  "Unknown Author": "अज्ञात लेखक",
+
+  "Research Articles": "शोध लेख",
+  "With extensive hard work and highly strenuous fact checking, our Writing Team has led us to offer you a selection of curated articles.": "अत्यंत कठिन परिश्रम और कड़ी जाँच के साथ, हमारी लेखन टीम ने आपके लिए चुनिंदा लेखों का संग्रह प्रस्तुत किया है।",
+  "Search articles...": "लेख खोजें...",
+  "No articles match your search.": "आपकी खोज से कोई लेख मेल नहीं खाता।",
+
+  "We want everyone to be aware.": "हम चाहते हैं कि सभी जागरूक हों।",
+  "There's plenty of misconceptions about cancer, especially amongst our current generation.": "कैंसर के बारे में, विशेषकर हमारी वर्तमान पीढ़ी में, बहुत सी भ्रांतियाँ हैं।",
+
+  "Rural Care": "ग्रामीण देखभाल",
+  "We aim to contribute toward a more decentralized and equitable rural cancer support infrastructure.": "हम अधिक विकेन्द्रीकृत और न्यायसंगत ग्रामीण कैंसर सहायता ढांचे में योगदान देने का लक्ष्य रखते हैं।",
+
+  "Healthcare Equity": "स्वास्थ्य समानता",
+  "No individual should progress to advanced-stage cancer due to delayed diagnosis, financial unawareness, or limited access to healthcare resources.": "किसी भी व्यक्ति को देर से निदान, वित्तीय अनजानी, या स्वास्थ्य सेवाओं तक सीमित पहुँच के कारण उन्नत कैंसर तक नहीं पहुँचना चाहिए।",
+
+  "Run by Students": "छात्रों द्वारा संचालित",
+  "We believe that our generation can redefine cancer. And we try our best to educate our community.": "हम मानते हैं कि हमारी पीढ़ी कैंसर को नए सिरे से परिभाषित कर सकती है। और हम अपने समुदाय को शिक्षित करने के लिए पूरी कोशिश करते हैं।",
+
+  "Early Detection": "शीघ्र पहचान",
+  "It is the strongest defense against cancer, and we work to ensure that no life is lost simply because the signs were missed too late.": "यह कैंसर के खिलाफ सबसे मजबूत बचाव है, और हम यह सुनिश्चित करने के लिए काम करते हैं कि कोई भी जीवन केवल इसलिए न जाए क्योंकि संकेत बहुत देर से पहचाने गए।",
+
+  "Meet the team": "टीम से मिलें",
+
+  "\u201cThe human spirit was built to outlast despair. So, live life to the fullest and don't think about things too much.\u201d": "\"मानव आत्मा निराशा से बड़ी है। इसलिए, जीवन को भरपूर जियो और चीजों के बारे में बहुत अधिक मत सोचो।\"",
+  "Rajannya Das": "रजन्या दास",
+  "Founder & CEO": "संस्थापक और सीईओ",
+  "Founder": "संस्थापक",
+
+  "Our panel of Oncologists:": "हमारे ऑन्कोलॉजिस्टों का पैनल:",
+  "We are honored to work alongside oncologists whose expertise, mentorship, clinical insight and belief in our mission help us build a future where no one is left behind in the fight against cancer.": "हमें उन ऑन्कोलॉजिस्टों के साथ काम करने का सम्मान है जिनकी विशेषज्ञता, मार्गदर्शन, नैदानिक दृष्टि और हमारे मिशन में विश्वास हमें एक ऐसा भविष्य बनाने में मदद करता है जहाँ कोई भी कैंसर के खिलाफ लड़ाई में पीछे न रहे।",
+  "Read more": "और पढ़ें",
+
+  "CONTACT": "संपर्क",
+  "Our Tribute": "हमारी श्रद्धांजलि",
+  "All Rights Reserved.": "सर्वाधिकार सुरक्षित।",
+  "Privacy Policy": "गोपनीयता नीति",
+  "Terms of Service": "सेवा की शर्तें"
+}

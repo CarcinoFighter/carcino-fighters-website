@@ -1,0 +1,69 @@
+{
+  "_meta": {
+    "language": "Bengali",
+    "languageCode": "bn",
+    "nativeName": "বাংলা",
+    "lastUpdated": "2026-06-21",
+    "note": "Keys are exact English UI strings. Values are manual Bengali translations. This map is applied BEFORE the auto-translate API for instant, accurate rendering of system texts."
+  },
+
+  "Home": "হোম",
+  "About": "আমাদের সম্পর্কে",
+  "Articles": "নিবন্ধ",
+  "Blogs": "ব্লগ",
+  "Survivors": "বেঁচে থাকা মানুষেরা",
+  "Dashboard": "ড্যাশবোর্ড",
+  "Sign Up": "সাইন আপ",
+  "Sign In": "সাইন ইন",
+
+  "Select Language": "ভাষা নির্বাচন করুন",
+
+  "Breaking Down Cancer for Everyone, With Pride.": "সবার জন্য ক্যান্সার সহজ করা, গর্বের সাথে।",
+  "Cancer affects millions of lives—but this Pride Month, we stand for dignity, visibility, resilience, and compassionate healthcare for everyone.": "ক্যান্সার লক্ষ লক্ষ মানুষের জীবন প্রভাবিত করে — কিন্তু এই প্রাইড মাসে, আমরা সকলের জন্য মর্যাদা, দৃশ্যমানতা, স্থিতিস্থাপকতা এবং সহানুভূতিশীল স্বাস্থ্যসেবার পক্ষে দাঁড়াই।",
+  "Read Articles": "নিবন্ধ পড়ুন",
+
+  "Article Gallery": "নিবন্ধ গ্যালারি",
+  "Here's the latest collection of articles we offer, tailored to be understandable by everyone, made with love and care by our Writing Team.": "এখানে আমাদের নিবন্ধগুলির সর্বশেষ সংকলন রয়েছে, যা সকলের বোধগম্য হওয়ার জন্য তৈরি করা হয়েছে, আমাদের লেখক দলের ভালোবাসা ও যত্নের সাথে।",
+  "Visit the Articles Tab": "নিবন্ধ ট্যাব দেখুন",
+  "Loading articles...": "নিবন্ধ লোড হচ্ছে...",
+  "No articles found.": "কোনো নিবন্ধ পাওয়া যায়নি।",
+  "Research Article": "গবেষণা নিবন্ধ",
+  "Unknown Author": "অজানা লেখক",
+
+  "Research Articles": "গবেষণা নিবন্ধ",
+  "With extensive hard work and highly strenuous fact checking, our Writing Team has led us to offer you a selection of curated articles.": "ব্যাপক পরিশ্রম এবং কঠোর তথ্য যাচাইয়ের মাধ্যমে, আমাদের লেখক দল আপনার জন্য একটি বাছাই করা নিবন্ধের সংকলন উপস্থাপন করেছে।",
+  "Search articles...": "নিবন্ধ খুঁজুন...",
+  "No articles match your search.": "আপনার অনুসন্ধানের সাথে কোনো নিবন্ধ মেলেনি।",
+
+  "We want everyone to be aware.": "আমরা চাই সবাই সচেতন হোক।",
+  "There's plenty of misconceptions about cancer, especially amongst our current generation.": "ক্যান্সার সম্পর্কে, বিশেষত আমাদের বর্তমান প্রজন্মের মধ্যে, অনেক ভ্রান্ত ধারণা রয়েছে।",
+
+  "Rural Care": "গ্রামীণ সেবা",
+  "We aim to contribute toward a more decentralized and equitable rural cancer support infrastructure.": "আমরা আরও বিকেন্দ্রীভূত এবং সুষম গ্রামীণ ক্যান্সার সহায়তা কাঠামোতে অবদান রাখার লক্ষ্য রাখি।",
+
+  "Healthcare Equity": "স্বাস্থ্যসেবা সমতা",
+  "No individual should progress to advanced-stage cancer due to delayed diagnosis, financial unawareness, or limited access to healthcare resources.": "কোনো ব্যক্তির বিলম্বিত রোগ নির্ণয়, আর্থিক অজ্ঞতা বা স্বাস্থ্যসেবা সম্পদে সীমিত প্রবেশাধিকারের কারণে উন্নত ক্যান্সারে পৌঁছানো উচিত নয়।",
+
+  "Run by Students": "শিক্ষার্থীদের দ্বারা পরিচালিত",
+  "We believe that our generation can redefine cancer. And we try our best to educate our community.": "আমরা বিশ্বাস করি আমাদের প্রজন্ম ক্যান্সারকে নতুনভাবে সংজ্ঞায়িত করতে পারে। এবং আমরা আমাদের সম্প্রদায়কে শিক্ষিত করার জন্য যথাসাধ্য চেষ্টা করি।",
+
+  "Early Detection": "প্রাথমিক সনাক্তকরণ",
+  "It is the strongest defense against cancer, and we work to ensure that no life is lost simply because the signs were missed too late.": "এটি ক্যান্সারের বিরুদ্ধে সবচেয়ে শক্তিশালী প্রতিরক্ষা, এবং আমরা নিশ্চিত করতে কাজ করি যাতে কোনো জীবন শুধুমাত্র এই কারণে না যায় যে লক্ষণগুলো অনেক দেরিতে লক্ষ্য করা হয়েছিল।",
+
+  "Meet the team": "দলের সাথে পরিচিত হন",
+
+  "\u201cThe human spirit was built to outlast despair. So, live life to the fullest and don't think about things too much.\u201d": "\"মানব আত্মা হতাশাকে টিকিয়ে রাখার জন্যই গড়া হয়েছে। তাই, জীবনকে পরিপূর্ণভাবে যাপন করুন এবং বিষয়গুলো নিয়ে বেশি চিন্তা করবেন না।\"",
+  "Rajannya Das": "রাজন্যা দাস",
+  "Founder & CEO": "প্রতিষ্ঠাতা ও সিইও",
+  "Founder": "প্রতিষ্ঠাতা",
+
+  "Our panel of Oncologists:": "আমাদের অনকোলজিস্টদের প্যানেল:",
+  "We are honored to work alongside oncologists whose expertise, mentorship, clinical insight and belief in our mission help us build a future where no one is left behind in the fight against cancer.": "আমরা সেই অনকোলজিস্টদের সাথে কাজ করতে পেরে সম্মানিত যাদের দক্ষতা, পরামর্শদাতৃত্ব, ক্লিনিকাল অন্তর্দৃষ্টি এবং আমাদের মিশনে বিশ্বাস আমাদেরকে এমন একটি ভবিষ্যৎ গড়তে সাহায্য করে যেখানে ক্যান্সারের বিরুদ্ধে লড়াইয়ে কেউ পিছিয়ে পড়বে না।",
+  "Read more": "আরও জানুন",
+
+  "CONTACT": "যোগাযোগ",
+  "Our Tribute": "আমাদের শ্রদ্ধাঞ্জলি",
+  "All Rights Reserved.": "সর্বস্বত্ব সংরক্ষিত।",
+  "Privacy Policy": "গোপনীয়তা নীতি",
+  "Terms of Service": "সেবার শর্তাবলী"
+}
