@@ -209,7 +209,7 @@ export function ArticleListClient({ articles }: ArticleListClientProps) {
                               Research Article
                             </div>
 
-                            <h3 className={`${getTitleFontSize(article.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}>
+                            <h3 className={`${getTitleFontSize(article.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white notranslate`}>
                               {article.title}
                             </h3>
 

@@ -179,6 +179,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
   dark:prose-invert
   font-dmsans
   break-words [overflow-wrap:anywhere]
+  notranslate
   ${readmore ? "overflow-visible" : "max-h-[50vh] sm:max-h-[60vh] overflow-hidden"}
 `}
                 style={
@@ -417,7 +418,7 @@ export function ArticlePageClient({ article, moreArticles }: ArticlePageClientPr
                                 Research Article
                               </div>
 
-                              <h3 className={`${getTitleFontSize(a.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}>
+                              <h3 className={`${getTitleFontSize(a.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white notranslate`}>
                                 {a.title}
                               </h3>
 

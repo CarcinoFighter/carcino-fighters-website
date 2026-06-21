@@ -7,6 +7,7 @@ import { Navbar } from "@/components/navbar";
 import { BannedBanner } from "@/components/BannedBanner";
 import localFont from "next/font/local";
 import { GoogleAnalytics } from '@next/third-parties/google';
+import { TranslationProvider } from "@/components/TranslationProvider";
 
 // import { Footer } from "@/components/footer";
 
@@ -179,8 +180,10 @@ export default function RootLayout({
           }}
         />
 
-        <ThemeProvider
 
+
+        <TranslationProvider>
+        <ThemeProvider
           attribute="class"
           defaultTheme="dark"
           storageKey="theme"
@@ -269,6 +272,7 @@ export default function RootLayout({
 
           {children}
         </ThemeProvider>
+        </TranslationProvider>
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ""} />
       </body>
 

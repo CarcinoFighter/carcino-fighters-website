@@ -161,6 +161,7 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
               dark:prose-invert
               font-dmsans
               break-words [overflow-wrap:anywhere]
+              notranslate
               ${expanded ? "overflow-visible" : "max-h-[60vh] sm:max-h-[80vh] overflow-hidden"}
             `}
           style={
@@ -304,7 +305,7 @@ export default function BlogPageClient({ entry, related, cardColor }: BlogPageCl
                             Blog Post
                           </div>
 
-                          <h3 className={`${getTitleFontSize(r.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white`}>
+                          <h3 className={`${getTitleFontSize(r.title)} leading-[1] p-2 text-center uppercase font-tttravelsnext font-bold max-w-[220px] mx-auto w-full text-white notranslate`}>
                             {r.title}
                           </h3>
 
