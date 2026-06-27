@@ -41,7 +41,7 @@ const organizationHierarchy: Leader = {
   description:
     "A science enthusiast who's usually found lifting weights for peace, balancing deadlines with dopamine bike rides, travelling and learning languages. Mitosis deserves a standing ovation— biology said yes.",
   avatar: "/avatars/rajannya.png",
-  flags: ["/flags/raju.png"], // Provision to put the flag PNG paths here, e.g., ["/flags/india.png"]
+  flags: [], // Provision to put the flag PNG paths here, e.g., ["/flags/india.png"]
   children: [
     {
       name: "Agnihotra Nath",
