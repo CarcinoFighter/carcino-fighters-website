@@ -35,7 +35,13 @@
     "jose": "^5.9.3",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.477.0",
+<<<<<<< HEAD
     "next": "^16.0.10",
+=======
+    "motion": "^12.23.12",
+    "net": "^1.0.2",
+    "next": "15.3.8",
+>>>>>>> b4ea26fefa7e08b3804b9c2726e28eb5883f6115
     "next-themes": "^0.4.6",
     "nodemailer": "^8.0.2",
     "ogl": "^1.0.11",
